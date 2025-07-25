@@ -1,0 +1,18 @@
+[
+  {
+    "origin": [
+      "http://localhost:3000",
+      "https://www.lab.hoogrr.com",
+      "https://lab.hoogrr.com",
+      "https://www.dev-lab.hoogrr.com",
+      "https://dev-lab.hoogrr.com"
+    ],
+    "method": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "X-Firebase-Storage-Version"
+    ]
+  }
+]
