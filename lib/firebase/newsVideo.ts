@@ -1,16 +1,4 @@
-import { db } from "../firebase";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  getDoc,
-  doc,
-  updateDoc,
-  query,
-  where,
-  orderBy,
-  deleteDoc,
-} from "firebase/firestore";
+import { dbAdmin } from "../firebase-admin";
 import { NewsVideo, NewsVideoCreateData } from "../types/newsVideo";
 
 const COLLECTION_NAME = "newsVideos";
@@ -20,7 +8,7 @@ export const saveNewsVideo = async (
   data: NewsVideoCreateData
 ): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+    const docRef = await dbAdmin.collection(COLLECTION_NAME).add({
       uid,
       ...data,
       status: "completed",
@@ -40,7 +28,7 @@ export const createNewsVideoDraft = async (
   data: Partial<NewsVideoCreateData>
 ): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+    const docRef = await dbAdmin.collection(COLLECTION_NAME).add({
       uid,
       ...data,
       status: "processing",
@@ -60,9 +48,11 @@ export const getNewsVideosByUser = async (
 ): Promise<NewsVideo[]> => {
   try {
     // 단순 쿼리로 시작 (인덱스 없이도 작동)
-    const q = query(collection(db, COLLECTION_NAME), where("uid", "==", uid));
+    const querySnapshot = await dbAdmin
+      .collection(COLLECTION_NAME)
+      .where("uid", "==", uid)
+      .get();
 
-    const querySnapshot = await getDocs(q);
     const videos: NewsVideo[] = [];
 
     querySnapshot.forEach((doc) => {
@@ -88,11 +78,11 @@ export const getNewsVideoById = async (
 ): Promise<NewsVideo | null> => {
   try {
     console.log("Fetching news video with ID:", id);
-    const docRef = doc(db, COLLECTION_NAME, id);
-    const docSnap = await getDoc(docRef);
+    const docRef = dbAdmin.collection(COLLECTION_NAME).doc(id);
+    const docSnap = await docRef.get();
 
-    if (docSnap.exists()) {
-      const data = docSnap.data();
+    if (docSnap.exists) {
+      const data = docSnap.data()!;
       console.log("Found video data:", data);
       return {
         id: docSnap.id,
@@ -115,8 +105,8 @@ export const updateNewsVideo = async (
   data: Partial<NewsVideo>
 ): Promise<void> => {
   try {
-    const docRef = doc(db, COLLECTION_NAME, id);
-    await updateDoc(docRef, {
+    const docRef = dbAdmin.collection(COLLECTION_NAME).doc(id);
+    await docRef.update({
       ...data,
       updatedAt: new Date(),
     });
@@ -128,8 +118,8 @@ export const updateNewsVideo = async (
 
 export const deleteNewsVideo = async (id: string): Promise<void> => {
   try {
-    const docRef = doc(db, COLLECTION_NAME, id);
-    await deleteDoc(docRef);
+    const docRef = dbAdmin.collection(COLLECTION_NAME).doc(id);
+    await docRef.delete();
   } catch (error) {
     console.error("Error deleting news video:", error);
     throw error;

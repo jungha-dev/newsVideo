@@ -5,6 +5,7 @@
 1. **Service Account Key File Error**: Removed file-based service account loading that was causing build failures
 2. **Firebase API Key Error**: Updated all Firebase Admin initialization to use environment variables
 3. **Client-side Firebase in API Routes**: Converted all API routes to use Firebase Admin SDK instead of client-side Firebase
+4. **NewsVideo Module**: Updated `lib/firebase/newsVideo.ts` to use Firebase Admin SDK
 
 ## Required Environment Variables
 
@@ -97,6 +98,7 @@ RUNWAY_API_SECRET=your_runway_api_secret_here
 5. **app/api/upload-from-url/route.ts**: Converted from client-side Firebase to Firebase Admin SDK
 6. **app/api/upload/route.ts**: Converted from client-side Firebase to Firebase Admin SDK
 7. **app/api/video/delete-batch/route.ts**: Converted from client-side Firebase to Firebase Admin SDK
+8. **lib/firebase/newsVideo.ts**: Converted from client-side Firebase to Firebase Admin SDK
 
 ### Key Changes:
 
@@ -105,6 +107,14 @@ RUNWAY_API_SECRET=your_runway_api_secret_here
 - Added proper environment variable validation
 - Converted all API routes to use Firebase Admin SDK instead of client-side Firebase
 - Added proper error handling for missing environment variables
+- Updated `getNewsVideoById` function to use Firebase Admin SDK
+
+### Specific Changes in newsVideo.ts:
+
+- ❌ `import { db } from "../firebase"` → ✅ `import { dbAdmin } from "../firebase-admin"`
+- ❌ `collection(db, COLLECTION_NAME)` → ✅ `dbAdmin.collection(COLLECTION_NAME)`
+- ❌ `getDoc(docRef)` → ✅ `docRef.get()`
+- ❌ `docSnap.exists()` → ✅ `docSnap.exists`
 
 ## Verification
 
