@@ -1,4 +1,4 @@
-import { dbAdmin } from "../firebase-admin";
+import { getFirebaseDbAdmin } from "../firebase-admin";
 import { NewsVideo, NewsVideoCreateData } from "../types/newsVideo";
 
 const COLLECTION_NAME = "newsVideos";
@@ -8,13 +8,15 @@ export const saveNewsVideo = async (
   data: NewsVideoCreateData
 ): Promise<string> => {
   try {
-    const docRef = await dbAdmin.collection(COLLECTION_NAME).add({
-      uid,
-      ...data,
-      status: "completed",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    const docRef = await getFirebaseDbAdmin()
+      .collection(COLLECTION_NAME)
+      .add({
+        uid,
+        ...data,
+        status: "completed",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
 
     return docRef.id;
   } catch (error) {
@@ -28,13 +30,15 @@ export const createNewsVideoDraft = async (
   data: Partial<NewsVideoCreateData>
 ): Promise<string> => {
   try {
-    const docRef = await dbAdmin.collection(COLLECTION_NAME).add({
-      uid,
-      ...data,
-      status: "processing",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    const docRef = await getFirebaseDbAdmin()
+      .collection(COLLECTION_NAME)
+      .add({
+        uid,
+        ...data,
+        status: "processing",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
 
     return docRef.id;
   } catch (error) {
@@ -48,7 +52,7 @@ export const getNewsVideosByUser = async (
 ): Promise<NewsVideo[]> => {
   try {
     // 단순 쿼리로 시작 (인덱스 없이도 작동)
-    const querySnapshot = await dbAdmin
+    const querySnapshot = await getFirebaseDbAdmin()
       .collection(COLLECTION_NAME)
       .where("uid", "==", uid)
       .get();
@@ -78,7 +82,7 @@ export const getNewsVideoById = async (
 ): Promise<NewsVideo | null> => {
   try {
     console.log("Fetching news video with ID:", id);
-    const docRef = dbAdmin.collection(COLLECTION_NAME).doc(id);
+    const docRef = getFirebaseDbAdmin().collection(COLLECTION_NAME).doc(id);
     const docSnap = await docRef.get();
 
     if (docSnap.exists) {
@@ -105,7 +109,7 @@ export const updateNewsVideo = async (
   data: Partial<NewsVideo>
 ): Promise<void> => {
   try {
-    const docRef = dbAdmin.collection(COLLECTION_NAME).doc(id);
+    const docRef = getFirebaseDbAdmin().collection(COLLECTION_NAME).doc(id);
     await docRef.update({
       ...data,
       updatedAt: new Date(),
@@ -118,7 +122,7 @@ export const updateNewsVideo = async (
 
 export const deleteNewsVideo = async (id: string): Promise<void> => {
   try {
-    const docRef = dbAdmin.collection(COLLECTION_NAME).doc(id);
+    const docRef = getFirebaseDbAdmin().collection(COLLECTION_NAME).doc(id);
     await docRef.delete();
   } catch (error) {
     console.error("Error deleting news video:", error);

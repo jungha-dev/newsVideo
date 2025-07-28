@@ -96,6 +96,13 @@ const getStorageInstance = () => {
   return _storage;
 };
 
+// 함수를 export하여 완전한 지연 초기화 구현
+export const getFirebaseDb = () => getDbInstance();
+export const getFirebaseAuth = () => getAuthInstance();
+export const getFirebaseDbAdmin = () => getDbAdminInstance();
+export const getFirebaseStorage = () => getStorageInstance();
+
+// 기존 호환성을 위한 별칭 (사용하지 않는 것을 권장)
 export const db = getDbInstance();
 export const auth = getAuthInstance();
 export const dbAdmin = getDbAdminInstance();

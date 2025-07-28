@@ -8,6 +8,7 @@
 4. **NewsVideo Module**: Updated `lib/firebase/newsVideo.ts` to use Firebase Admin SDK
 5. **Build-time Firebase Initialization**: Fixed Firebase initialization during build time by using lazy initialization
 6. **Client-side Firebase Admin SDK Import**: Removed Firebase Admin SDK imports from client-side components
+7. **Complete Lazy Initialization**: Implemented complete lazy initialization to prevent any build-time Firebase initialization
 
 ## Required Environment Variables
 
@@ -96,14 +97,15 @@ RUNWAY_API_SECRET=your_runway_api_secret_here
 1. **app/api/firebase-images/route.ts**: Updated to use environment variables only
 2. **app/api/categories/route.ts**: Updated to use environment variables only
 3. **app/api/video/runway/multi-generate-video/image-to-video/route.ts**: Updated to use environment variables only
-4. **lib/firebase-admin.ts**: Updated to use environment variables only and lazy initialization
+4. **lib/firebase-admin.ts**: Updated to use environment variables only and complete lazy initialization
 5. **app/api/upload-from-url/route.ts**: Converted from client-side Firebase to Firebase Admin SDK
 6. **app/api/upload/route.ts**: Converted from client-side Firebase to Firebase Admin SDK
 7. **app/api/video/delete-batch/route.ts**: Converted from client-side Firebase to Firebase Admin SDK
 8. **lib/firebase/newsVideo.ts**: Converted from client-side Firebase to Firebase Admin SDK
 9. **app/api/video/news/merge-videos/route.ts**: Changed to use dynamic import for Firebase functions
 10. **app/api/video/news/save/route.ts**: Created new API route for saving news videos
-11. **app/api/(auth)/news/page.tsx**: Removed Firebase Admin SDK imports and used API calls instead
+11. **app/(auth)/news/page.tsx**: Removed Firebase Admin SDK imports and used API calls instead
+12. **lib/auth.ts**: Updated to use lazy initialization for Firebase Admin SDK
 
 ### Key Changes:
 
@@ -113,16 +115,28 @@ RUNWAY_API_SECRET=your_runway_api_secret_here
 - Converted all API routes to use Firebase Admin SDK instead of client-side Firebase
 - Added proper error handling for missing environment variables
 - Updated `getNewsVideoById` function to use Firebase Admin SDK
-- Implemented lazy initialization in `lib/firebase-admin.ts` to prevent build-time Firebase initialization
+- Implemented complete lazy initialization in `lib/firebase-admin.ts` to prevent build-time Firebase initialization
 - Used dynamic imports in `merge-videos` API to prevent build-time execution
 - Removed Firebase Admin SDK imports from client-side components
 - Created API routes for server-side Firebase operations
+- Implemented function-based exports instead of instance-based exports
 
 ### Specific Changes in firebase-admin.ts:
 
-- ❌ 모듈 레벨에서 Firebase 초기화 → ✅ 지연 초기화 (lazy initialization)
-- ❌ `const app = initializeApp(...)` → ✅ `const initializeAppIfNeeded = () => { ... }`
+- ❌ 모듈 레벨에서 Firebase 초기화 → ✅ 완전한 지연 초기화 (complete lazy initialization)
+- ❌ `export const db = getDbInstance()` → ✅ `export const getFirebaseDb = () => getDbInstance()`
 - ❌ 빌드 시점에 환경 변수 접근 → ✅ 런타임에만 환경 변수 접근
+- ❌ 인스턴스 기반 export → ✅ 함수 기반 export
+
+### Specific Changes in auth.ts:
+
+- ❌ `import { getAuth } from "firebase-admin/auth"` → ✅ `import { getFirebaseAuth } from "./firebase-admin"`
+- ❌ `getAuth().verifyIdToken(token)` → ✅ `getFirebaseAuth().verifyIdToken(token)`
+
+### Specific Changes in newsVideo.ts:
+
+- ❌ `import { dbAdmin } from "../firebase-admin"` → ✅ `import { getFirebaseDbAdmin } from "../firebase-admin"`
+- ❌ `dbAdmin.collection(...)` → ✅ `getFirebaseDbAdmin().collection(...)`
 
 ### Specific Changes in merge-videos API:
 
@@ -153,6 +167,7 @@ If you still encounter issues:
 5. **API key errors**: Make sure all API routes are using Firebase Admin SDK, not client-side Firebase
 6. **Build-time errors**: Ensure Firebase initialization only happens at runtime, not build time
 7. **Client-side errors**: Make sure no Firebase Admin SDK imports are in client-side components
+8. **Lazy initialization errors**: Ensure all Firebase functions are called through lazy initialization functions
 
 ## Security Notes
 
@@ -161,5 +176,6 @@ If you still encounter issues:
 - Environment variables in Vercel are encrypted and secure
 - Use different Firebase projects for development and production if possible
 - All API routes now use Firebase Admin SDK for server-side operations
-- Firebase initialization is now lazy-loaded to prevent build-time issues
+- Firebase initialization is now completely lazy-loaded to prevent build-time issues
 - Client-side components use API calls instead of direct Firebase Admin SDK imports
+- All Firebase operations use function-based access instead of instance-based access
