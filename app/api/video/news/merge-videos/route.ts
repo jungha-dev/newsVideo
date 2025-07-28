@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromToken } from "@/lib/auth";
+import { getNewsVideoById } from "@/lib/firebase/newsVideo";
 import { tmpdir } from "os";
 import { join } from "path";
 import fs from "fs/promises";
@@ -49,8 +50,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 비디오 정보 가져오기 (동적 import 사용)
-    const { getNewsVideoById } = await import("@/lib/firebase/newsVideo");
+    // 비디오 정보 가져오기
     const video = await getNewsVideoById(videoId);
     if (!video) {
       return NextResponse.json({ error: "Video not found" }, { status: 404 });
