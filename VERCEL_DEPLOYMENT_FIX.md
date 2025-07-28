@@ -4,6 +4,7 @@
 
 1. **Service Account Key File Error**: Removed file-based service account loading that was causing build failures
 2. **Firebase API Key Error**: Updated all Firebase Admin initialization to use environment variables
+3. **Client-side Firebase in API Routes**: Converted all API routes to use Firebase Admin SDK instead of client-side Firebase
 
 ## Required Environment Variables
 
@@ -87,10 +88,23 @@ RUNWAY_API_SECRET=your_runway_api_secret_here
 
 ## Code Changes Made
 
+### Updated API Routes to Use Firebase Admin SDK:
+
 1. **app/api/firebase-images/route.ts**: Updated to use environment variables only
 2. **app/api/categories/route.ts**: Updated to use environment variables only
 3. **app/api/video/runway/multi-generate-video/image-to-video/route.ts**: Updated to use environment variables only
 4. **lib/firebase-admin.ts**: Updated to use environment variables only
+5. **app/api/upload-from-url/route.ts**: Converted from client-side Firebase to Firebase Admin SDK
+6. **app/api/upload/route.ts**: Converted from client-side Firebase to Firebase Admin SDK
+7. **app/api/video/delete-batch/route.ts**: Converted from client-side Firebase to Firebase Admin SDK
+
+### Key Changes:
+
+- Removed all `require("../../../keys/serviceAccountKey.json")` calls
+- Removed file-based service account loading
+- Added proper environment variable validation
+- Converted all API routes to use Firebase Admin SDK instead of client-side Firebase
+- Added proper error handling for missing environment variables
 
 ## Verification
 
@@ -109,6 +123,7 @@ If you still encounter issues:
 2. **Firebase auth errors**: Verify that the API key and project ID are correct
 3. **Service account errors**: Ensure the private key is properly formatted (with \n for line breaks)
 4. **Storage errors**: Verify the storage bucket name is correct
+5. **API key errors**: Make sure all API routes are using Firebase Admin SDK, not client-side Firebase
 
 ## Security Notes
 
@@ -116,3 +131,4 @@ If you still encounter issues:
 - The `keys/` directory is already in `.gitignore`
 - Environment variables in Vercel are encrypted and secure
 - Use different Firebase projects for development and production if possible
+- All API routes now use Firebase Admin SDK for server-side operations
