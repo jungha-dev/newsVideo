@@ -6,6 +6,7 @@
 2. **Firebase API Key Error**: Updated all Firebase Admin initialization to use environment variables
 3. **Client-side Firebase in API Routes**: Converted all API routes to use Firebase Admin SDK instead of client-side Firebase
 4. **NewsVideo Module**: Updated `lib/firebase/newsVideo.ts` to use Firebase Admin SDK
+5. **Build-time Firebase Initialization**: Fixed Firebase initialization during build time by using lazy initialization
 
 ## Required Environment Variables
 
@@ -94,11 +95,12 @@ RUNWAY_API_SECRET=your_runway_api_secret_here
 1. **app/api/firebase-images/route.ts**: Updated to use environment variables only
 2. **app/api/categories/route.ts**: Updated to use environment variables only
 3. **app/api/video/runway/multi-generate-video/image-to-video/route.ts**: Updated to use environment variables only
-4. **lib/firebase-admin.ts**: Updated to use environment variables only
+4. **lib/firebase-admin.ts**: Updated to use environment variables only and lazy initialization
 5. **app/api/upload-from-url/route.ts**: Converted from client-side Firebase to Firebase Admin SDK
 6. **app/api/upload/route.ts**: Converted from client-side Firebase to Firebase Admin SDK
 7. **app/api/video/delete-batch/route.ts**: Converted from client-side Firebase to Firebase Admin SDK
 8. **lib/firebase/newsVideo.ts**: Converted from client-side Firebase to Firebase Admin SDK
+9. **app/api/video/news/merge-videos/route.ts**: Changed to use dynamic import for Firebase functions
 
 ### Key Changes:
 
@@ -108,13 +110,18 @@ RUNWAY_API_SECRET=your_runway_api_secret_here
 - Converted all API routes to use Firebase Admin SDK instead of client-side Firebase
 - Added proper error handling for missing environment variables
 - Updated `getNewsVideoById` function to use Firebase Admin SDK
+- Implemented lazy initialization in `lib/firebase-admin.ts` to prevent build-time Firebase initialization
+- Used dynamic imports in `merge-videos` API to prevent build-time execution
 
-### Specific Changes in newsVideo.ts:
+### Specific Changes in firebase-admin.ts:
 
-- ❌ `import { db } from "../firebase"` → ✅ `import { dbAdmin } from "../firebase-admin"`
-- ❌ `collection(db, COLLECTION_NAME)` → ✅ `dbAdmin.collection(COLLECTION_NAME)`
-- ❌ `getDoc(docRef)` → ✅ `docRef.get()`
-- ❌ `docSnap.exists()` → ✅ `docSnap.exists`
+- ❌ 모듈 레벨에서 Firebase 초기화 → ✅ 지연 초기화 (lazy initialization)
+- ❌ `const app = initializeApp(...)` → ✅ `const initializeAppIfNeeded = () => { ... }`
+- ❌ 빌드 시점에 환경 변수 접근 → ✅ 런타임에만 환경 변수 접근
+
+### Specific Changes in merge-videos API:
+
+- ❌ `import { getNewsVideoById } from "@/lib/firebase/newsVideo"` → ✅ `const { getNewsVideoById } = await import("@/lib/firebase/newsVideo")`
 
 ## Verification
 
@@ -134,6 +141,7 @@ If you still encounter issues:
 3. **Service account errors**: Ensure the private key is properly formatted (with \n for line breaks)
 4. **Storage errors**: Verify the storage bucket name is correct
 5. **API key errors**: Make sure all API routes are using Firebase Admin SDK, not client-side Firebase
+6. **Build-time errors**: Ensure Firebase initialization only happens at runtime, not build time
 
 ## Security Notes
 
@@ -142,3 +150,4 @@ If you still encounter issues:
 - Environment variables in Vercel are encrypted and secure
 - Use different Firebase projects for development and production if possible
 - All API routes now use Firebase Admin SDK for server-side operations
+- Firebase initialization is now lazy-loaded to prevent build-time issues

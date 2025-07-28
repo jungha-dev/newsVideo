@@ -44,19 +44,59 @@ const getServiceAccount = () => {
   }
 };
 
-const serviceAccount = getServiceAccount();
+// 지연 초기화를 위한 함수들
+let _app: any = null;
+let _db: any = null;
+let _auth: any = null;
+let _dbAdmin: any = null;
+let _storage: any = null;
 
-const app =
-  getApps().length === 0
-    ? initializeApp({
+const initializeAppIfNeeded = () => {
+  if (!_app) {
+    if (getApps().length === 0) {
+      const serviceAccount = getServiceAccount();
+      _app = initializeApp({
         credential: cert(serviceAccount),
         storageBucket:
           process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
           "oing-portfolio.firebasestorage.com",
-      })
-    : getApps()[0];
+      });
+    } else {
+      _app = getApps()[0];
+    }
+  }
+  return _app;
+};
 
-export const db = getFirestore(app);
-export const auth = getAuth(app);
-export const dbAdmin = getFirestore(app);
-export const storage = getStorage(app);
+const getDbInstance = () => {
+  if (!_db) {
+    _db = getFirestore(initializeAppIfNeeded());
+  }
+  return _db;
+};
+
+const getAuthInstance = () => {
+  if (!_auth) {
+    _auth = getAuth(initializeAppIfNeeded());
+  }
+  return _auth;
+};
+
+const getDbAdminInstance = () => {
+  if (!_dbAdmin) {
+    _dbAdmin = getFirestore(initializeAppIfNeeded());
+  }
+  return _dbAdmin;
+};
+
+const getStorageInstance = () => {
+  if (!_storage) {
+    _storage = getStorage(initializeAppIfNeeded());
+  }
+  return _storage;
+};
+
+export const db = getDbInstance();
+export const auth = getAuthInstance();
+export const dbAdmin = getDbAdminInstance();
+export const storage = getStorageInstance();
