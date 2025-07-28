@@ -13,11 +13,6 @@ import {
   Section,
   VideoScenarioList,
 } from "@/components/styled";
-import {
-  saveNewsVideo,
-  createNewsVideoDraft,
-  updateNewsVideo,
-} from "@/lib/firebase/newsVideo";
 import { NewsVideoCreateData } from "@/lib/types/newsVideo";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -667,7 +662,24 @@ Please compose the video based on the following blog content:
         duration: selectedVideoModel === "kling-v2" ? klingDuration : 5,
       };
 
-      const videoId = await saveNewsVideo(user.uid, newsVideoData);
+      // API를 통해 뉴스 비디오 저장
+      const saveResponse = await fetch("/api/video/news/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uid: user.uid,
+          newsVideoData,
+        }),
+      });
+
+      if (!saveResponse.ok) {
+        throw new Error("뉴스 비디오 저장에 실패했습니다.");
+      }
+
+      const saveData = await saveResponse.json();
+      const videoId = saveData.videoId;
 
       // 성공 시 상세 페이지로 이동
       router.push(`/video/news/${videoId}`);

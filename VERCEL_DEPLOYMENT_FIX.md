@@ -7,6 +7,7 @@
 3. **Client-side Firebase in API Routes**: Converted all API routes to use Firebase Admin SDK instead of client-side Firebase
 4. **NewsVideo Module**: Updated `lib/firebase/newsVideo.ts` to use Firebase Admin SDK
 5. **Build-time Firebase Initialization**: Fixed Firebase initialization during build time by using lazy initialization
+6. **Client-side Firebase Admin SDK Import**: Removed Firebase Admin SDK imports from client-side components
 
 ## Required Environment Variables
 
@@ -101,6 +102,8 @@ RUNWAY_API_SECRET=your_runway_api_secret_here
 7. **app/api/video/delete-batch/route.ts**: Converted from client-side Firebase to Firebase Admin SDK
 8. **lib/firebase/newsVideo.ts**: Converted from client-side Firebase to Firebase Admin SDK
 9. **app/api/video/news/merge-videos/route.ts**: Changed to use dynamic import for Firebase functions
+10. **app/api/video/news/save/route.ts**: Created new API route for saving news videos
+11. **app/api/(auth)/news/page.tsx**: Removed Firebase Admin SDK imports and used API calls instead
 
 ### Key Changes:
 
@@ -112,6 +115,8 @@ RUNWAY_API_SECRET=your_runway_api_secret_here
 - Updated `getNewsVideoById` function to use Firebase Admin SDK
 - Implemented lazy initialization in `lib/firebase-admin.ts` to prevent build-time Firebase initialization
 - Used dynamic imports in `merge-videos` API to prevent build-time execution
+- Removed Firebase Admin SDK imports from client-side components
+- Created API routes for server-side Firebase operations
 
 ### Specific Changes in firebase-admin.ts:
 
@@ -122,6 +127,11 @@ RUNWAY_API_SECRET=your_runway_api_secret_here
 ### Specific Changes in merge-videos API:
 
 - ❌ `import { getNewsVideoById } from "@/lib/firebase/newsVideo"` → ✅ `const { getNewsVideoById } = await import("@/lib/firebase/newsVideo")`
+
+### Specific Changes in news page:
+
+- ❌ `import { saveNewsVideo } from "@/lib/firebase/newsVideo"` → ✅ API 호출 사용
+- ❌ `await saveNewsVideo(user.uid, newsVideoData)` → ✅ `await fetch("/api/video/news/save", ...)`
 
 ## Verification
 
@@ -142,6 +152,7 @@ If you still encounter issues:
 4. **Storage errors**: Verify the storage bucket name is correct
 5. **API key errors**: Make sure all API routes are using Firebase Admin SDK, not client-side Firebase
 6. **Build-time errors**: Ensure Firebase initialization only happens at runtime, not build time
+7. **Client-side errors**: Make sure no Firebase Admin SDK imports are in client-side components
 
 ## Security Notes
 
@@ -151,3 +162,4 @@ If you still encounter issues:
 - Use different Firebase projects for development and production if possible
 - All API routes now use Firebase Admin SDK for server-side operations
 - Firebase initialization is now lazy-loaded to prevent build-time issues
+- Client-side components use API calls instead of direct Firebase Admin SDK imports
