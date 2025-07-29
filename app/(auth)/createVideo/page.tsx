@@ -181,7 +181,7 @@ Please compose the video based on the following blog content:
 
   const handleGenerateText = async () => {
     if (!prompt.trim()) {
-      setError("프롬프트를 입력해주세요.");
+      setError("Please enter a prompt.");
       return;
     }
 
@@ -215,9 +215,7 @@ Please compose the video based on the following blog content:
       setGeneratedText(data.text);
     } catch (err) {
       console.error("Text generation error:", err);
-      setError(
-        err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
-      );
+      setError(err instanceof Error ? err.message : "expected error occurred.");
     } finally {
       setLoading(false);
     }
@@ -225,7 +223,7 @@ Please compose the video based on the following blog content:
 
   const handleGenerateScenario = async () => {
     if (!blogContent.trim()) {
-      setError("블로그 본문을 입력해주세요.");
+      setError("please enter blog content.");
       return;
     }
 
@@ -263,7 +261,7 @@ Please compose the video based on the following blog content:
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "비디오 시나리오 생성에 실패했습니다.");
+        throw new Error(data.error || "video scenario generation failed.");
       }
 
       try {
@@ -272,13 +270,13 @@ Please compose the video based on the following blog content:
         // 시나리오 생성 후 Input Settings 자동 접기
         setIsScenarioCollapsed(true);
       } catch (parseError) {
-        console.error("JSON 파싱 오류:", parseError);
-        setError("시나리오 파싱에 실패했습니다. 다시 시도해주세요.");
+        console.error("JSON error:", parseError);
+        setError("response parsing failed. Please check the format.");
       }
     } catch (err) {
       console.error("Video scenario generation error:", err);
       setError(
-        err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
+        err instanceof Error ? err.message : "video scenario generation failed."
       );
     } finally {
       setLoading(false);
@@ -287,7 +285,7 @@ Please compose the video based on the following blog content:
 
   const handleGenerateVideo = async () => {
     if (!videoPrompt.trim()) {
-      setError("비디오 프롬프트를 입력해주세요.");
+      setError("please enter a video prompt.");
       return;
     }
 
@@ -312,14 +310,14 @@ Please compose the video based on the following blog content:
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "비디오 생성에 실패했습니다.");
+        throw new Error(data.error || "video generation failed.");
       }
 
       setGeneratedVideoUrl(data.videoUrl);
     } catch (err) {
       console.error("Video generation error:", err);
       setError(
-        err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
+        err instanceof Error ? err.message : "unexpected error occurred."
       );
     } finally {
       setLoading(false);
@@ -331,7 +329,7 @@ Please compose the video based on the following blog content:
     narrations: string[]
   ) => {
     if (!user || !videoScenario) {
-      setError("사용자 정보나 비디오 시나리오가 없습니다.");
+      setError("cannot generate videos without user or scenario.");
       return;
     }
 
@@ -352,16 +350,16 @@ Please compose the video based on the following blog content:
 
     // 확인 팝업 표시
     setConfirmModalData({
-      title: "비디오 생성 확인",
+      title: "video generation confirmation",
       message: `SelectedVideoModel: ${
         selectedVideoModel === "veo-3"
           ? "Veo-3 (Google)"
           : selectedVideoModel === "kling-v2"
           ? "Kling V2.0 (Kwaivgi)"
           : "Hailuo-02 (Minimax)"
-      }\n\n비디오 생성을 시작하시겠습니까?`,
+      }\n\nWould you like to start video generation?`,
       apiInfo: {
-        url: "/api/video/news/generate",
+        url: "/api/video/createVideo/generate",
         method: "POST",
         data: requestData,
       },
@@ -373,7 +371,7 @@ Please compose the video based on the following blog content:
         setVideoItems([]);
 
         try {
-          const response = await fetch("/api/video/news/generate", {
+          const response = await fetch("/api/video/createVideo/generate", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -383,7 +381,7 @@ Please compose the video based on the following blog content:
 
           if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || "비디오 생성에 실패했습니다.");
+            throw new Error(errorData.error || "Video generation failed.");
           }
 
           const data = await response.json();
@@ -398,7 +396,7 @@ Please compose the video based on the following blog content:
         } catch (err) {
           console.error("News video generation error:", err);
           setError(
-            err instanceof Error ? err.message : "비디오 생성에 실패했습니다."
+            err instanceof Error ? err.message : "Video generation failed."
           );
         } finally {
           setGeneratingVideos(false);
@@ -521,8 +519,8 @@ Please compose the video based on the following blog content:
   const createManualVideoScenario = () => {
     if (manualScenes.length > 0) {
       const scenario: VideoScenario = {
-        title: "수동 생성 시나리오",
-        scenario: `${manualScenes.length}개의 씬으로 구성된 수동 생성 비디오 시나리오입니다.`,
+        title: "Manual Creation Scenario",
+        scenario: `${manualScenes.length}This is a manually created video scenario consisting of [number] scenes.`,
         scenes: manualScenes.map((scene, index) => ({
           ...scene,
           scene_number: index + 1, // 씬 번호를 1부터 시작하도록 보장
@@ -579,7 +577,7 @@ Please compose the video based on the following blog content:
   const handleMerge = async () => {
     setIsLoadingMerge(true);
     setMergeError(null);
-    setCurrentProgress("영상을 병합하는 중...");
+    setCurrentProgress("Merging video…");
 
     try {
       const response = await fetch("/api/video/merge-videos", {
@@ -595,7 +593,7 @@ Please compose the video based on the following blog content:
       });
 
       if (!response.ok) {
-        throw new Error("영상 병합에 실패했습니다.");
+        throw new Error("video merge failed.");
       }
 
       const data = await response.json();
@@ -612,19 +610,19 @@ Please compose the video based on the following blog content:
         });
         const url = URL.createObjectURL(blob);
         setMergedBlobUrl(url);
-        setCurrentProgress("병합 완료!");
+        setCurrentProgress("merge complete.");
 
         // 메모리 정리
         setTimeout(() => {
           URL.revokeObjectURL(url);
         }, 60000); // 1분 후 메모리 정리
       } else {
-        throw new Error("영상 데이터를 받지 못했습니다.");
+        throw new Error("No video data returned from merge API.");
       }
     } catch (err) {
       console.error("Merge error:", err);
       setMergeError(
-        err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
+        err instanceof Error ? err.message : "An unknown error has occurred"
       );
     } finally {
       setIsLoadingMerge(false);
@@ -633,7 +631,7 @@ Please compose the video based on the following blog content:
 
   const handleSaveNewsVideo = async () => {
     if (!user || !videoScenario || !mergedBlobUrl) {
-      setError("저장할 수 있는 데이터가 없습니다.");
+      setError("There is no data available to save.");
       return;
     }
 
@@ -688,7 +686,7 @@ Please compose the video based on the following blog content:
       });
 
       if (!uploadResponse.ok) {
-        throw new Error("비디오 업로드에 실패했습니다.");
+        throw new Error("Failed to upload video file.");
       }
 
       const uploadData = await uploadResponse.json();
@@ -711,12 +709,10 @@ Please compose the video based on the following blog content:
       const videoId = await saveNewsVideo(user.uid, newsVideoData);
 
       // 성공 시 상세 페이지로 이동
-      router.push(`/video/news/${videoId}`);
+      router.push(`/video/createVideo/${videoId}`);
     } catch (err) {
       console.error("Save news video error:", err);
-      setError(
-        err instanceof Error ? err.message : "뉴스 비디오 저장에 실패했습니다."
-      );
+      setError(err instanceof Error ? err.message : "video saving failed.");
     } finally {
       setLoading(false);
     }
@@ -740,7 +736,7 @@ Please compose the video based on the following blog content:
                 variant="normal"
                 size="sm"
               >
-                {isScenarioCollapsed ? "상세보기" : "접기"}
+                {isScenarioCollapsed ? "View Details" : "Collapse"}
                 <svg
                   className={`w-4 h-4 ml-2 transition-transform ${
                     isScenarioCollapsed ? "" : "rotate-180"
@@ -891,7 +887,7 @@ Please compose the video based on the following blog content:
                     {showPromptSettings && (
                       <div className="border rounded-lg p-4 space-y-4 bg-gray-50">
                         <h4 className="text-sm font-medium text-gray-900">
-                          프롬프트 설정
+                          Prompt Settings
                         </h4>
 
                         <div>
@@ -908,7 +904,7 @@ Please compose the video based on the following blog content:
                             className="text-xs"
                           />
                           <p className="text-xs text-gray-500 mt-1">
-                            사용 가능한 변수: {"{sceneCount}"},{" "}
+                            Available Variables: {"{sceneCount}"},{" "}
                             {"{blogContent}"}
                           </p>
                         </div>
@@ -927,7 +923,7 @@ Please compose the video based on the following blog content:
                             className="text-xs"
                           />
                           <p className="text-xs text-gray-500 mt-1">
-                            사용 가능한 변수: {"{sceneDuration}"},{" "}
+                            Available Variables: {"{sceneDuration}"},{" "}
                             {"{sceneCount}"}
                           </p>
                         </div>
@@ -945,7 +941,7 @@ Please compose the video based on the following blog content:
                             variant="outline"
                             size="sm"
                           >
-                            기본값으로 복원
+                            Reset
                           </Button>
                         </div>
                       </div>
@@ -964,7 +960,7 @@ Please compose the video based on the following blog content:
                 {/* 직접 씬 추가 섹션 - 모든 탭에서 보임 */}
                 <div className="border-t pt-4 mt-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-sm font-medium">직접 씬 추가</h4>
+                    <h4 className="text-sm font-medium">Add Scenes</h4>
                     <Button
                       onClick={() =>
                         setShowManualSceneInput(!showManualSceneInput)
@@ -972,7 +968,7 @@ Please compose the video based on the following blog content:
                       variant="normal"
                       size="sm"
                     >
-                      {showManualSceneInput ? "접기" : "씬 추가"}
+                      {showManualSceneInput ? "Collapse" : "Add Scene"}
                     </Button>
                   </div>
 
@@ -1029,7 +1025,7 @@ Please compose the video based on the following blog content:
                           size="sm"
                           className="w-full"
                         >
-                          씬 추가
+                          Add Scene
                         </Button>
                       </div>
 
@@ -1037,7 +1033,7 @@ Please compose the video based on the following blog content:
                       {manualScenes.length > 0 && (
                         <div className="space-y-3">
                           <h5 className="text-sm font-medium">
-                            추가된 씬들 ({manualScenes.length})
+                            Added Scenes ({manualScenes.length})
                           </h5>
                           <div className="space-y-3">
                             {manualScenes.map((scene, index) => (
@@ -1053,7 +1049,7 @@ Please compose the video based on the following blog content:
                                     onClick={() => removeManualScene(index)}
                                     className="text-red-500 hover:text-red-700 text-sm"
                                   >
-                                    삭제
+                                    Delete
                                   </button>
                                 </div>
                                 <div className="space-y-2">
@@ -1084,7 +1080,7 @@ Please compose the video based on the following blog content:
                             variant="primary"
                             className="w-full"
                           >
-                            시나리오 생성 ({manualScenes.length}개 씬)
+                            Generate Scenario ({manualScenes.length} scenes)
                           </Button>
                         </div>
                       )}
@@ -1475,17 +1471,16 @@ Please compose the video based on the following blog content:
                               >
                                 {scene.imageUrl
                                   ? isSafe
-                                    ? "✅ 안전한 이미지"
-                                    : "⚠️ 안전하지 않은 이미지"
-                                  : "❌ 이미지 없음"}
+                                    ? "✅ Safe Image"
+                                    : "⚠️ Unsafe Image"
+                                  : "❌ No Image"}
                               </span>
                             </div>
                           );
                         })}
                       </div>
                       <p className="text-xs text-gray-600 mt-2">
-                        ⚠️ 안전하지 않은 이미지는 start_image로 사용되지
-                        않습니다.
+                        ⚠️ Unsafe images cannot be used as a start image.
                       </p>
 
                       {/* 안전하지 않은 이미지가 있는 경우 경고 메시지 */}
@@ -1579,7 +1574,7 @@ Please compose the video based on the following blog content:
                       상세 페이지에서 결과를 확인하세요.
                     </p>
                   </div>
-                  <Link href={`/video/news/${currentVideoId}`}>
+                  <Link href={`/video/createVideo/${currentVideoId}`}>
                     <Button variant="primary" size="sm">
                       상세 페이지 보기
                     </Button>

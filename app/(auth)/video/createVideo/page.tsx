@@ -78,14 +78,14 @@ export default function NewsVideoListPage() {
           <p className="text-gray-600 mb-4">
             아직 생성된 Generated Video가 없습니다.
           </p>
-          <Link href="/news">
+          <Link href="/create">
             <Button variant="primary">첫 번째 Generated Video 만들기</Button>
           </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {videos.map((video) => (
-            <Link key={video.id} href={`/video/news/${video.id}`}>
+            <Link key={video.id} href={`/video/createVideo/${video.id}`}>
               <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
                 {/* 썸네일 */}
                 <div className="aspect-video bg-gray-100 relative">

@@ -52,11 +52,11 @@ const MENUS: MenuGroup[] = [
 // 단순 링크 메뉴 (드롭다운 없음)
 const SIMPLE_LINKS = [
   {
-    href: "/news",
-    label: "News",
+    href: "/createVideo",
+    label: "Create",
   },
   {
-    href: "/video/news",
+    href: "/video/createVideo",
     label: "Generated Videos",
   },
 ];

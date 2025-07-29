@@ -106,7 +106,9 @@ export default function NewsVideoDetailPage() {
     // 즉시 한 번 상태 확인
     const checkStatus = async () => {
       try {
-        const response = await fetch(`/api/video/news/status/${videoId}`);
+        const response = await fetch(
+          `/api/video/createVideo/status/${videoId}`
+        );
         if (response.ok) {
           const data = await response.json();
           console.log("Polling update:", data.video.status);
@@ -251,7 +253,7 @@ export default function NewsVideoDetailPage() {
       // 재생성 시작 플래그 설정
       isRegeneratingRef.current = true;
 
-      const response = await fetch(`/api/video/news/regenerate-scene`, {
+      const response = await fetch(`/api/video/createVideo/regenerate-scene`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -319,7 +321,7 @@ export default function NewsVideoDetailPage() {
       // 씬 추가 시작 플래그 설정
       isRegeneratingRef.current = true;
 
-      const response = await fetch(`/api/video/news/generate`, {
+      const response = await fetch(`/api/video/createVideo/generate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -420,7 +422,7 @@ export default function NewsVideoDetailPage() {
     if (!video || !hasUnsavedChanges) return;
 
     try {
-      const response = await fetch(`/api/video/news/update-scenes`, {
+      const response = await fetch(`/api/video/createVideo/update-scenes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -464,7 +466,7 @@ export default function NewsVideoDetailPage() {
 
       console.log("병합 요청 데이터:", requestBody);
 
-      const response = await fetch(`/api/video/news/merge-videos`, {
+      const response = await fetch(`/api/video/createVideo/merge-videos`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -530,7 +532,9 @@ export default function NewsVideoDetailPage() {
             `📤 씬 ${i + 1} Firebase Storage 업로드: ${scene.videoUrl}`
           );
 
-          const response = await fetch(`/api/video/news/status/${videoId}`);
+          const response = await fetch(
+            `/api/video/createVideo/status/${videoId}`
+          );
           if (response.ok) {
             const data = await response.json();
             console.log(`✅ 씬 ${i + 1} Firebase Storage 업로드 완료:`, data);
@@ -583,7 +587,7 @@ export default function NewsVideoDetailPage() {
       console.log(`📤 씬 ${sceneIndex + 1} Firebase Storage 업로드 시작...`);
       console.log(`📤 원본 URL: ${scene.videoUrl}`);
 
-      const response = await fetch(`/api/video/news/status/${videoId}`);
+      const response = await fetch(`/api/video/createVideo/status/${videoId}`);
       if (response.ok) {
         const data = await response.json();
         console.log(
@@ -672,7 +676,7 @@ export default function NewsVideoDetailPage() {
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           {video.status === "failed" ? (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800">비디오 생성에 실패했습니다.</p>
+              <p className="text-red-800">Video generation failed.</p>
             </div>
           ) : video.scenes.some((scene) => scene.videoUrl) ? (
             <VideoPreview
