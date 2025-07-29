@@ -79,7 +79,7 @@ const app =
 console.log("✅ Firebase Admin 초기화 완료");
 console.log("Storage Bucket:", process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
 
-export const db = getFirestore(app);
+export const db = getFirestore(app, "news-video");
 export const auth = getAuth(app);
 export const dbAdmin = getFirestore(app);
 export const storage = getStorage(app);
