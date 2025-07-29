@@ -57,7 +57,7 @@ const SIMPLE_LINKS = [
   },
   {
     href: "/video/news",
-    label: "News Videos",
+    label: "Generated Videos",
   },
 ];
 

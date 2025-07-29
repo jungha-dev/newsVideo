@@ -627,7 +627,7 @@ export default function NewsVideoDetailPage() {
   if (!user) {
     return (
       <div className="container max-w-6xl mx-auto px-4 py-8">
-        <PageTitle title="뉴스 비디오" />
+        <PageTitle title="Generated Video" />
         <div className="text-center py-8">
           <p className="text-gray-600">로그인이 필요합니다.</p>
         </div>
@@ -638,7 +638,7 @@ export default function NewsVideoDetailPage() {
   if (loading) {
     return (
       <div className="container max-w-6xl mx-auto px-4 py-8">
-        <PageTitle title="뉴스 비디오" />
+        <PageTitle title="Generated Video" />
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
           <p className="text-gray-600 mt-2">비디오를 불러오는 중...</p>
@@ -650,14 +650,14 @@ export default function NewsVideoDetailPage() {
   if (error || !video) {
     return (
       <div className="container max-w-6xl mx-auto px-4 py-8">
-        <PageTitle title="뉴스 비디오" />
+        <PageTitle title="Generated Video" />
         <div className="text-center py-8">
           <div className="text-4xl mb-4">❌</div>
           <p className="text-gray-600 mb-4">
             {error || "비디오를 찾을 수 없습니다."}
           </p>
           <Link href="/video/news">
-            <Button variant="primary">뉴스 비디오 목록으로 돌아가기</Button>
+            <Button variant="primary">Generated Video 목록으로 돌아가기</Button>
           </Link>
         </div>
       </div>

@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     );
 
     const sendProgress = (msg: string) => msg;
-    const progress: string[] = [sendProgress("📥 뉴스 비디오 병합 시작")];
+    const progress: string[] = [sendProgress("📥 Generated Video 병합 시작")];
 
     /* ───────── 개별 씬 다운로드·편집 ───────── */
     const processedVideos = await Promise.all(

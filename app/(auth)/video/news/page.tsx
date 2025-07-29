@@ -49,7 +49,7 @@ export default function NewsVideoListPage() {
   if (!user) {
     return (
       <div className="container max-w-6xl mx-auto px-4 py-8">
-        <PageTitle title="뉴스 비디오" />
+        <PageTitle title="Generated Video" />
         <div className="text-center py-8">
           <p className="text-gray-600">로그인이 필요합니다.</p>
         </div>
@@ -59,16 +59,7 @@ export default function NewsVideoListPage() {
 
   return (
     <div className="container max-w-6xl mx-auto px-4 py-8">
-      <PageTitle title="뉴스 비디오" />
-
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">내 뉴스 비디오</h2>
-        <Link href="/news">
-          <Button variant="primary" size="sm">
-            새 뉴스 비디오 만들기
-          </Button>
-        </Link>
-      </div>
+      <PageTitle title="Generated Video" />
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
@@ -85,10 +76,10 @@ export default function NewsVideoListPage() {
         <div className="text-center py-8">
           <div className="text-4xl mb-4">🎬</div>
           <p className="text-gray-600 mb-4">
-            아직 생성된 뉴스 비디오가 없습니다.
+            아직 생성된 Generated Video가 없습니다.
           </p>
           <Link href="/news">
-            <Button variant="primary">첫 번째 뉴스 비디오 만들기</Button>
+            <Button variant="primary">첫 번째 Generated Video 만들기</Button>
           </Link>
         </div>
       ) : (

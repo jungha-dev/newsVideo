@@ -28,7 +28,7 @@ export async function uploadVideoToFirebase({
     // 파일 경로 생성
     let storagePath: string;
     if (videoId && sceneIndex !== undefined) {
-      // 뉴스 비디오 씬의 경우
+      // Generated Video 씬의 경우
       storagePath = `users/${userId}/newsVideos/${videoId}/scene-${
         sceneIndex + 1
       }.mp4`;

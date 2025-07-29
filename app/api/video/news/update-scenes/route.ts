@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     const { videoId, scenes } = await request.json();
 
-    // 뉴스 비디오 정보 가져오기
+    // Generated Video 정보 가져오기
     const videoDoc = await db
       .collection("users")
       .doc(user.uid)

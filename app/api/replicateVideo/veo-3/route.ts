@@ -8,9 +8,8 @@ const replicate = new Replicate({
 
 interface Veo3Request {
   prompt: string;
-  narration?: string;
   seed?: number;
-  enhance_prompt?: boolean;
+  resolution?: "720p" | "1080p";
   negative_prompt?: string;
 }
 
@@ -31,17 +30,15 @@ export async function POST(request: NextRequest) {
 
     const {
       prompt,
-      narration,
       seed,
-      enhance_prompt = true,
+      resolution = "720p",
       negative_prompt,
     }: Veo3Request = await request.json();
 
     console.log("=== Request Body ===");
     console.log("Prompt:", prompt);
-    console.log("Narration:", narration);
     console.log("Seed:", seed);
-    console.log("Enhance prompt:", enhance_prompt);
+    console.log("Resolution:", resolution);
     console.log("Negative prompt:", negative_prompt);
     console.log("=====================");
 
@@ -55,14 +52,10 @@ export async function POST(request: NextRequest) {
 
     const input: any = {
       prompt: prompt.trim(),
-      enhance_prompt,
+      resolution,
     };
 
     // Optional parameters
-    if (narration && narration.trim()) {
-      input.narration = narration.trim();
-    }
-
     if (seed !== undefined && seed !== null) {
       input.seed = seed;
     }

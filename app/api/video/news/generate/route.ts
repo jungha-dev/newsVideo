@@ -17,6 +17,7 @@ interface NewsVideoRequest {
   model: string;
   aspectRatio: string;
   duration: number;
+  veo3Resolution?: "720p" | "1080p";
   videoId?: string; // 기존 비디오 ID (씬 추가 시)
   isAddScene?: boolean; // 씬 추가 플래그
 }
@@ -42,6 +43,7 @@ export async function POST(request: NextRequest) {
       model,
       aspectRatio,
       duration,
+      veo3Resolution,
       videoId: existingVideoId,
       isAddScene,
     } = body;
@@ -132,28 +134,52 @@ export async function POST(request: NextRequest) {
       const sceneVideoId = uuidv4();
       const scene = scenes[0];
 
-      // Replicate API 호출 (Kling v2 사용)
-      const replicateResponse = await fetch(
-        "https://api.replicate.com/v1/predictions",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            version: "kwaivgi/kling-v2.0",
-            input: {
-              prompt: scene.image_prompt,
-              duration: existingVideoData.duration || 5,
-              aspect_ratio: existingVideoData.aspectRatio || "16:9",
-              cfg_scale: 0.5,
-              negative_prompt: "blurry, low quality, distorted",
-              ...(scene.imageUrl && { start_image: scene.imageUrl }),
+      // 모델에 따른 API 호출
+      let replicateResponse;
+      if (model === "veo-3") {
+        // Veo-3 API 호출
+        replicateResponse = await fetch(
+          "https://api.replicate.com/v1/predictions",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
+              "Content-Type": "application/json",
             },
-          }),
-        }
-      );
+            body: JSON.stringify({
+              version: "google/veo-3",
+              input: {
+                prompt: scene.image_prompt,
+                resolution: veo3Resolution || "720p",
+                negative_prompt: "blurry, low quality, distorted",
+              },
+            }),
+          }
+        );
+      } else {
+        // Kling v2 API 호출 (기본값)
+        replicateResponse = await fetch(
+          "https://api.replicate.com/v1/predictions",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              version: "kwaivgi/kling-v2.0",
+              input: {
+                prompt: scene.image_prompt,
+                duration: existingVideoData.duration || 5,
+                aspect_ratio: existingVideoData.aspectRatio || "16:9",
+                cfg_scale: 0.5,
+                negative_prompt: "blurry, low quality, distorted",
+                ...(scene.imageUrl && { start_image: scene.imageUrl }),
+              },
+            }),
+          }
+        );
+      }
 
       if (!replicateResponse.ok) {
         const errorText = await replicateResponse.text();
@@ -198,7 +224,7 @@ export async function POST(request: NextRequest) {
         message: "Scene added successfully",
       });
     } else {
-      // 새로운 뉴스 비디오 생성
+      // 새로운 Generated Video 생성
       const newsVideoData = {
         id: videoId,
         uid,
@@ -230,28 +256,52 @@ export async function POST(request: NextRequest) {
       const videoPromises = scenes.map(async (scene, index) => {
         const sceneVideoId = uuidv4();
 
-        // Replicate API 호출 (Kling v2 사용)
-        const replicateResponse = await fetch(
-          "https://api.replicate.com/v1/predictions",
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              version: "kwaivgi/kling-v2.0",
-              input: {
-                prompt: prompts[index],
-                duration: duration,
-                aspect_ratio: aspectRatio,
-                cfg_scale: 0.5,
-                negative_prompt: "blurry, low quality, distorted",
-                ...(scene.imageUrl && { start_image: scene.imageUrl }),
+        // 모델에 따른 API 호출
+        let replicateResponse;
+        if (model === "veo-3") {
+          // Veo-3 API 호출
+          replicateResponse = await fetch(
+            "https://api.replicate.com/v1/predictions",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
+                "Content-Type": "application/json",
               },
-            }),
-          }
-        );
+              body: JSON.stringify({
+                version: "google/veo-3",
+                input: {
+                  prompt: prompts[index],
+                  resolution: veo3Resolution || "720p",
+                  negative_prompt: "blurry, low quality, distorted",
+                },
+              }),
+            }
+          );
+        } else {
+          // Kling v2 API 호출 (기본값)
+          replicateResponse = await fetch(
+            "https://api.replicate.com/v1/predictions",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                version: "kwaivgi/kling-v2.0",
+                input: {
+                  prompt: prompts[index],
+                  duration: duration,
+                  aspect_ratio: aspectRatio,
+                  cfg_scale: 0.5,
+                  negative_prompt: "blurry, low quality, distorted",
+                  ...(scene.imageUrl && { start_image: scene.imageUrl }),
+                },
+              }),
+            }
+          );
+        }
 
         if (!replicateResponse.ok) {
           throw new Error(

@@ -16,12 +16,12 @@ export async function GET(
 
     const { videoId } = await params;
 
-    console.log(`🔍 뉴스 비디오 상태 확인 시작:`);
+    console.log(`🔍 Generated Video 상태 확인 시작:`);
     console.log(`   📺 비디오 ID: ${videoId}`);
     console.log(`   👤 사용자: ${user.uid}`);
     console.log(`   ─────────────────────────────────────────`);
 
-    // 뉴스 비디오 정보 가져오기
+    // Generated Video 정보 가져오기
     const videoDoc = await db
       .collection("users")
       .doc(user.uid)
@@ -267,7 +267,7 @@ export async function GET(
 
     // 전체 완료 시 요약 로깅
     if (allCompleted) {
-      console.log(`🎉 뉴스 비디오 완료 요약:`);
+      console.log(`🎉 Generated Video 완료 요약:`);
       console.log(`   📺 비디오 ID: ${videoId}`);
       console.log(`   👤 사용자: ${user.uid}`);
       console.log(`   📊 총 씬 수: ${updatedScenes.length}`);

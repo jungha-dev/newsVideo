@@ -12,6 +12,7 @@ import {
   PageTitle,
   Section,
   VideoScenarioList,
+  ConfirmModal,
 } from "@/components/styled";
 import {
   saveNewsVideo,
@@ -127,6 +128,9 @@ Please compose the video based on the following blog content:
     "16:9" | "9:16" | "1:1"
   >("16:9");
   const [klingStartImage, setKlingStartImage] = useState("");
+  const [veo3Resolution, setVeo3Resolution] = useState<"720p" | "1080p">(
+    "720p"
+  );
   const [activeTab, setActiveTab] = useState<"text" | "scenario" | "video">(
     "scenario"
   );
@@ -159,6 +163,20 @@ Please compose the video based on the following blog content:
   const [mergedBlobUrl, setMergedBlobUrl] = useState<string | null>(null);
   const [mergeError, setMergeError] = useState<string | null>(null);
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
+
+  // 확인 팝업 관련 상태
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmModalData, setConfirmModalData] = useState<{
+    title: string;
+    message: string;
+    apiInfo?: {
+      url: string;
+      method: string;
+      data: any;
+    };
+    onConfirm: () => void;
+  } | null>(null);
+
   const router = useRouter();
 
   const handleGenerateText = async () => {
@@ -317,54 +335,77 @@ Please compose the video based on the following blog content:
       return;
     }
 
-    setGeneratingVideos(true);
-    setError("");
-    setGeneratedVideos([]);
-    setVideoItems([]);
+    // API 요청 데이터 준비
+    const requestData = {
+      title: videoScenario.title,
+      description: videoScenario.scenario,
+      prompts: prompts,
+      narrations: narrations,
+      scenes: videoScenario.scenes,
+      model: selectedVideoModel,
+      aspectRatio:
+        selectedVideoModel === "kling-v2" ? klingAspectRatio : "16:9",
+      duration: selectedVideoModel === "kling-v2" ? klingDuration : 5,
+      veo3Resolution:
+        selectedVideoModel === "veo-3" ? veo3Resolution : undefined,
+    };
 
-    try {
-      // 새로운 뉴스 비디오 생성 API 사용
-      const response = await fetch("/api/video/news/generate", {
+    // 확인 팝업 표시
+    setConfirmModalData({
+      title: "비디오 생성 확인",
+      message: `선택된 모델: ${
+        selectedVideoModel === "veo-3"
+          ? "Veo-3 (Google)"
+          : selectedVideoModel === "kling-v2"
+          ? "Kling V2.0 (Kwaivgi)"
+          : "Hailuo-02 (Minimax)"
+      }\n\n비디오 생성을 시작하시겠습니까?`,
+      apiInfo: {
+        url: "/api/video/news/generate",
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: videoScenario.title,
-          description: videoScenario.scenario,
-          prompts: prompts,
-          narrations: narrations,
-          scenes: videoScenario.scenes,
-          model: selectedVideoModel,
-          aspectRatio:
-            selectedVideoModel === "kling-v2" ? klingAspectRatio : "16:9",
-          duration: selectedVideoModel === "kling-v2" ? klingDuration : 5,
-        }),
-      });
+        data: requestData,
+      },
+      onConfirm: async () => {
+        setShowConfirmModal(false);
+        setGeneratingVideos(true);
+        setError("");
+        setGeneratedVideos([]);
+        setVideoItems([]);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "비디오 생성에 실패했습니다.");
-      }
+        try {
+          const response = await fetch("/api/video/news/generate", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(requestData),
+          });
 
-      const data = await response.json();
-      const videoId = data.videoId;
-      setCurrentVideoId(videoId);
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "비디오 생성에 실패했습니다.");
+          }
 
-      console.log("News video generation started:", videoId);
-      console.log("Scene videos:", data.sceneVideos);
+          const data = await response.json();
+          const videoId = data.videoId;
+          setCurrentVideoId(videoId);
 
-      // 성공 메시지 표시
-      setError("");
-      // 여기서는 상세 페이지로 이동하지 않고 현재 페이지에서 생성 상태를 보여줌
-    } catch (err) {
-      console.error("News video generation error:", err);
-      setError(
-        err instanceof Error ? err.message : "비디오 생성에 실패했습니다."
-      );
-    } finally {
-      setGeneratingVideos(false);
-    }
+          console.log("News video generation started:", videoId);
+          console.log("Scene videos:", data.sceneVideos);
+
+          // 성공 메시지 표시
+          setError("");
+        } catch (err) {
+          console.error("News video generation error:", err);
+          setError(
+            err instanceof Error ? err.message : "비디오 생성에 실패했습니다."
+          );
+        } finally {
+          setGeneratingVideos(false);
+        }
+      },
+    });
+    setShowConfirmModal(true);
   };
 
   const handleDownloadVideo = (url: string, index: number) => {
@@ -1303,6 +1344,28 @@ Please compose the video based on the following blog content:
               )}
 
             {!isVideoModelDetailsCollapsed &&
+              selectedVideoModel === "veo-3" && (
+                <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Resolution
+                    </label>
+                    <Select
+                      value={veo3Resolution}
+                      onChange={(value) =>
+                        setVeo3Resolution(value as "720p" | "1080p")
+                      }
+                      options={[
+                        { value: "720p", label: "720p (Standard)" },
+                        { value: "1080p", label: "1080p (High Quality)" },
+                      ]}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              )}
+
+            {!isVideoModelDetailsCollapsed &&
               selectedVideoModel === "kling-v2" && (
                 <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
                   <div>
@@ -1568,6 +1631,18 @@ Please compose the video based on the following blog content:
           </Section>
         )}
       </div>
+
+      {/* 확인 팝업 */}
+      {showConfirmModal && confirmModalData && (
+        <ConfirmModal
+          isOpen={showConfirmModal}
+          onClose={() => setShowConfirmModal(false)}
+          onConfirm={confirmModalData.onConfirm}
+          title={confirmModalData.title}
+          message={confirmModalData.message}
+          apiInfo={confirmModalData.apiInfo}
+        />
+      )}
     </div>
   );
 }

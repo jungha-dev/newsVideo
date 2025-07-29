@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     const { videoId, sceneIndex, sceneData } = await request.json();
 
-    // 뉴스 비디오 정보 가져오기
+    // Generated Video 정보 가져오기
     const videoDoc = await db
       .collection("users")
       .doc(user.uid)
@@ -62,19 +62,36 @@ export async function POST(request: NextRequest) {
         updated_at: new Date(),
       });
 
-    // Replicate API로 비디오 생성 시작
-    const requestBody = {
-      version: "kwaivgi/kling-v2.0",
-      input: {
-        prompt: sceneData.image_prompt,
-        duration: 5,
-        aspect_ratio: "16:9",
-        cfg_scale: 0.5,
-        negative_prompt: "blurry, low quality, distorted",
-        ...(sceneData.imageUrl && { start_image: sceneData.imageUrl }),
-        narration: sceneData.narration,
-      },
-    };
+    // 비디오 데이터에서 모델 정보 가져오기
+    const model = videoData.model || "kling-v2";
+
+    // 모델에 따른 API 요청 구성
+    let requestBody;
+    if (model === "veo-3") {
+      // Veo-3 API 요청
+      requestBody = {
+        version: "google/veo-3",
+        input: {
+          prompt: sceneData.image_prompt,
+          resolution: "720p",
+          negative_prompt: "blurry, low quality, distorted",
+        },
+      };
+    } else {
+      // Kling v2 API 요청 (기본값)
+      requestBody = {
+        version: "kwaivgi/kling-v2.0",
+        input: {
+          prompt: sceneData.image_prompt,
+          duration: 5,
+          aspect_ratio: "16:9",
+          cfg_scale: 0.5,
+          negative_prompt: "blurry, low quality, distorted",
+          ...(sceneData.imageUrl && { start_image: sceneData.imageUrl }),
+          narration: sceneData.narration,
+        },
+      };
+    }
 
     console.log(
       "Replicate API request body:",
