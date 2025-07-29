@@ -92,7 +92,11 @@ export async function POST(request: NextRequest) {
 
     if (isAddScene && existingVideoId) {
       // 기존 비디오에 씬 추가
-      const existingVideoRef = db.collection("newsVideos").doc(existingVideoId);
+      const existingVideoRef = db
+        .collection("users")
+        .doc(uid)
+        .collection("newsVideo")
+        .doc(existingVideoId);
       const existingVideoDoc = await existingVideoRef.get();
 
       if (!existingVideoDoc.exists) {
@@ -180,7 +184,9 @@ export async function POST(request: NextRequest) {
 
       // Firestore에 씬 비디오 저장
       await db
-        .collection("newsVideos")
+        .collection("users")
+        .doc(uid)
+        .collection("newsVideo")
         .doc(existingVideoId)
         .collection("sceneVideos")
         .doc(sceneVideoId)
@@ -213,7 +219,12 @@ export async function POST(request: NextRequest) {
       };
 
       // Firestore에 저장
-      await db.collection("newsVideos").doc(videoId).set(newsVideoData);
+      await db
+        .collection("users")
+        .doc(uid)
+        .collection("newsVideo")
+        .doc(videoId)
+        .set(newsVideoData);
 
       // 각 씬에 대해 비디오 생성
       const videoPromises = scenes.map(async (scene, index) => {
@@ -264,7 +275,9 @@ export async function POST(request: NextRequest) {
 
         // Firestore에 씬 비디오 저장
         await db
-          .collection("newsVideos")
+          .collection("users")
+          .doc(uid)
+          .collection("newsVideo")
           .doc(videoId)
           .collection("sceneVideos")
           .doc(sceneVideoId)

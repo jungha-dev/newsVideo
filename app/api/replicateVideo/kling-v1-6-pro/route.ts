@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { uploadVideoToFirebase } from "@/lib/uploadVideoToFirebase";
 
 export async function POST(request: NextRequest) {
   try {
@@ -138,6 +139,30 @@ export async function GET(request: NextRequest) {
     }
 
     const prediction = await response.json();
+
+    // 완료된 경우 Firebase에 업로드
+    if (prediction.status === "succeeded" && prediction.output) {
+      try {
+        const { searchParams } = new URL(request.url);
+        const userId = searchParams.get("userId");
+
+        if (userId) {
+          const firebaseUrl = await uploadVideoToFirebase({
+            replicateUrl: prediction.output,
+            userId,
+            fileName: `kling-v1-6-pro-${Date.now()}.mp4`,
+          });
+
+          // Firebase URL을 prediction 객체에 추가
+          prediction.firebaseUrl = firebaseUrl;
+          console.log("Video uploaded to Firebase:", firebaseUrl);
+        }
+      } catch (uploadError) {
+        console.error("Failed to upload to Firebase:", uploadError);
+        // Firebase 업로드 실패 시 원본 URL 사용
+      }
+    }
+
     return NextResponse.json(prediction);
   } catch (error) {
     console.error("Error getting prediction status:", error);

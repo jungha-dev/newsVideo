@@ -18,7 +18,7 @@ if (!admin.apps.length) {
   });
 }
 
-const db = admin.firestore();
+const db = admin.firestore(app, "news-video");
 const storage = admin.storage();
 const bucket = storage.bucket();
 

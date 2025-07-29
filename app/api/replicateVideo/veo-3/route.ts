@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Replicate from "replicate";
+import { uploadVideoToFirebase } from "@/lib/uploadVideoToFirebase";
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
@@ -147,9 +148,30 @@ export async function POST(request: NextRequest) {
 
     console.log("Generated video URL:", resultVideoUrl);
 
+    // Firebase Storage에 업로드
+    let firebaseUrl = resultVideoUrl;
+    try {
+      const { userId } = await request.json();
+      if (userId) {
+        firebaseUrl = await uploadVideoToFirebase({
+          replicateUrl: resultVideoUrl,
+          userId,
+          fileName: `veo-3-${Date.now()}.mp4`,
+        });
+        console.log("Video uploaded to Firebase:", firebaseUrl);
+      }
+    } catch (uploadError) {
+      console.error(
+        "Failed to upload to Firebase, using Replicate URL:",
+        uploadError
+      );
+      // Firebase 업로드 실패 시 Replicate URL 사용
+    }
+
     return NextResponse.json({
-      videoUrl: resultVideoUrl,
+      videoUrl: firebaseUrl,
       taskId: finalPrediction.id,
+      originalUrl: resultVideoUrl, // 원본 Replicate URL도 함께 반환
     });
   } catch (error) {
     console.error("=== Veo-3 API Error ===");

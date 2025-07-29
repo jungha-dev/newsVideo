@@ -147,7 +147,7 @@ export default function NewsVideoDetailPage() {
   const loadVideo = async () => {
     try {
       setLoading(true);
-      const videoData = await getNewsVideoById(videoId);
+      const videoData = await getNewsVideoById(user?.uid || "", videoId);
       if (videoData) {
         setVideo(videoData);
       } else {
@@ -515,6 +515,115 @@ export default function NewsVideoDetailPage() {
     }
   };
 
+  // Firebase Storage 업로드 기능
+  const handleUploadToFirebase = async () => {
+    if (!video || !user) return;
+
+    try {
+      console.log("📤 Firebase Storage 업로드 시작...");
+
+      // 각 씬에 대해 Firebase Storage 업로드
+      for (let i = 0; i < video.scenes.length; i++) {
+        const scene = video.scenes[i];
+        if (scene.videoUrl) {
+          console.log(
+            `📤 씬 ${i + 1} Firebase Storage 업로드: ${scene.videoUrl}`
+          );
+
+          const response = await fetch(`/api/video/news/status/${videoId}`);
+          if (response.ok) {
+            const data = await response.json();
+            console.log(`✅ 씬 ${i + 1} Firebase Storage 업로드 완료:`, data);
+
+            // 업데이트된 씬 정보 확인
+            const updatedScene = data.video?.scenes?.[i];
+            if (updatedScene?.firebaseUrl) {
+              console.log(
+                `🔗 씬 ${i + 1} Firebase URL: ${updatedScene.firebaseUrl}`
+              );
+
+              // 비디오 데이터 업데이트
+              const updatedScenes = [...video.scenes];
+              updatedScenes[i] = {
+                ...updatedScenes[i],
+                videoUrl: updatedScene.firebaseUrl,
+                firebaseUrl: updatedScene.firebaseUrl,
+              } as any;
+              setVideo({ ...video, scenes: updatedScenes });
+            }
+          } else {
+            console.error(
+              `❌ 씬 ${i + 1} Firebase Storage 업로드 실패:`,
+              response.statusText
+            );
+          }
+        }
+      }
+
+      console.log("🎉 Firebase Storage 업로드 완료!");
+
+      // 업데이트된 데이터 다시 로드
+      await loadVideo();
+    } catch (error) {
+      console.error("❌ Firebase Storage 업로드 실패:", error);
+    }
+  };
+
+  // 개별 씬 Firebase Storage 업로드 기능
+  const handleUploadSceneToFirebase = async (sceneIndex: number) => {
+    if (!video || !user) return;
+
+    try {
+      const scene = video.scenes[sceneIndex];
+      if (!scene.videoUrl) {
+        console.log(`❌ 씬 ${sceneIndex + 1}: 비디오 URL이 없습니다.`);
+        return;
+      }
+
+      console.log(`📤 씬 ${sceneIndex + 1} Firebase Storage 업로드 시작...`);
+      console.log(`📤 원본 URL: ${scene.videoUrl}`);
+
+      const response = await fetch(`/api/video/news/status/${videoId}`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log(
+          `✅ 씬 ${sceneIndex + 1} Firebase Storage 업로드 완료:`,
+          data
+        );
+
+        // 업데이트된 씬 정보 확인
+        const updatedScene = data.video?.scenes?.[sceneIndex];
+        if (updatedScene?.firebaseUrl) {
+          console.log(
+            `🔗 씬 ${sceneIndex + 1} Firebase URL: ${updatedScene.firebaseUrl}`
+          );
+
+          // 비디오 데이터 업데이트
+          const updatedScenes = [...video.scenes];
+          updatedScenes[sceneIndex] = {
+            ...updatedScenes[sceneIndex],
+            videoUrl: updatedScene.firebaseUrl,
+            firebaseUrl: updatedScene.firebaseUrl,
+          } as any;
+          setVideo({ ...video, scenes: updatedScenes });
+        }
+
+        // 업데이트된 데이터 다시 로드
+        await loadVideo();
+      } else {
+        console.error(
+          `❌ 씬 ${sceneIndex + 1} Firebase Storage 업로드 실패:`,
+          response.statusText
+        );
+      }
+    } catch (error) {
+      console.error(
+        `❌ 씬 ${sceneIndex + 1} Firebase Storage 업로드 실패:`,
+        error
+      );
+    }
+  };
+
   if (!user) {
     return (
       <div className="container max-w-6xl mx-auto px-4 py-8">
@@ -653,6 +762,14 @@ export default function NewsVideoDetailPage() {
                 </>
               )}
               <Button
+                onClick={handleUploadToFirebase}
+                variant="outline"
+                size="sm"
+                className="text-xs"
+              >
+                📤 Firebase 업로드
+              </Button>
+              <Button
                 onClick={handleAddScene}
                 variant="primary"
                 size="sm"
@@ -672,17 +789,24 @@ export default function NewsVideoDetailPage() {
                   <h4 className="font-medium text-sm">
                     씬 {scene.scene_number}
                   </h4>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                      getSceneStatus(scene, index)
-                    )}`}
-                  >
-                    {getStatusText(getSceneStatus(scene, index))}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                        getSceneStatus(scene, index)
+                      )}`}
+                    >
+                      {getStatusText(getSceneStatus(scene, index))}
+                    </span>
+                    {(scene as any).firebaseUrl && (
+                      <span className="px-1 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        🔗 Firebase
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* 씬 비디오 플레이어 */}
-                {scene.videoUrl ? (
+                {(scene as any).firebaseUrl || scene.videoUrl ? (
                   <div className="mb-3">
                     <div className="bg-gray-100 rounded-lg overflow-hidden">
                       <video
@@ -690,7 +814,10 @@ export default function NewsVideoDetailPage() {
                         className="w-full h-auto max-h-90 object-cover"
                         preload="metadata"
                       >
-                        <source src={scene.videoUrl} type="video/mp4" />
+                        <source
+                          src={(scene as any).firebaseUrl || scene.videoUrl}
+                          type="video/mp4"
+                        />
                         브라우저가 비디오를 지원하지 않습니다.
                       </video>
                     </div>
@@ -732,11 +859,12 @@ export default function NewsVideoDetailPage() {
                 </div>
 
                 <div className="mt-3 flex gap-2">
-                  {scene.videoUrl && (
+                  {(scene as any).firebaseUrl || scene.videoUrl ? (
                     <Button
                       onClick={() => {
                         const link = document.createElement("a");
-                        link.href = scene.videoUrl!;
+                        link.href =
+                          (scene as any).firebaseUrl || scene.videoUrl!;
                         link.download = `scene-${scene.scene_number}.mp4`;
                         link.click();
                       }}
@@ -745,6 +873,16 @@ export default function NewsVideoDetailPage() {
                       className="flex-1 text-xs py-1"
                     >
                       다운로드
+                    </Button>
+                  ) : null}
+                  {scene.videoUrl && !(scene as any).firebaseUrl && (
+                    <Button
+                      onClick={() => handleUploadSceneToFirebase(index)}
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-xs py-1 bg-green-50 border-green-200 hover:bg-green-100"
+                    >
+                      📤 업로드
                     </Button>
                   )}
                   <Button

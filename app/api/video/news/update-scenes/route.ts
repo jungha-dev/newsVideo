@@ -13,7 +13,12 @@ export async function POST(request: NextRequest) {
     const { videoId, scenes } = await request.json();
 
     // 뉴스 비디오 정보 가져오기
-    const videoDoc = await db.collection("newsVideos").doc(videoId).get();
+    const videoDoc = await db
+      .collection("users")
+      .doc(user.uid)
+      .collection("newsVideo")
+      .doc(videoId)
+      .get();
 
     if (!videoDoc.exists) {
       return NextResponse.json({ error: "Video not found" }, { status: 404 });
@@ -28,10 +33,15 @@ export async function POST(request: NextRequest) {
     }));
 
     // Firestore 업데이트
-    await db.collection("newsVideos").doc(videoId).update({
-      scenes: updatedScenes,
-      updatedAt: new Date(),
-    });
+    await db
+      .collection("users")
+      .doc(user.uid)
+      .collection("newsVideo")
+      .doc(videoId)
+      .update({
+        scenes: updatedScenes,
+        updatedAt: new Date(),
+      });
 
     return NextResponse.json({
       success: true,

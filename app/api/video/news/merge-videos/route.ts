@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 비디오 정보 가져오기
-    const video = await getNewsVideoById(videoId);
+    const video = await getNewsVideoById(user.uid, videoId);
     if (!video) {
       return NextResponse.json({ error: "Video not found" }, { status: 404 });
     }

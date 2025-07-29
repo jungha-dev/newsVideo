@@ -24,7 +24,9 @@ export default function NewsVideoListPage() {
 
     try {
       setLoading(true);
+      console.log("Loading videos for user:", user.uid);
       const userVideos = await getNewsVideosByUser(user.uid);
+      console.log("Loaded videos:", userVideos);
       setVideos(userVideos);
     } catch (err) {
       console.error("Error loading videos:", err);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase-admin";
 import { getUserFromToken } from "@/lib/auth";
+import { getStorage } from "firebase-admin/storage";
 
 export async function GET(
   request: NextRequest,
@@ -15,8 +16,18 @@ export async function GET(
 
     const { videoId } = await params;
 
+    console.log(`🔍 뉴스 비디오 상태 확인 시작:`);
+    console.log(`   📺 비디오 ID: ${videoId}`);
+    console.log(`   👤 사용자: ${user.uid}`);
+    console.log(`   ─────────────────────────────────────────`);
+
     // 뉴스 비디오 정보 가져오기
-    const videoDoc = await db.collection("newsVideos").doc(videoId).get();
+    const videoDoc = await db
+      .collection("users")
+      .doc(user.uid)
+      .collection("newsVideo")
+      .doc(videoId)
+      .get();
 
     if (!videoDoc.exists) {
       return NextResponse.json({ error: "Video not found" }, { status: 404 });
@@ -26,7 +37,9 @@ export async function GET(
 
     // 씬 비디오들 가져오기
     const sceneVideosSnapshot = await db
-      .collection("newsVideos")
+      .collection("users")
+      .doc(user.uid)
+      .collection("newsVideo")
       .doc(videoId)
       .collection("sceneVideos")
       .get();
@@ -77,33 +90,109 @@ export async function GET(
               ) {
                 updateData.videoUrl = replicateData.output;
 
-                // Firebase Storage에 업로드
+                // Firebase Storage에 직접 업로드
                 try {
-                  const uploadResponse = await fetch("/api/upload-from-url", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
+                  console.log(
+                    `📥 Replicate에서 비디오 다운로드 시작: ${replicateData.output}`
+                  );
+
+                  // Replicate URL에서 비디오 다운로드
+                  const videoResponse = await fetch(replicateData.output);
+                  if (!videoResponse.ok) {
+                    throw new Error(
+                      `Failed to fetch video: ${videoResponse.statusText}`
+                    );
+                  }
+
+                  const videoBuffer = await videoResponse.arrayBuffer();
+                  console.log(
+                    `📦 비디오 버퍼 크기: ${videoBuffer.byteLength} bytes`
+                  );
+
+                  // Firebase Storage 경로 설정
+                  const storagePath = `users/${
+                    user.uid
+                  }/newsVideo/${videoId}/scene-${
+                    sceneVideo.sceneIndex + 1
+                  }.mp4`;
+
+                  // Firebase Admin Storage 사용
+                  const adminStorage = getStorage();
+                  const bucket = adminStorage.bucket();
+                  const file = bucket.file(storagePath);
+
+                  // Firebase Storage에 업로드
+                  console.log(
+                    `📤 Firebase Storage 업로드 시작: ${storagePath}`
+                  );
+                  await file.save(Buffer.from(videoBuffer), {
+                    metadata: {
+                      contentType: "video/mp4",
                     },
-                    body: JSON.stringify({
-                      url: replicateData.output,
-                      path: `users/${user.uid}/newsVideos/${videoId}/scene-${
-                        sceneVideo.sceneIndex + 1
-                      }.mp4`,
-                    }),
                   });
 
-                  if (uploadResponse.ok) {
-                    const uploadData = await uploadResponse.json();
-                    updateData.firebaseUrl = uploadData.url;
-                  }
+                  // Signed URL 생성 (makePublic 대신)
+                  const [signedUrl] = await file.getSignedUrl({
+                    action: "read",
+                    expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7일
+                  });
+
+                  const downloadURL = signedUrl;
+
+                  updateData.firebaseUrl = downloadURL;
+                  updateData.videoUrl = downloadURL; // videoUrl도 Firebase URL로 업데이트
+
+                  // 실시간 업로드 로깅
+                  console.log(
+                    `🎬 씬 ${
+                      sceneVideo.sceneIndex + 1
+                    } Firebase Storage 업로드 완료:`
+                  );
+                  console.log(`   📁 경로: ${storagePath}`);
+                  console.log(`   🔗 Firebase URL: ${downloadURL}`);
+                  console.log(
+                    `   📊 원본 Replicate URL: ${replicateData.output}`
+                  );
+                  console.log(
+                    `   ✅ 상태: ${replicateData.status} → completed`
+                  );
+                  console.log(`   ─────────────────────────────────────────`);
                 } catch (uploadError) {
                   console.error("Upload error:", uploadError);
+                  console.log(
+                    `❌ 씬 ${
+                      sceneVideo.sceneIndex + 1
+                    } Firebase Storage 업로드 실패:`
+                  );
+                  console.log(
+                    `   📁 시도한 경로: users/${
+                      user.uid
+                    }/newsVideos/${videoId}/scene-${
+                      sceneVideo.sceneIndex + 1
+                    }.mp4`
+                  );
+                  console.log(
+                    `   🔗 원본 Replicate URL: ${replicateData.output}`
+                  );
+                  console.log(
+                    `   ⚠️ 에러: ${
+                      uploadError instanceof Error
+                        ? uploadError.message
+                        : String(uploadError)
+                    }`
+                  );
+                  console.log(`   ─────────────────────────────────────────`);
                 }
+
+                // Replicate "succeeded" → 앱 내부 "completed"로 변경
+                updateData.status = "completed";
               }
 
               // Firestore 업데이트
               await db
-                .collection("newsVideos")
+                .collection("users")
+                .doc(user.uid)
+                .collection("newsVideo")
                 .doc(videoId)
                 .collection("sceneVideos")
                 .doc(sceneVideo.id)
@@ -125,7 +214,7 @@ export async function GET(
 
     // 전체 비디오 상태 확인
     const allCompleted = updatedSceneVideos.every(
-      (scene) => scene.status === "succeeded"
+      (scene) => scene.status === "completed"
     );
     const anyFailed = updatedSceneVideos.some(
       (scene) => scene.status === "failed"
@@ -140,10 +229,15 @@ export async function GET(
 
     // 전체 비디오 상태 업데이트
     if (overallStatus !== videoData.status) {
-      await db.collection("newsVideos").doc(videoId).update({
-        status: overallStatus,
-        updatedAt: new Date(),
-      });
+      await db
+        .collection("users")
+        .doc(user.uid)
+        .collection("newsVideo")
+        .doc(videoId)
+        .update({
+          status: overallStatus,
+          updatedAt: new Date(),
+        });
     }
 
     // 씬 비디오 URL들을 메인 비디오 문서에 업데이트
@@ -153,13 +247,47 @@ export async function GET(
       );
       return {
         ...scene,
-        videoUrl: sceneVideo?.firebaseUrl || sceneVideo?.videoUrl || "",
+        videoUrl:
+          sceneVideo?.firebaseUrl ||
+          sceneVideo?.videoUrl ||
+          scene.videoUrl ||
+          "",
+        firebaseUrl: sceneVideo?.firebaseUrl || scene.firebaseUrl || "",
       };
     });
 
-    await db.collection("newsVideos").doc(videoId).update({
-      scenes: updatedScenes,
-    });
+    await db
+      .collection("users")
+      .doc(user.uid)
+      .collection("newsVideo")
+      .doc(videoId)
+      .update({
+        scenes: updatedScenes,
+      });
+
+    // 전체 완료 시 요약 로깅
+    if (allCompleted) {
+      console.log(`🎉 뉴스 비디오 완료 요약:`);
+      console.log(`   📺 비디오 ID: ${videoId}`);
+      console.log(`   👤 사용자: ${user.uid}`);
+      console.log(`   📊 총 씬 수: ${updatedScenes.length}`);
+      console.log(`   🔗 업로드된 씬들:`);
+      updatedScenes.forEach((scene, index) => {
+        const sceneVideo = updatedSceneVideos.find(
+          (sv) => sv.sceneIndex === index
+        );
+        if (sceneVideo?.firebaseUrl) {
+          console.log(`      씬 ${index + 1}: ${sceneVideo.firebaseUrl}`);
+        } else if (sceneVideo?.videoUrl) {
+          console.log(
+            `      씬 ${index + 1}: ${sceneVideo.videoUrl} (Replicate URL)`
+          );
+        } else {
+          console.log(`      씬 ${index + 1}: 업로드되지 않음`);
+        }
+      });
+      console.log(`   ─────────────────────────────────────────`);
+    }
 
     return NextResponse.json({
       video: {

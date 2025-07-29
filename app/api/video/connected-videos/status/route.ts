@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase-admin";
 import { getUserFromToken } from "@/lib/auth";
+import { uploadVideoToFirebase } from "@/lib/uploadVideoToFirebase";
 
 // Firebase Storage URL을 올바른 형식으로 변환하는 함수
 const ensureFirebaseUrl = (url: string): string => {
@@ -87,22 +88,12 @@ export async function GET(request: NextRequest) {
               updated_at: new Date(),
             };
 
-            // 영상이 완료되면 원본 URL 유지 (Firebase Storage 저장은 선택사항)
+            // 영상이 완료되면 Firebase Storage에 업로드
             if (updatedStatus === "succeeded" && klingData.output) {
               // Replicate output이 배열인 경우 첫 번째 요소 사용
               const replicateUrl = Array.isArray(klingData.output)
                 ? klingData.output[0]
                 : klingData.output;
-
-              // 원본 Replicate URL을 그대로 유지 (접근 권한 문제 없음)
-              updatedData.output = replicateUrl;
-
-              // 기존 Firebase Storage URL이 있다면 Replicate URL로 교체
-              if (videoData.output && videoData.output.includes("firebase")) {
-                console.log(
-                  `Replacing Firebase URL with Replicate URL for video ${doc.id}`
-                );
-              }
 
               // Replicate URL을 Firebase Storage에 업로드하여 영구적인 URL로 교체
               try {

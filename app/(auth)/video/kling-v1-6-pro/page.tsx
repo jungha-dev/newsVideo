@@ -54,14 +54,15 @@ export default function KlingV16ProPage() {
     const pollInterval = setInterval(async () => {
       try {
         const response = await fetch(
-          `/api/replicateVideo/kling-v1-6-pro?id=${currentPrediction.id}`
+          `/api/replicateVideo/kling-v1-6-pro?id=${currentPrediction.id}&userId=${user?.uid}`
         );
         if (response.ok) {
           const prediction = await response.json();
           setCurrentPrediction(prediction);
 
           if (prediction.status === "succeeded" && prediction.output) {
-            setGeneratedVideo(prediction.output);
+            // Firebase URL이 있으면 사용, 없으면 원본 URL 사용
+            setGeneratedVideo(prediction.firebaseUrl || prediction.output);
             setIsGenerating(false);
           } else if (prediction.status === "failed") {
             setError(prediction.error || "Video generation failed");

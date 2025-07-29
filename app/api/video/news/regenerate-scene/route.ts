@@ -13,7 +13,12 @@ export async function POST(request: NextRequest) {
     const { videoId, sceneIndex, sceneData } = await request.json();
 
     // 뉴스 비디오 정보 가져오기
-    const videoDoc = await db.collection("newsVideos").doc(videoId).get();
+    const videoDoc = await db
+      .collection("users")
+      .doc(user.uid)
+      .collection("newsVideo")
+      .doc(videoId)
+      .get();
 
     if (!videoDoc.exists) {
       return NextResponse.json({ error: "Video not found" }, { status: 404 });
@@ -28,7 +33,9 @@ export async function POST(request: NextRequest) {
 
     // 기존 씬 비디오 삭제
     const existingSceneVideos = await db
-      .collection("newsVideos")
+      .collection("users")
+      .doc(user.uid)
+      .collection("newsVideo")
       .doc(videoId)
       .collection("sceneVideos")
       .where("sceneIndex", "==", sceneIndex)
@@ -40,7 +47,9 @@ export async function POST(request: NextRequest) {
 
     // 새로운 씬 비디오 생성
     const sceneVideoRef = await db
-      .collection("newsVideos")
+      .collection("users")
+      .doc(user.uid)
+      .collection("newsVideo")
       .doc(videoId)
       .collection("sceneVideos")
       .add({

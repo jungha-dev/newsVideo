@@ -20,7 +20,7 @@ export const saveNewsVideo = async (
   data: NewsVideoCreateData
 ): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+    const docRef = await addDoc(collection(db, "users", uid, "newsVideo"), {
       uid,
       ...data,
       status: "completed",
@@ -40,7 +40,7 @@ export const createNewsVideoDraft = async (
   data: Partial<NewsVideoCreateData>
 ): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+    const docRef = await addDoc(collection(db, "users", uid, "newsVideo"), {
       uid,
       ...data,
       status: "processing",
@@ -59,8 +59,10 @@ export const getNewsVideosByUser = async (
   uid: string
 ): Promise<NewsVideo[]> => {
   try {
-    // 단순 쿼리로 시작 (인덱스 없이도 작동)
-    const q = query(collection(db, COLLECTION_NAME), where("uid", "==", uid));
+    console.log("Fetching news videos for user:", uid);
+
+    // 새로운 경로 구조 사용
+    const q = query(collection(db, "users", uid, "newsVideo"));
 
     const querySnapshot = await getDocs(q);
     const videos: NewsVideo[] = [];
@@ -84,11 +86,12 @@ export const getNewsVideosByUser = async (
 };
 
 export const getNewsVideoById = async (
+  uid: string,
   id: string
 ): Promise<NewsVideo | null> => {
   try {
-    console.log("Fetching news video with ID:", id);
-    const docRef = doc(db, COLLECTION_NAME, id);
+    console.log("Fetching news video with ID:", id, "for user:", uid);
+    const docRef = doc(db, "users", uid, "newsVideo", id);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
@@ -111,11 +114,12 @@ export const getNewsVideoById = async (
 };
 
 export const updateNewsVideo = async (
+  uid: string,
   id: string,
   data: Partial<NewsVideo>
 ): Promise<void> => {
   try {
-    const docRef = doc(db, COLLECTION_NAME, id);
+    const docRef = doc(db, "users", uid, "newsVideo", id);
     await updateDoc(docRef, {
       ...data,
       updatedAt: new Date(),
@@ -126,9 +130,12 @@ export const updateNewsVideo = async (
   }
 };
 
-export const deleteNewsVideo = async (id: string): Promise<void> => {
+export const deleteNewsVideo = async (
+  uid: string,
+  id: string
+): Promise<void> => {
   try {
-    const docRef = doc(db, COLLECTION_NAME, id);
+    const docRef = doc(db, "users", uid, "newsVideo", id);
     await deleteDoc(docRef);
   } catch (error) {
     console.error("Error deleting news video:", error);

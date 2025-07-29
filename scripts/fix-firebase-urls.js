@@ -7,7 +7,7 @@ admin.initializeApp({
   storageBucket: "nesvideo-24f56.appspot.com",
 });
 
-const db = admin.firestore();
+const db = admin.firestore(app, "news-video");
 
 async function fixFirebaseUrls() {
   try {
