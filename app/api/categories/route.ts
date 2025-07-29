@@ -50,7 +50,7 @@ if (!getApps().length) {
     credential: cert(serviceAccount),
     storageBucket:
       process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
-      "oing-portfolio.firebasestorage.com",
+      "nesvideo-24f56.firebasestorage.com",
   });
 }
 

@@ -4,7 +4,7 @@ const serviceAccount = require("../keys/serviceAccountKey.json");
 // Firebase Admin 초기화
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: "oing-blog-4c0c0.appspot.com",
+  storageBucket: "nesvideo-24f56.appspot.com",
 });
 
 const db = admin.firestore();
