@@ -56,7 +56,7 @@ if (!getApps().length) {
   });
 }
 
-const db = getFirestore(app, "news-video");
+const db = getFirestore("news-video");
 
 // Firebase Storage URL을 올바른 형식으로 변환하는 유틸리티 함수
 const ensureFirebaseUrl = (url: string): string => {

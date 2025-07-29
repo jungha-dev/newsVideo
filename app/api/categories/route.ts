@@ -54,7 +54,7 @@ if (!getApps().length) {
   });
 }
 
-const db = getFirestore(app, "news-video");
+const db = getFirestore("news-video");
 const storage = getStorage();
 const auth = getAuth();
 

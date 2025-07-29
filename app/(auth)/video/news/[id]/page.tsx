@@ -761,14 +761,7 @@ export default function NewsVideoDetailPage() {
                   </Button>
                 </>
               )}
-              <Button
-                onClick={handleUploadToFirebase}
-                variant="outline"
-                size="sm"
-                className="text-xs"
-              >
-                📤 Firebase 업로드
-              </Button>
+
               <Button
                 onClick={handleAddScene}
                 variant="primary"
@@ -797,11 +790,6 @@ export default function NewsVideoDetailPage() {
                     >
                       {getStatusText(getSceneStatus(scene, index))}
                     </span>
-                    {(scene as any).firebaseUrl && (
-                      <span className="px-1 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        🔗 Firebase
-                      </span>
-                    )}
                   </div>
                 </div>
 
