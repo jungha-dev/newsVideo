@@ -49,7 +49,7 @@ export default function NewsVideoDetailPage() {
     []
   );
 
-  // 씬별 상태 계산
+  // Scene별 상태 계산
   const getSceneStatus = (scene: any, index: number) => {
     if (scene.videoUrl) return "completed";
     if (video?.status === "processing") return "processing";
@@ -72,7 +72,7 @@ export default function NewsVideoDetailPage() {
   useEffect(() => {
     const currentStatus = video?.status;
 
-    // 재생성 중이 아니고 처리 중이 아니면 폴링하지 않음
+    // Regenerate 중이 아니고 처리 중이 아니면 폴링하지 않음
     if (!isRegeneratingRef.current && currentStatus !== "processing") {
       if (pollingRef.current) {
         clearInterval(pollingRef.current);
@@ -123,7 +123,7 @@ export default function NewsVideoDetailPage() {
               clearInterval(pollingRef.current);
               pollingRef.current = null;
             }
-            // 재생성 완료 시 플래그 리셋
+            // Regenerate 완료 시 플래그 리셋
             isRegeneratingRef.current = false;
           }
         }
@@ -153,11 +153,11 @@ export default function NewsVideoDetailPage() {
       if (videoData) {
         setVideo(videoData);
       } else {
-        setError("비디오를 찾을 수 없습니다.");
+        setError("Video not found.");
       }
     } catch (err) {
       console.error("Error loading video:", err);
-      setError("비디오를 불러오는데 실패했습니다.");
+      setError("Failed to load video.");
     } finally {
       setLoading(false);
     }
@@ -170,7 +170,7 @@ export default function NewsVideoDetailPage() {
 
       // 유효한 날짜인지 확인
       if (isNaN(dateObj.getTime())) {
-        return "날짜 정보 없음";
+        return "No date information available.";
       }
 
       return new Intl.DateTimeFormat("ko-KR", {
@@ -182,7 +182,7 @@ export default function NewsVideoDetailPage() {
       }).format(dateObj);
     } catch (error) {
       console.error("Date formatting error:", error);
-      return "날짜 정보 없음";
+      return "No date information available.";
     }
   };
 
@@ -206,19 +206,19 @@ export default function NewsVideoDetailPage() {
   const getStatusText = (status: string) => {
     switch (status) {
       case "completed":
-        return "완료";
+        return "Completed";
       case "processing":
-        return "처리중";
+        return "Processing";
       case "failed":
-        return "실패";
+        return "Failed";
       case "pending":
-        return "대기";
+        return "Pending";
       case "starting":
-        return "시작";
+        return "Starting";
       case "succeeded":
-        return "완료";
+        return "Completed";
       default:
-        return "알 수 없음";
+        return "Unknown";
     }
   };
 
@@ -250,7 +250,7 @@ export default function NewsVideoDetailPage() {
     if (!video || regenerateSceneIndex === null) return;
 
     try {
-      // 재생성 시작 플래그 설정
+      // Regenerate 시작 플래그 설정
       isRegeneratingRef.current = true;
 
       const response = await fetch(`/api/video/createVideo/regenerate-scene`, {
@@ -310,7 +310,7 @@ export default function NewsVideoDetailPage() {
     if (!video) return;
 
     if (!addSceneForm.image_prompt.trim() || !addSceneForm.narration.trim()) {
-      setError("프롬프트와 나레이션을 모두 입력해주세요.");
+      setError("Please enter both the prompt and the narration.");
       return;
     }
 
@@ -318,7 +318,7 @@ export default function NewsVideoDetailPage() {
     setError("");
 
     try {
-      // 씬 추가 시작 플래그 설정
+      // Scene 추가 시작 플래그 설정
       isRegeneratingRef.current = true;
 
       const response = await fetch(`/api/video/createVideo/generate`, {
@@ -336,7 +336,7 @@ export default function NewsVideoDetailPage() {
               imageUrl: addSceneForm.imageUrl.trim() || "",
             },
           ],
-          isAddScene: true, // 새로운 씬 추가 플래그
+          isAddScene: true, // 새로운 Scene 추가 플래그
           title: video.title, // 기존 비디오 제목
           prompts: [addSceneForm.image_prompt.trim()], // 임시 값
           narrations: [addSceneForm.narration.trim()], // 임시 값
@@ -360,13 +360,11 @@ export default function NewsVideoDetailPage() {
       } else {
         const errorData = await response.json();
         console.error("API Error Response:", errorData);
-        throw new Error(errorData.error || "씬 추가에 실패했습니다.");
+        throw new Error(errorData.error || "SceneFailed to add.");
       }
     } catch (error) {
       console.error("Error adding scene:", error);
-      setError(
-        error instanceof Error ? error.message : "씬 추가에 실패했습니다."
-      );
+      setError(error instanceof Error ? error.message : "SceneFailed to add.");
       // 에러 발생 시 플래그 리셋
       isRegeneratingRef.current = false;
     } finally {
@@ -391,7 +389,7 @@ export default function NewsVideoDetailPage() {
     const [movedScene] = newScenes.splice(fromIndex, 1);
     newScenes.splice(toIndex, 0, movedScene);
 
-    // 씬 번호 재정렬
+    // Scene 번호 재정렬
     newScenes.forEach((scene, index) => {
       scene.scene_number = index + 1;
     });
@@ -448,12 +446,12 @@ export default function NewsVideoDetailPage() {
   // 영상 병합 기능
   const handleMergeAndDownload = async () => {
     if (!video || video.status !== "completed") {
-      setError("완료된 영상만 병합할 수 있습니다.");
+      setError("Only completed videos can be merged. ");
       return;
     }
 
     setIsMerging(true);
-    setMergeProgress("영상을 병합하고 있습니다...");
+    setMergeProgress("Merging videos…");
     setMergeProgressMessages([]);
 
     try {
@@ -464,7 +462,7 @@ export default function NewsVideoDetailPage() {
         showSubtitles,
       };
 
-      console.log("병합 요청 데이터:", requestBody);
+      console.log("Merge request data:", requestBody);
 
       const response = await fetch(`/api/video/createVideo/merge-videos`, {
         method: "POST",
@@ -524,12 +522,12 @@ export default function NewsVideoDetailPage() {
     try {
       console.log("📤 Firebase Storage 업로드 시작...");
 
-      // 각 씬에 대해 Firebase Storage 업로드
+      // 각 Scene에 대해 Firebase Storage 업로드
       for (let i = 0; i < video.scenes.length; i++) {
         const scene = video.scenes[i];
         if (scene.videoUrl) {
           console.log(
-            `📤 씬 ${i + 1} Firebase Storage 업로드: ${scene.videoUrl}`
+            `📤 Scene ${i + 1} Firebase Storage 업로드: ${scene.videoUrl}`
           );
 
           const response = await fetch(
@@ -537,13 +535,16 @@ export default function NewsVideoDetailPage() {
           );
           if (response.ok) {
             const data = await response.json();
-            console.log(`✅ 씬 ${i + 1} Firebase Storage 업로드 완료:`, data);
+            console.log(
+              `✅ Scene ${i + 1} Firebase Storage 업로드 완료:`,
+              data
+            );
 
-            // 업데이트된 씬 정보 확인
+            // 업데이트된 Scene Info 확인
             const updatedScene = data.video?.scenes?.[i];
             if (updatedScene?.firebaseUrl) {
               console.log(
-                `🔗 씬 ${i + 1} Firebase URL: ${updatedScene.firebaseUrl}`
+                `🔗 Scene ${i + 1} Firebase URL: ${updatedScene.firebaseUrl}`
               );
 
               // 비디오 데이터 업데이트
@@ -557,7 +558,7 @@ export default function NewsVideoDetailPage() {
             }
           } else {
             console.error(
-              `❌ 씬 ${i + 1} Firebase Storage 업로드 실패:`,
+              `❌ Scene ${i + 1} Firebase Storage 업로드 실패:`,
               response.statusText
             );
           }
@@ -573,33 +574,35 @@ export default function NewsVideoDetailPage() {
     }
   };
 
-  // 개별 씬 Firebase Storage 업로드 기능
+  // 개별 Scene Firebase Storage 업로드 기능
   const handleUploadSceneToFirebase = async (sceneIndex: number) => {
     if (!video || !user) return;
 
     try {
       const scene = video.scenes[sceneIndex];
       if (!scene.videoUrl) {
-        console.log(`❌ 씬 ${sceneIndex + 1}: 비디오 URL이 없습니다.`);
+        console.log(`❌ Scene ${sceneIndex + 1}: 비디오 URL이 없습니다.`);
         return;
       }
 
-      console.log(`📤 씬 ${sceneIndex + 1} Firebase Storage 업로드 시작...`);
+      console.log(`📤 Scene ${sceneIndex + 1} Firebase Storage 업로드 시작...`);
       console.log(`📤 원본 URL: ${scene.videoUrl}`);
 
       const response = await fetch(`/api/video/createVideo/status/${videoId}`);
       if (response.ok) {
         const data = await response.json();
         console.log(
-          `✅ 씬 ${sceneIndex + 1} Firebase Storage 업로드 완료:`,
+          `✅ Scene ${sceneIndex + 1} Firebase Storage 업로드 완료:`,
           data
         );
 
-        // 업데이트된 씬 정보 확인
+        // 업데이트된 Scene Info 확인
         const updatedScene = data.video?.scenes?.[sceneIndex];
         if (updatedScene?.firebaseUrl) {
           console.log(
-            `🔗 씬 ${sceneIndex + 1} Firebase URL: ${updatedScene.firebaseUrl}`
+            `🔗 Scene ${sceneIndex + 1} Firebase URL: ${
+              updatedScene.firebaseUrl
+            }`
           );
 
           // 비디오 데이터 업데이트
@@ -616,13 +619,13 @@ export default function NewsVideoDetailPage() {
         await loadVideo();
       } else {
         console.error(
-          `❌ 씬 ${sceneIndex + 1} Firebase Storage 업로드 실패:`,
+          `❌ Scene ${sceneIndex + 1} Firebase Storage 업로드 실패:`,
           response.statusText
         );
       }
     } catch (error) {
       console.error(
-        `❌ 씬 ${sceneIndex + 1} Firebase Storage 업로드 실패:`,
+        `❌ Scene ${sceneIndex + 1} Firebase Storage 업로드 실패:`,
         error
       );
     }
@@ -657,9 +660,7 @@ export default function NewsVideoDetailPage() {
         <PageTitle title="Generated Video" />
         <div className="text-center py-8">
           <div className="text-4xl mb-4">❌</div>
-          <p className="text-gray-600 mb-4">
-            {error || "비디오를 찾을 수 없습니다."}
-          </p>
+          <p className="text-gray-600 mb-4">{error || "Video not found."}</p>
           <Link href="/video/news">
             <Button variant="primary">Generated Video 목록으로 돌아가기</Button>
           </Link>
@@ -689,8 +690,8 @@ export default function NewsVideoDetailPage() {
                   id: `scene-${scene.scene_number}-${scene.videoUrl}`, // videoUrl을 포함하여 고유 ID 생성
                   output: scene.videoUrl,
                   status: "completed",
-                  fromImage: "", // 씬 이미지가 없으므로 빈 문자열
-                  toImage: "", // 씬 이미지가 없으므로 빈 문자열
+                  fromImage: "", // Scene 이미지가 없으므로 빈 문자열
+                  toImage: "", // Scene 이미지가 없으므로 빈 문자열
                   narration: scene.narration || "", // 나레이션 추가
                 }))}
               projectInfo={{
@@ -745,10 +746,10 @@ export default function NewsVideoDetailPage() {
           )}
         </div>
 
-        {/* 씬 정보 */}
+        {/* Scene Info */}
         <div className="bg-white rounded-lg p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">씬 정보</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Scene Info</h3>
             <div className="flex items-center gap-2">
               {hasUnsavedChanges && (
                 <>
@@ -772,7 +773,7 @@ export default function NewsVideoDetailPage() {
                 size="sm"
                 className="text-xs"
               >
-                씬 추가
+                Scene 추가
               </Button>
             </div>
           </div>
@@ -784,7 +785,7 @@ export default function NewsVideoDetailPage() {
               >
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-medium text-sm">
-                    씬 {scene.scene_number}
+                    Scene {scene.scene_number}
                   </h4>
                   <div className="flex items-center gap-1">
                     <span
@@ -797,7 +798,7 @@ export default function NewsVideoDetailPage() {
                   </div>
                 </div>
 
-                {/* 씬 비디오 플레이어 */}
+                {/* Scene 비디오 플레이어 */}
                 {(scene as any).firebaseUrl || scene.videoUrl ? (
                   <div className="mb-3">
                     <div className="bg-gray-100 rounded-lg overflow-hidden">
@@ -829,13 +830,13 @@ export default function NewsVideoDetailPage() {
 
                 <div className="text-xs text-gray-600 space-y-2">
                   <div>
-                    <strong className="block mb-1 text-xs">프롬프트:</strong>
+                    <strong className="block mb-1 text-xs">Prompt :</strong>
                     <p className="text-gray-700 bg-gray-50 p-1 rounded text-xs line-clamp-2">
                       {scene.image_prompt}
                     </p>
                   </div>
                   <div>
-                    <strong className="block mb-1 text-xs">나레이션:</strong>
+                    <strong className="block mb-1 text-xs">Narration :</strong>
                     <textarea
                       value={
                         modifiedScenes[index]?.narration || scene.narration
@@ -864,7 +865,7 @@ export default function NewsVideoDetailPage() {
                       size="sm"
                       className="flex-1 text-xs py-1"
                     >
-                      다운로드
+                      Download
                     </Button>
                   ) : null}
                   {scene.videoUrl && !(scene as any).firebaseUrl && (
@@ -874,7 +875,7 @@ export default function NewsVideoDetailPage() {
                       size="sm"
                       className="flex-1 text-xs py-1 bg-green-50 border-green-200 hover:bg-green-100"
                     >
-                      📤 업로드
+                      Upload
                     </Button>
                   )}
                   <Button
@@ -883,18 +884,18 @@ export default function NewsVideoDetailPage() {
                     size="sm"
                     className="flex-1 text-xs py-1 bg-blue-50 border-blue-200 hover:bg-blue-100"
                   >
-                    재생성
+                    Regenerate
                   </Button>
                 </div>
               </div>
             ))}
 
-            {/* 재생성 입력 폼 */}
+            {/* Regenerate 입력 폼 */}
             {showRegenerateForm && (
               <div className="border rounded-lg p-3 transition-colors border-blue-300 bg-blue-50">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-medium text-sm text-blue-900">
-                    씬 {regenerateSceneIndex! + 1} 재생성
+                    Scene {regenerateSceneIndex! + 1} Regenerate
                   </h4>
                   <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                     편집 모드
@@ -905,7 +906,7 @@ export default function NewsVideoDetailPage() {
                   {/* 프롬프트 입력 */}
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
-                      프롬프트:
+                      Prompt :
                     </label>
                     <textarea
                       value={regenerateForm.image_prompt}
@@ -924,7 +925,7 @@ export default function NewsVideoDetailPage() {
                   {/* 나레이션 입력 */}
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
-                      나레이션:
+                      Narration :
                     </label>
                     <textarea
                       value={regenerateForm.narration}
@@ -967,7 +968,7 @@ export default function NewsVideoDetailPage() {
                       size="sm"
                       className="flex-1 text-xs py-1"
                     >
-                      재생성 시작
+                      Regenerate start
                     </Button>
                     <Button
                       onClick={handleCancelRegenerate}
@@ -975,22 +976,22 @@ export default function NewsVideoDetailPage() {
                       size="sm"
                       className="flex-1 text-xs py-1"
                     >
-                      취소
+                      cancle
                     </Button>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* 씬 추가 폼 */}
+            {/* Scene 추가 폼 */}
             {showAddSceneForm && (
               <div className="border rounded-lg p-3 transition-colors border-green-300 bg-green-50">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-medium text-sm text-green-900">
-                    새 씬 추가
+                    Add Scene
                   </h4>
                   <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    추가 모드
+                    Add Scene Mode
                   </span>
                 </div>
 
@@ -998,7 +999,7 @@ export default function NewsVideoDetailPage() {
                   {/* 프롬프트 입력 */}
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
-                      프롬프트:
+                      Prompt:
                     </label>
                     <textarea
                       value={addSceneForm.image_prompt}
@@ -1010,14 +1011,14 @@ export default function NewsVideoDetailPage() {
                       }
                       className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       rows={2}
-                      placeholder="이미지 프롬프트를 입력하세요"
+                      placeholder="Please enter image prompt"
                     />
                   </div>
 
                   {/* 나레이션 입력 */}
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
-                      나레이션:
+                      Narration:
                     </label>
                     <textarea
                       value={addSceneForm.narration}
@@ -1029,14 +1030,14 @@ export default function NewsVideoDetailPage() {
                       }
                       className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       rows={2}
-                      placeholder="나레이션을 입력하세요"
+                      placeholder="please enter narration"
                     />
                   </div>
 
                   {/* 이미지 URL 입력 */}
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
-                      이미지 URL (선택사항):
+                      Image URL (optional):
                     </label>
                     <input
                       type="url"
@@ -1065,7 +1066,7 @@ export default function NewsVideoDetailPage() {
                         isAddingScene
                       }
                     >
-                      {isAddingScene ? "추가 중..." : "씬 추가"}
+                      {isAddingScene ? "추가 중..." : "Scene 추가"}
                     </Button>
                     <Button
                       onClick={handleCancelAddScene}

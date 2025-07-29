@@ -30,7 +30,7 @@ export default function NewsVideoListPage() {
       setVideos(userVideos);
     } catch (err) {
       console.error("Error loading videos:", err);
-      setError("비디오를 불러오는데 실패했습니다.");
+      setError("Failed to load video.");
     } finally {
       setLoading(false);
     }
@@ -141,7 +141,7 @@ export default function NewsVideoListPage() {
                   )}
 
                   <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>{video.scenes.length}개 씬</span>
+                    <span>{video.scenes.length}개 Scene</span>
                     <span>{formatDate(video.createdAt)}</span>
                   </div>
 

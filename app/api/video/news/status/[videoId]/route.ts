@@ -35,7 +35,7 @@ export async function GET(
 
     const videoData = videoDoc.data()!;
 
-    // 씬 비디오들 가져오기
+    // Scene 비디오들 가져오기
     const sceneVideosSnapshot = await db
       .collection("users")
       .doc(user.uid)
@@ -56,7 +56,7 @@ export async function GET(
       firebaseUrl?: string;
     }>;
 
-    // 각 씬 비디오의 상태 확인 및 업데이트
+    // 각 Scene 비디오의 상태 확인 및 업데이트
     const updatedSceneVideos = await Promise.all(
       sceneVideos.map(async (sceneVideo) => {
         if (
@@ -144,7 +144,7 @@ export async function GET(
 
                   // 실시간 업로드 로깅
                   console.log(
-                    `🎬 씬 ${
+                    `🎬 Scene ${
                       sceneVideo.sceneIndex + 1
                     } Firebase Storage 업로드 완료:`
                   );
@@ -160,7 +160,7 @@ export async function GET(
                 } catch (uploadError) {
                   console.error("Upload error:", uploadError);
                   console.log(
-                    `❌ 씬 ${
+                    `❌ Scene ${
                       sceneVideo.sceneIndex + 1
                     } Firebase Storage 업로드 실패:`
                   );
@@ -240,7 +240,7 @@ export async function GET(
         });
     }
 
-    // 씬 비디오 URL들을 메인 비디오 문서에 업데이트
+    // Scene 비디오 URL들을 메인 비디오 문서에 업데이트
     const updatedScenes = videoData.scenes.map((scene: any, index: number) => {
       const sceneVideo = updatedSceneVideos.find(
         (sv) => sv.sceneIndex === index
@@ -270,20 +270,20 @@ export async function GET(
       console.log(`🎉 Generated Video 완료 요약:`);
       console.log(`   📺 비디오 ID: ${videoId}`);
       console.log(`   👤 사용자: ${user.uid}`);
-      console.log(`   📊 총 씬 수: ${updatedScenes.length}`);
-      console.log(`   🔗 업로드된 씬들:`);
+      console.log(`   📊 총 Scene 수: ${updatedScenes.length}`);
+      console.log(`   🔗 업로드된 Scene들:`);
       updatedScenes.forEach((scene, index) => {
         const sceneVideo = updatedSceneVideos.find(
           (sv) => sv.sceneIndex === index
         );
         if (sceneVideo?.firebaseUrl) {
-          console.log(`      씬 ${index + 1}: ${sceneVideo.firebaseUrl}`);
+          console.log(`      Scene ${index + 1}: ${sceneVideo.firebaseUrl}`);
         } else if (sceneVideo?.videoUrl) {
           console.log(
-            `      씬 ${index + 1}: ${sceneVideo.videoUrl} (Replicate URL)`
+            `      Scene ${index + 1}: ${sceneVideo.videoUrl} (Replicate URL)`
           );
         } else {
-          console.log(`      씬 ${index + 1}: 업로드되지 않음`);
+          console.log(`      Scene ${index + 1}: 업로드되지 않음`);
         }
       });
       console.log(`   ─────────────────────────────────────────`);

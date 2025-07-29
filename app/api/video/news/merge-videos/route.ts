@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Video not found" }, { status: 404 });
     }
 
-    // 완료된 씬들만 필터링
+    // 완료된 Scene들만 필터링
     const completedScenes = video.scenes.filter((scene) => scene.videoUrl);
     if (completedScenes.length === 0) {
       return NextResponse.json(
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(
-      "병합할 씬들:",
+      "병합할 Scene들:",
       completedScenes.map((scene) => ({
         scene_number: scene.scene_number,
         videoUrl: scene.videoUrl,
@@ -78,26 +78,28 @@ export async function POST(request: NextRequest) {
     const sendProgress = (msg: string) => msg;
     const progress: string[] = [sendProgress("📥 Generated Video 병합 시작")];
 
-    /* ───────── 개별 씬 다운로드·편집 ───────── */
+    /* ───────── 개별 Scene 다운로드·편집 ───────── */
     const processedVideos = await Promise.all(
       completedScenes.map(async (scene, idx) => {
         progress.push(
-          sendProgress(`⏳ 씬 ${idx + 1}/${completedScenes.length} 처리 중...`)
+          sendProgress(
+            `⏳ Scene ${idx + 1}/${completedScenes.length} 처리 중...`
+          )
         );
 
         /* 1) 다운로드 */
         const src = join(tmpdir(), `scene-${uuid()}.mp4`);
         if (!scene.videoUrl) {
-          console.warn(`씬 ${idx + 1}의 비디오 URL이 없습니다. 건너뜁니다.`);
+          console.warn(`Scene ${idx + 1}의 비디오 URL이 없습니다. 건너뜁니다.`);
           return null; // Skip this scene
         }
 
-        console.log(`씬 ${idx + 1} 다운로드 시도: ${scene.videoUrl}`);
+        console.log(`Scene ${idx + 1} 다운로드 시도: ${scene.videoUrl}`);
         const res = await fetch(scene.videoUrl);
 
         if (!res.ok) {
           console.warn(
-            `씬 ${idx + 1} 다운로드 실패: ${res.status} ${
+            `Scene ${idx + 1} 다운로드 실패: ${res.status} ${
               res.statusText
             }. 건너뜁니다.`
           );
@@ -105,26 +107,26 @@ export async function POST(request: NextRequest) {
         }
 
         const buffer = await res.buffer();
-        console.log(`씬 ${idx + 1} 다운로드 크기: ${buffer.length} bytes`);
+        console.log(`Scene ${idx + 1} 다운로드 크기: ${buffer.length} bytes`);
 
         if (buffer.length === 0) {
           console.warn(
-            `씬 ${idx + 1}의 비디오 파일이 비어있습니다. 건너뜁니다.`
+            `Scene ${idx + 1}의 비디오 파일이 비어있습니다. 건너뜁니다.`
           );
           return null; // Skip this scene
         }
 
         await fs.writeFile(src, buffer);
-        progress.push(sendProgress(`✅ 씬 ${idx + 1} 다운로드 완료`));
+        progress.push(sendProgress(`✅ Scene ${idx + 1} 다운로드 완료`));
 
         // Validate the downloaded file
         try {
           const stats = await fs.stat(src);
-          console.log(`씬 ${idx + 1} 파일 크기: ${stats.size} bytes`);
+          console.log(`Scene ${idx + 1} 파일 크기: ${stats.size} bytes`);
 
           if (stats.size === 0) {
             console.warn(
-              `씬 ${idx + 1}의 다운로드된 파일이 비어있습니다. 건너뜁니다.`
+              `Scene ${idx + 1}의 다운로드된 파일이 비어있습니다. 건너뜁니다.`
             );
             return null; // Skip this scene
           }
@@ -132,7 +134,7 @@ export async function POST(request: NextRequest) {
           // Check if file is too small to be a valid video (less than 1KB)
           if (stats.size < 1024) {
             console.warn(
-              `씬 ${idx + 1} 파일이 너무 작습니다 (${
+              `Scene ${idx + 1} 파일이 너무 작습니다 (${
                 stats.size
               } bytes). 이는 오류 응답일 가능성이 높습니다.`
             );
@@ -140,18 +142,20 @@ export async function POST(request: NextRequest) {
             // Read the content to see what error message is returned
             try {
               const errorContent = await fs.readFile(src, "utf8");
-              console.error(`씬 ${idx + 1} 오류 내용:`, errorContent);
+              console.error(`Scene ${idx + 1} 오류 내용:`, errorContent);
             } catch (readError) {
-              console.error(`씬 ${idx + 1} 파일 읽기 실패:`, readError);
+              console.error(`Scene ${idx + 1} 파일 읽기 실패:`, readError);
             }
 
             console.warn(
-              `씬 ${idx + 1}의 비디오 파일이 유효하지 않습니다. 건너뜁니다.`
+              `Scene ${idx + 1}의 비디오 파일이 유효하지 않습니다. 건너뜁니다.`
             );
             return null; // Skip this scene
           }
         } catch (error) {
-          console.warn(`씬 ${idx + 1} 파일 검증 실패: ${error}. 건너뜁니다.`);
+          console.warn(
+            `Scene ${idx + 1} 파일 검증 실패: ${error}. 건너뜁니다.`
+          );
           return null; // Skip this scene
         }
 
@@ -160,7 +164,7 @@ export async function POST(request: NextRequest) {
         const filters: string[] = [];
 
         /* 자막 */
-        console.log(`씬 ${idx + 1} 자막 처리:`, {
+        console.log(`Scene ${idx + 1} 자막 처리:`, {
           showSubtitles,
           narration: scene.narration,
           hasNarration: !!scene.narration?.trim(),
@@ -203,8 +207,8 @@ export async function POST(request: NextRequest) {
 
           // 텍스트를 두 줄로 나누기 적용
           const wrappedText = splitIntoTwoLines(scene.narration);
-          console.log(`씬 ${idx + 1} 원본 텍스트: "${scene.narration}"`);
-          console.log(`씬 ${idx + 1} 줄바꿈 텍스트: "${wrappedText}"`);
+          console.log(`Scene ${idx + 1} 원본 텍스트: "${scene.narration}"`);
+          console.log(`Scene ${idx + 1} 줄바꿈 텍스트: "${wrappedText}"`);
 
           // 텍스트 파일 생성 (줄바꿈 문제 해결)
           const textFile = join(tmpdir(), `subtitle-${idx}-${uuid()}.txt`);
@@ -239,11 +243,11 @@ export async function POST(request: NextRequest) {
           console.log(`자막 필터 생성:`, subtitleFilter);
           filters.push(subtitleFilter);
           progress.push(
-            sendProgress(`💬 씬 ${idx + 1} 자막 설정: "${scene.narration}"`)
+            sendProgress(`💬 Scene ${idx + 1} 자막 설정: "${scene.narration}"`)
           );
         } else {
           console.log(
-            `씬 ${
+            `Scene ${
               idx + 1
             } 자막 건너뜀: showSubtitles=${showSubtitles}, narration="${
               scene.narration
@@ -252,8 +256,8 @@ export async function POST(request: NextRequest) {
         }
 
         /* 3) FFmpeg 실행 */
-        progress.push(sendProgress(`🔄 씬 ${idx + 1} 처리 시작`));
-        console.log(`씬 ${idx + 1} FFmpeg 필터:`, filters);
+        progress.push(sendProgress(`🔄 Scene ${idx + 1} 처리 시작`));
+        console.log(`Scene ${idx + 1} FFmpeg 필터:`, filters);
 
         await new Promise((res, rej) => {
           const cmd = ffmpeg(src);
@@ -266,10 +270,13 @@ export async function POST(request: NextRequest) {
           if (filters.length > 0) {
             try {
               allFilters = `${scalingFilter},${filters.join(",")}`;
-              console.log(`씬 ${idx + 1} 최종 필터 (자막 포함):`, allFilters);
+              console.log(
+                `Scene ${idx + 1} 최종 필터 (자막 포함):`,
+                allFilters
+              );
             } catch (error) {
               console.warn(
-                `씬 ${idx + 1} 자막 필터 생성 실패, 자막 없이 처리:`,
+                `Scene ${idx + 1} 자막 필터 생성 실패, 자막 없이 처리:`,
                 error
               );
               allFilters = scalingFilter;
@@ -278,7 +285,7 @@ export async function POST(request: NextRequest) {
             allFilters = scalingFilter;
           }
 
-          console.log(`씬 ${idx + 1} 최종 필터:`, allFilters);
+          console.log(`Scene ${idx + 1} 최종 필터:`, allFilters);
 
           cmd
             .outputOptions([
@@ -304,13 +311,13 @@ export async function POST(request: NextRequest) {
             .output(out)
             .on("progress", (p) =>
               sendProgress(
-                `⏳ 씬 ${idx + 1} 처리 진행률: ${p.percent?.toFixed(1)}% (${
+                `⏳ Scene ${idx + 1} 처리 진행률: ${p.percent?.toFixed(1)}% (${
                   p.timemark
                 })`
               )
             )
             .on("end", () => {
-              sendProgress(`✅ 씬 ${idx + 1} 처리 완료`);
+              sendProgress(`✅ Scene ${idx + 1} 처리 완료`);
               res(null);
             })
             .on("error", (err) => {
@@ -325,8 +332,12 @@ export async function POST(request: NextRequest) {
 
               // 자막 필터가 문제인 경우 자막 없이 다시 시도
               if (filters.length > 0 && err.message.includes("filter")) {
-                console.warn(`씬 ${idx + 1} 자막 필터 오류, 자막 없이 재시도`);
-                sendProgress(`⚠️ 씬 ${idx + 1} 자막 처리 실패, 자막 없이 처리`);
+                console.warn(
+                  `Scene ${idx + 1} 자막 필터 오류, 자막 없이 재시도`
+                );
+                sendProgress(
+                  `⚠️ Scene ${idx + 1} 자막 처리 실패, 자막 없이 처리`
+                );
 
                 // 자막 없이 다시 시도
                 const cmdRetry = ffmpeg(src);
@@ -353,17 +364,19 @@ export async function POST(request: NextRequest) {
                   ])
                   .output(out)
                   .on("end", () => {
-                    sendProgress(`✅ 씬 ${idx + 1} 처리 완료 (자막 없음)`);
+                    sendProgress(`✅ Scene ${idx + 1} 처리 완료 (자막 없음)`);
                     res(null);
                   })
                   .on("error", (retryErr) => {
-                    console.error(`씬 ${idx + 1} 재시도 실패:`, retryErr);
-                    sendProgress(`❌ 씬 ${idx + 1} 오류: ${retryErr.message}`);
+                    console.error(`Scene ${idx + 1} 재시도 실패:`, retryErr);
+                    sendProgress(
+                      `❌ Scene ${idx + 1} 오류: ${retryErr.message}`
+                    );
                     rej(retryErr);
                   })
                   .run();
               } else {
-                sendProgress(`❌ 씬 ${idx + 1} 오류: ${err.message}`);
+                sendProgress(`❌ Scene ${idx + 1} 오류: ${err.message}`);
                 rej(err);
               }
             })
@@ -380,18 +393,18 @@ export async function POST(request: NextRequest) {
     );
 
     if (validProcessedVideos.length === 0) {
-      throw new Error("처리할 수 있는 유효한 씬이 없습니다.");
+      throw new Error("처리할 수 있는 유효한 Scene이 없습니다.");
     }
 
     console.log(
-      `처리된 씬: ${validProcessedVideos.length}/${completedScenes.length}`
+      `처리된 Scene: ${validProcessedVideos.length}/${completedScenes.length}`
     );
     progress.push(
-      sendProgress(`✅ ${validProcessedVideos.length}개 씬 처리 완료`)
+      sendProgress(`✅ ${validProcessedVideos.length}개 Scene 처리 완료`)
     );
 
     /* ───────── 병합 ───────── */
-    progress.push(sendProgress("🔄 씬 병합 시작"));
+    progress.push(sendProgress("🔄 Scene 병합 시작"));
     const concatList = join(tmpdir(), `list-${uuid()}.txt`);
     await fs.writeFile(
       concatList,
@@ -430,11 +443,11 @@ export async function POST(request: NextRequest) {
           )
         )
         .on("end", () => {
-          sendProgress("✅ 씬 병합 완료");
+          sendProgress("✅ Scene 병합 완료");
           res(null);
         })
         .on("error", (err) => {
-          sendProgress(`❌ 씬 병합 오류: ${err.message}`);
+          sendProgress(`❌ Scene 병합 오류: ${err.message}`);
           rej(err);
         })
         .run()

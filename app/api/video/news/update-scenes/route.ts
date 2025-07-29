@@ -26,10 +26,10 @@ export async function POST(request: NextRequest) {
 
     const videoData = videoDoc.data()!;
 
-    // 씬 순서 업데이트
+    // Scene 순서 업데이트
     const updatedScenes = scenes.map((scene: any, index: number) => ({
       ...scene,
-      scene_number: index + 1, // 씬 번호 재정렬
+      scene_number: index + 1, // Scene 번호 재정렬
     }));
 
     // Firestore 업데이트

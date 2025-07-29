@@ -18,8 +18,8 @@ interface NewsVideoRequest {
   aspectRatio: string;
   duration: number;
   veo3Resolution?: "720p" | "1080p";
-  videoId?: string; // 기존 비디오 ID (씬 추가 시)
-  isAddScene?: boolean; // 씬 추가 플래그
+  videoId?: string; // 기존 비디오 ID (Scene 추가 시)
+  isAddScene?: boolean; // Scene 추가 플래그
 }
 
 export async function POST(request: NextRequest) {
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     // 유효성 검사
     if (isAddScene && existingVideoId) {
-      // 씬 추가 시 유효성 검사
+      // Scene 추가 시 유효성 검사
       if (!scenes || scenes.length === 0) {
         return NextResponse.json(
           { error: "At least one scene is required" },
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     const videoId = existingVideoId || uuidv4();
 
     if (isAddScene && existingVideoId) {
-      // 기존 비디오에 씬 추가
+      // 기존 비디오에 Scene 추가
       const existingVideoRef = db
         .collection("users")
         .doc(uid)
@@ -115,9 +115,9 @@ export async function POST(request: NextRequest) {
       const currentScenes = existingVideoData.scenes || [];
       const newSceneNumber = currentScenes.length + 1;
 
-      // 새 씬 추가
+      // 새 Scene 추가
       const newScene = {
-        ...scenes[0], // 첫 번째 씬만 사용
+        ...scenes[0], // 첫 번째 Scene만 사용
         scene_number: newSceneNumber,
         videoUrl: "", // 비디오 생성 후 업데이트
       };
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
         updatedAt: now,
       });
 
-      // 새 씬에 대해서만 비디오 생성
+      // 새 Scene에 대해서만 비디오 생성
       const sceneVideoId = uuidv4();
       const scene = scenes[0];
 
@@ -196,10 +196,10 @@ export async function POST(request: NextRequest) {
       const replicateData = await replicateResponse.json();
       console.log("Replicate API Response:", replicateData);
 
-      // 씬 비디오 데이터 생성
+      // Scene 비디오 데이터 생성
       const sceneVideoData = {
         id: sceneVideoId,
-        sceneIndex: currentScenes.length, // 새 씬의 인덱스
+        sceneIndex: currentScenes.length, // 새 Scene의 인덱스
         status: "starting" as const,
         prompt: scene.image_prompt,
         narration: scene.narration,
@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
         updated_at: now,
       };
 
-      // Firestore에 씬 비디오 저장
+      // Firestore에 Scene 비디오 저장
       await db
         .collection("users")
         .doc(uid)
@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
         .doc(videoId)
         .set(newsVideoData);
 
-      // 각 씬에 대해 비디오 생성
+      // 각 Scene에 대해 비디오 생성
       const videoPromises = scenes.map(async (scene, index) => {
         const sceneVideoId = uuidv4();
 
@@ -311,7 +311,7 @@ export async function POST(request: NextRequest) {
 
         const replicateData = await replicateResponse.json();
 
-        // 씬 비디오 데이터 생성
+        // Scene 비디오 데이터 생성
         const sceneVideoData = {
           id: sceneVideoId,
           sceneIndex: index,
@@ -323,7 +323,7 @@ export async function POST(request: NextRequest) {
           updated_at: now,
         };
 
-        // Firestore에 씬 비디오 저장
+        // Firestore에 Scene 비디오 저장
         await db
           .collection("users")
           .doc(uid)

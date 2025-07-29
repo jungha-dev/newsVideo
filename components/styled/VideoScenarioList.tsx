@@ -43,11 +43,11 @@ interface VideoScenarioListProps {
   onSubtitleStyleChange?: (style: "box" | "outline") => void;
   // 이미지 링크 추가 관련 props
   onAddImageUrl?: (url: string) => void;
-  // 씬별 미디어 추가 관련 props
+  // Scene별 미디어 추가 관련 props
   onAddSceneImage?: (sceneIndex: number, imageUrl: string) => void;
   onAddSceneVideo?: (sceneIndex: number, videoUrl: string) => void;
   onUpdateScene?: (sceneIndex: number, updatedScene: Scene) => void;
-  // 씬 추가 관련 props
+  // Scene 추가 관련 props
   onAddScene?: () => void;
   // Generated Video 저장 관련 props
   onSaveNewsVideo?: () => void;
@@ -254,7 +254,7 @@ export default function VideoScenarioList({
           <div className="flex gap-2">
             {onAddScene && (
               <Button onClick={onAddScene} variant="outline" size="sm">
-                씬 추가
+                Scene 추가
               </Button>
             )}
             {onMerge && (
@@ -675,7 +675,7 @@ export default function VideoScenarioList({
         </div>
       )}
 
-      {/* 씬별 미디어 추가 모달 */}
+      {/* Scene별 미디어 추가 모달 */}
       {Object.entries(sceneMediaModals).map(([sceneIndex, modal]) => {
         if (!modal.show) return null;
         const index = parseInt(sceneIndex);
@@ -704,8 +704,8 @@ export default function VideoScenarioList({
                 {modal.type === "image" && (
                   <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-xs text-blue-800">
-                      💡 이미지 추가 시 해당 씬의 프롬프트가 자동으로 "Keep the
-                      image content unchanged and minimize actions."로
+                      💡 이미지 추가 시 해당 Scene의 프롬프트가 자동으로 "Keep
+                      the image content unchanged and minimize actions."로
                       변경됩니다.
                     </p>
                   </div>

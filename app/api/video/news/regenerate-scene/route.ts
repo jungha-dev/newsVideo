@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Scene not found" }, { status: 404 });
     }
 
-    // 기존 씬 비디오 삭제
+    // 기존 Scene 비디오 삭제
     const existingSceneVideos = await db
       .collection("users")
       .doc(user.uid)
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       await doc.ref.delete();
     }
 
-    // 새로운 씬 비디오 생성
+    // 새로운 Scene 비디오 생성
     const sceneVideoRef = await db
       .collection("users")
       .doc(user.uid)
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
       const replicateData = await replicateResponse.json();
       console.log("Replicate API response:", replicateData);
 
-      // 씬 비디오 상태 업데이트
+      // Scene 비디오 상태 업데이트
       await sceneVideoRef.update({
         replicatePredictionId: replicateData.id,
         status: "processing",

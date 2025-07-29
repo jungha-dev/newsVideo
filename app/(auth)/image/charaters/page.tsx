@@ -1263,7 +1263,7 @@ export default function HomePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "카테고리 추가에 실패했습니다.");
+        throw new Error(errorData.error || "카테고리Failed to add.");
       }
 
       const result = await response.json();
@@ -1335,7 +1335,7 @@ export default function HomePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "카테고리 추가에 실패했습니다.");
+        throw new Error(errorData.error || "카테고리Failed to add.");
       }
 
       const result = await response.json();
@@ -1549,7 +1549,7 @@ export default function HomePage() {
       return;
     }
 
-    // 씬별 프롬프트 조합
+    // Scene별 프롬프트 조합
     const combinedPrompt = combineInteriorComicPanels();
     if (!combinedPrompt) {
       return; // combineInteriorComicPanels에서 이미 알림 표시됨
@@ -1611,7 +1611,7 @@ export default function HomePage() {
     }
   };
 
-  // 다중 이미지 씬별 프롬프트 조합
+  // 다중 이미지 Scene별 프롬프트 조합
   const combineInteriorComicPanels = () => {
     const panels = [
       interiorPanel1,
@@ -1622,7 +1622,7 @@ export default function HomePage() {
 
     // 모든 패널이 입력되었는지 확인
     if (panels.some((panel) => !panel.trim())) {
-      alert(`모든 ${interiorComicMode}개 씬을 입력해주세요.`);
+      alert(`모든 ${interiorComicMode}개 Scene을 입력해주세요.`);
       return null;
     }
 
@@ -2324,7 +2324,7 @@ export default function HomePage() {
                         {(panel1 || panel2 || panel3 || panel4) && (
                           <div className="p-3 bg-secondary-light border-1 border-black/5 rounded">
                             <h4 className="font-medium black mb-2">
-                              생성될 프롬프트:
+                              생성될 Prompt :
                             </h4>
                             <p className="text-sm -black">
                               {combineComicPanelsForPreview() ||

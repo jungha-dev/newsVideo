@@ -148,7 +148,7 @@ Please compose the video based on the following blog content:
   );
   const [showPromptSettings, setShowPromptSettings] = useState(false);
 
-  // 직접 씬 추가 관련 상태
+  // 직접 Scene 추가 관련 상태
   const [showManualSceneInput, setShowManualSceneInput] = useState(false);
   const [manualScenes, setManualScenes] = useState<Scene[]>([]);
   const [newSceneImagePrompt, setNewSceneImagePrompt] = useState("");
@@ -444,7 +444,7 @@ Please compose the video based on the following blog content:
     setActiveTab("scenario");
     setSceneCount(2);
     setIsScenarioCollapsed(false);
-    // 직접 씬 추가 관련 초기화
+    // 직접 Scene 추가 관련 초기화
     setShowManualSceneInput(false);
     setManualScenes([]);
     setNewSceneImagePrompt("");
@@ -491,7 +491,7 @@ Please compose the video based on the following blog content:
     setVideoItems((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // 직접 씬 추가 관련 함수들
+  // 직접 Scene 추가 관련 함수들
   const addManualScene = () => {
     if (newSceneImagePrompt.trim() && newSceneNarration.trim()) {
       const newScene: Scene = {
@@ -508,7 +508,7 @@ Please compose the video based on the following blog content:
   const removeManualScene = (index: number) => {
     setManualScenes((prev) => {
       const updatedScenes = prev.filter((_, i) => i !== index);
-      // 씬 번호 재정렬
+      // Scene 번호 재정렬
       return updatedScenes.map((scene, i) => ({
         ...scene,
         scene_number: i + 1,
@@ -523,7 +523,7 @@ Please compose the video based on the following blog content:
         scenario: `${manualScenes.length}This is a manually created video scenario consisting of [number] scenes.`,
         scenes: manualScenes.map((scene, index) => ({
           ...scene,
-          scene_number: index + 1, // 씬 번호를 1부터 시작하도록 보장
+          scene_number: index + 1, // Scene 번호를 1부터 시작하도록 보장
         })),
       };
       setVideoScenario(scenario);
@@ -759,40 +759,6 @@ Please compose the video based on the following blog content:
           {!isScenarioCollapsed && (
             <>
               {/* 탭 네비게이션 */}
-              <div className="border-b border-gray-200 mb-6">
-                <nav className="-mb-px flex space-x-8">
-                  <button
-                    onClick={() => setActiveTab("scenario")}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === "scenario"
-                        ? "border-primary-light text-primary"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    }`}
-                  >
-                    Video Scenario Generation
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("text")}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === "text"
-                        ? "border-primary-light text-primary"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    }`}
-                  >
-                    Text Generation
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("video")}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === "video"
-                        ? "border-primary-light text-primary"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    }`}
-                  >
-                    Veo-3 Video Generation
-                  </button>
-                </nav>
-              </div>
 
               <div className="space-y-6">
                 {/* 텍스트 생성 탭 */}
@@ -957,7 +923,7 @@ Please compose the video based on the following blog content:
                   </div>
                 )}
 
-                {/* 직접 씬 추가 섹션 - 모든 탭에서 보임 */}
+                {/* 직접 Scene 추가 섹션 - 모든 탭에서 보임 */}
                 <div className="border-t pt-4 mt-4">
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-sm font-medium">Add Scenes</h4>
@@ -974,7 +940,7 @@ Please compose the video based on the following blog content:
 
                   {showManualSceneInput && (
                     <div className="space-y-4">
-                      {/* 새 씬 입력 폼 */}
+                      {/* 새 Scene 입력 폼 */}
                       <div className="border rounded-lg p-4 space-y-3">
                         <div>
                           <label className="block text-sm font-medium mb-2">
@@ -1029,7 +995,7 @@ Please compose the video based on the following blog content:
                         </Button>
                       </div>
 
-                      {/* 추가된 씬 목록 */}
+                      {/* 추가된 Scene 목록 */}
                       {manualScenes.length > 0 && (
                         <div className="space-y-3">
                           <h5 className="text-sm font-medium">
@@ -1415,7 +1381,7 @@ Please compose the video based on the following blog content:
                     </p>
                   </div>
 
-                  {/* 씬별 이미지 상태 표시 */}
+                  {/* Scene별 이미지 상태 표시 */}
                   {videoScenario && (
                     <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded">
                       <p className="text-xs font-medium text-blue-800 mb-2">
