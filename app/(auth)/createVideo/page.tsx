@@ -416,7 +416,7 @@ Please compose the video based on the following blog content:
   const handleCopyText = () => {
     if (generatedText) {
       navigator.clipboard.writeText(generatedText);
-      alert("텍스트가 클립보드에 복사되었습니다.");
+      alert("text copied to clipboard.");
     }
   };
 
@@ -1410,8 +1410,8 @@ Please compose the video based on the following blog content:
                       className="w-full"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      씬에 이미지가 추가된 경우 해당 이미지가 자동으로
-                      start_image로 사용됩니다.
+                      If an image is added to a scene, that image will
+                      automatically be used as the start_image.
                     </p>
                   </div>
 
@@ -1419,7 +1419,7 @@ Please compose the video based on the following blog content:
                   {videoScenario && (
                     <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded">
                       <p className="text-xs font-medium text-blue-800 mb-2">
-                        씬별 이미지 상태:
+                        Image status by scene:
                       </p>
                       <div className="space-y-1">
                         {videoScenario.scenes.map((scene, index) => {
@@ -1512,9 +1512,9 @@ Please compose the video based on the following blog content:
                       }) && (
                         <div className="mt-2 p-2 bg-orange-50 border border-orange-200 rounded">
                           <p className="text-xs text-orange-800">
-                            🚨 일부 씬의 이미지가 SSL 보안 문제로
-                            차단되었습니다. 안전한 HTTPS 이미지 URL을
-                            사용해주세요.
+                            🚨 Some scene images have been blocked due to SSL
+                            security issues. Please use a secure HTTPS image
+                            URL.
                           </p>
                         </div>
                       )}
@@ -1568,15 +1568,15 @@ Please compose the video based on the following blog content:
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-green-800 font-medium">
-                      ✅ 뉴스 비디오 생성 완료!
+                      ✅ News video generation complete!
                     </p>
                     <p className="text-green-600 text-sm">
-                      상세 페이지에서 결과를 확인하세요.
+                      Check the results on the details page.
                     </p>
                   </div>
                   <Link href={`/video/createVideo/${currentVideoId}`}>
                     <Button variant="primary" size="sm">
-                      상세 페이지 보기
+                      View Details Page
                     </Button>
                   </Link>
                 </div>

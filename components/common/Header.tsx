@@ -90,7 +90,7 @@ export default function Header() {
     fetchRole();
   }, [user?.uid]);
 
-  // 사용자 프로필 정보 가져오기
+  // Users 프로필 정보 가져오기
   useEffect(() => {
     if (!user?.uid) return;
     const fetchUserProfile = async () => {
@@ -98,15 +98,15 @@ export default function Header() {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          setUserNickname(userData.nickname || user.displayName || "사용자");
+          setUserNickname(userData.nickname || user.displayName || "Users");
           setUserPhotoURL(userData.photoURL || user.photoURL || "");
         } else {
-          setUserNickname(user.displayName || "사용자");
+          setUserNickname(user.displayName || "Users");
           setUserPhotoURL(user.photoURL || "");
         }
       } catch (err) {
         console.error("User profile fetch failed:", err);
-        setUserNickname(user.displayName || "사용자");
+        setUserNickname(user.displayName || "Users");
         setUserPhotoURL(user.photoURL || "");
       }
     };
@@ -243,7 +243,7 @@ export default function Header() {
                     : "text-gray-600 hover:text-black"
                 }`}
               >
-                사용자 관리
+                Users Managing
                 {isActive("/admin/users") && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
                 )}
@@ -293,7 +293,7 @@ export default function Header() {
                       onClick={() => setShowUserDropdown(false)}
                     >
                       <Settings size={16} />
-                      설정
+                      Setting
                     </Link>
                     <button
                       onClick={() => {
@@ -303,7 +303,7 @@ export default function Header() {
                       className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                     >
                       <LogOut size={16} />
-                      로그아웃
+                      Logout
                     </button>
                   </div>
                 </div>

@@ -299,7 +299,7 @@ export default function VideoPreview({
               <button
                 onClick={onEditProject}
                 className="text-gray-400 hover:text-gray-600 text-xl p-1"
-                title="프로젝트 수정"
+                title="Project Settings"
               >
                 ⋯
               </button>
@@ -309,7 +309,7 @@ export default function VideoPreview({
             <div className="flex items-center gap-4 mb-2 text-sm text-gray-600">
               {info.model && (
                 <span>
-                  모델: <span className="font-medium">{info.model}</span>
+                  Model: <span className="font-medium">{info.model}</span>
                 </span>
               )}
               <span
@@ -324,17 +324,17 @@ export default function VideoPreview({
                 }`}
               >
                 {info.status === "completed"
-                  ? "완료"
+                  ? "Completed"
                   : info.status === "processing"
-                  ? "처리중"
+                  ? "Processing"
                   : info.status === "failed"
-                  ? "실패"
-                  : "대기"}
+                  ? "Failed"
+                  : "Pending"}
               </span>
             </div>
           )}
           <p className="text-gray-600">
-            생성일:{" "}
+            Created:{" "}
             {info
               ? new Date(info.createdAt).toLocaleDateString()
               : new Date(projectInfo.created_at).toLocaleDateString()}
@@ -345,13 +345,13 @@ export default function VideoPreview({
         {videos.length > 0 ? (
           <div className="border-t border-secondary pt-4">
             <h3 className="font-medium text-gray-900 mb-2">
-              영상 {currentVideoIndex + 1} / {videos.length}
+              Video {currentVideoIndex + 1} / {videos.length}
             </h3>
 
             {/* 시작 이미지 리스트 */}
             <div className="mb-3">
               <p className="text-xs text-gray-500 mb-2">
-                시작 이미지 선택 (순서 변경 가능):
+                Select Start Image (Reorderable):
               </p>
               <div className="grid grid-cols-5 gap-2 max-h-40 overflow-y-auto">
                 {videos.map((video, index) => {
@@ -368,19 +368,19 @@ export default function VideoPreview({
                         {video.fromImage ? (
                           <img
                             src={video.fromImage}
-                            alt={`시작 이미지 ${index + 1}`}
+                            alt={`Start Image ${index + 1}`}
                             className="w-full h-full object-cover rounded"
                           />
                         ) : videoThumbnails[video.id] ? (
                           <img
                             src={videoThumbnails[video.id]}
-                            alt={`비디오 썸네일 ${index + 1}`}
+                            alt={`Video Thumbnail ${index + 1}`}
                             className="w-full h-full object-cover rounded"
                           />
                         ) : (
                           <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded">
                             <span className="text-gray-500 text-xs">
-                              씬 {index + 1}
+                              Scene {index + 1}
                             </span>
                           </div>
                         )}
@@ -402,7 +402,7 @@ export default function VideoPreview({
                               }}
                               disabled={index === 0}
                               className="bg-blue-500 text-white text-xs p-1 rounded hover:bg-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
-                              title="위로 이동"
+                              title="Move Up"
                             >
                               ↑
                             </button>
@@ -415,7 +415,7 @@ export default function VideoPreview({
                               }}
                               disabled={index === videos.length - 1}
                               className="bg-blue-500 text-white text-xs p-1 rounded hover:bg-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
-                              title="아래로 이동"
+                              title="Move Down"
                             >
                               ↓
                             </button>
@@ -434,28 +434,28 @@ export default function VideoPreview({
                 disabled={currentVideoIndex === 0}
                 className="px-3 py-1 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
               >
-                이전
+                Pre
               </button>
               <button
                 onClick={nextVideo}
                 disabled={currentVideoIndex === videos.length - 1}
                 className="px-3 py-1 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
               >
-                다음
+                Next
               </button>
             </div>
             {/* 자막 설정 및 다운로드 섹션 */}
             {videos.length > 0 && (
               <div className="rounded-lg mt-8">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  자막 설정 및 다운로드
+                  Subtitle Settings and Download
                 </h3>
 
                 {/* 자막 설정 */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      자막 색상:
+                      Description Color:
                     </label>
                     <input
                       type="color"
@@ -467,7 +467,7 @@ export default function VideoPreview({
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      자막 스타일:
+                      Subtitle Style:
                     </label>
                     <div className="flex gap-4">
                       <label className="flex items-center">
@@ -478,7 +478,7 @@ export default function VideoPreview({
                           onChange={() => onSubtitleStyleChange?.("box")}
                           className="mr-2"
                         />
-                        <span className="text-sm">배경</span>
+                        <span className="text-sm">Background</span>
                       </label>
                       <label className="flex items-center">
                         <input
@@ -488,14 +488,14 @@ export default function VideoPreview({
                           onChange={() => onSubtitleStyleChange?.("outline")}
                           className="mr-2"
                         />
-                        <span className="text-sm">테두리</span>
+                        <span className="text-sm">Outline</span>
                       </label>
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      자막 표시:
+                      Show Subtitles:
                     </label>
                     <label className="flex items-center">
                       <input
@@ -506,7 +506,7 @@ export default function VideoPreview({
                         }
                         className="mr-2"
                       />
-                      <span className="text-sm">자막 표시</span>
+                      <span className="text-sm">Show Subtitles</span>
                     </label>
                   </div>
                 </div>
@@ -515,7 +515,7 @@ export default function VideoPreview({
                 {mergedVideoUrl && (
                   <div className="my-4">
                     <h4 className="text-md font-medium text-gray-900 mb-2">
-                      병합된 영상 프리뷰
+                      Merged Video Preview
                     </h4>
                     <div className="bg-black rounded-lg overflow-hidden">
                       <video
@@ -536,7 +536,7 @@ export default function VideoPreview({
                     disabled={isMerging}
                     className="flex-1 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    {isMerging ? "병합 중..." : "영상 병합 및 다운로드"}
+                    {isMerging ? "Merging..." : "Merge and Download Video"}
                   </button>
                   {mergedVideoUrl && (
                     <button
@@ -554,7 +554,7 @@ export default function VideoPreview({
                     <div className="flex items-center mb-2">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
                       <span className="text-sm text-blue-700">
-                        {mergeProgress || "영상을 병합하고 있습니다..."}
+                        {mergeProgress || "Merging Videos..."}
                       </span>
                     </div>
                     {mergeProgressMessages.length > 0 && (
@@ -576,10 +576,10 @@ export default function VideoPreview({
             <div className="text-center py-8">
               <div className="text-4xl mb-2">🎬</div>
               <p className="text-gray-600 text-sm">
-                아직 생성된 영상이 없습니다.
+                No videos have been generated yet.
               </p>
               <p className="text-gray-500 text-xs mt-1">
-                영상 추가 버튼을 클릭하여 첫 번째 영상을 생성하세요.
+                Click the "Add Video" button to create your first video.
               </p>
             </div>
           </div>
@@ -691,7 +691,7 @@ export default function VideoPreview({
           <div className="flex-1 flex items-center justify-center text-gray-400">
             <div className="text-center">
               <div className="text-6xl mb-4">🎬</div>
-              <p>영상을 생성해주세요</p>
+              <p>Please generate a video</p>
             </div>
           </div>
         )}
