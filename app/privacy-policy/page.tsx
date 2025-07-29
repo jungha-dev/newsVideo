@@ -15,7 +15,7 @@ export default function PrivacyPolicyPage() {
             </h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                후그르(HooGrr)는 다음과 같은 목적으로 개인정보를 수집하고
+                팔레트(Palette)는 다음과 같은 목적으로 개인정보를 수집하고
                 이용합니다:
               </p>
               <ul className="list-disc pl-6 space-y-2">
@@ -98,7 +98,7 @@ export default function PrivacyPolicyPage() {
             </h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                후그르(HooGrr)는 원칙적으로 개인정보를 제3자에게 제공하지
+                팔레트(Palette)는 원칙적으로 개인정보를 제3자에게 제공하지
                 않습니다. 다만, 다음의 경우에는 예외로 합니다:
               </p>
               <ul className="list-disc pl-6 space-y-2">
@@ -208,10 +208,10 @@ export default function PrivacyPolicyPage() {
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p>
-                  <strong>후그르(HooGrr)</strong>
+                  <strong>팔레트(Palette)</strong>
                 </p>
                 <p>이메일: ingingteam@gmail.com</p>
-                <p>웹사이트: https://lab.hoogrr.com</p>
+                <p>웹사이트: https://lab.palette.com</p>
               </div>
             </div>
           </section>

@@ -6,18 +6,18 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import FacebookSDK from "../components/FacebookSDK";
 
 export const metadata = {
-  title: "후그르(HooGrr)",
+  title: "팔레트(Palette)",
   description: "콘텐츠 제작 플랫폼",
-  keywords: ["AI 영상", "콘텐츠 자동화", "블로그", "Blog", "hoogrr"],
-  authors: [{ name: "HooGrr" }],
+  keywords: ["AI 영상", "콘텐츠 자동화", "블로그", "Blog", "Palette"],
+  authors: [{ name: "Palette" }],
   openGraph: {
-    title: "후그르(HooGrr)",
-    description: "콘텐츠 실험실 - lab.hoogrr.com",
-    url: "https://lab.hoogrr.com",
-    siteName: "후그르(HooGrr)",
+    title: "팔레트(Palette)",
+    description: "콘텐츠 실험실 - lab.palette.com",
+    url: "https://lab.palette.com",
+    siteName: "팔레트(Palette)",
     images: [
       {
-        url: "https://lab.hoogrr.com/og-image.png",
+        url: "https://lab.palette.com/og-image.png",
         width: 1200,
         height: 630,
       },
@@ -27,9 +27,9 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "후그르(HooGrr)",
-    description: "AI로 만드는 콘텐츠 실험실 - hoogrr.com",
-    images: ["https://lab.hoogrr.com/og-image.png"],
+    title: "팔레트(Palette)",
+    description: "AI로 만드는 콘텐츠 실험실 - palette.com",
+    images: ["https://lab.palette.com/og-image.png"],
   },
 };
 

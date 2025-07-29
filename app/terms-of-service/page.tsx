@@ -14,8 +14,8 @@ export default function TermsOfServicePage() {
           </h2>
           <div className="space-y-4 text-gray-700">
             <p>
-              후그르(HooGrr)는 AI 기술을 활용한 이미지 생성 및 블로그 서비스를
-              제공합니다. 본 약관은 후그르(HooGrr) 서비스 이용에 관한 조건 및
+              팔레트(Palette)는 AI 기술을 활용한 이미지 생성 및 블로그 서비스를
+              제공합니다. 본 약관은 팔레트(Palette) 서비스 이용에 관한 조건 및
               절차, 당사와 이용자의 권리, 의무, 책임사항을 규정합니다.
             </p>
             <ul className="list-disc pl-6 space-y-2">
@@ -104,7 +104,7 @@ export default function TermsOfServicePage() {
               4.1 서비스의 지적재산권
             </h3>
             <p>
-              후그르(HooGrr) 서비스와 관련된 모든 지적재산권은 당사에
+              팔레트(Palette) 서비스와 관련된 모든 지적재산권은 당사에
               귀속됩니다. 이용자는 서비스를 통해 생성된 콘텐츠에 대한 권리를
               가지지만, 서비스 자체의 지적재산권은 당사에 있습니다.
             </p>
@@ -210,7 +210,7 @@ export default function TermsOfServicePage() {
                 <strong>문의사항</strong>
               </p>
               <p>이메일: ingingteam@gmail.com</p>
-              <p>웹사이트: https://lab.hoogrr.com</p>
+              <p>웹사이트: https://lab.palette.com</p>
             </div>
           </div>
         </section>

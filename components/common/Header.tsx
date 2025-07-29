@@ -163,7 +163,7 @@ export default function Header() {
             href="/"
             className="text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors"
           >
-            HooGrr
+            Palette
           </Link>
 
           {/* ───── 네비게이션 메뉴 ───── */}

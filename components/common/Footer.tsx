@@ -10,12 +10,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* 서비스 정보 */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">후그르(Hoogrr)</h3>
+            <h3 className="text-lg font-semibold mb-4">팔레트(Palette)</h3>
             <p className="text-gray-300 text-sm">
               AI 기반 이미지 생성 및 블로그 서비스
             </p>
             <p className="text-gray-400 text-xs mt-2">
-              © 2024 후그르(HooGrr). All rights reserved.
+              © 2024 팔레트(Palette). All rights reserved.
             </p>
           </div>
 
