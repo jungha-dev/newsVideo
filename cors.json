@@ -1,12 +1,6 @@
 [
   {
-    "origin": [
-      "http://localhost:3000",
-      "https://www.lab.hoogrr.com",
-      "https://lab.hoogrr.com",
-      "https://www.dev-lab.hoogrr.com",
-      "https://dev-lab.hoogrr.com"
-    ],
+    "origin": ["http://localhost:3000", "https://news-video.vercel.app"],
     "method": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     "maxAgeSeconds": 3600,
     "responseHeader": [
