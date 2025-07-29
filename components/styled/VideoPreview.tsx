@@ -287,7 +287,7 @@ export default function VideoPreview({
   }, [videos, generateVideoThumbnail]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[600px]">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* 왼쪽: 프로젝트 정보 */}
       <div className="bg-gray-50 rounded-lg p-6 space-y-4">
         <div>
@@ -444,6 +444,132 @@ export default function VideoPreview({
                 다음
               </button>
             </div>
+            {/* 자막 설정 및 다운로드 섹션 */}
+            {videos.length > 0 && (
+              <div className="rounded-lg mt-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  자막 설정 및 다운로드
+                </h3>
+
+                {/* 자막 설정 */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      자막 색상:
+                    </label>
+                    <input
+                      type="color"
+                      value={subtitleColor}
+                      onChange={(e) => onSubtitleColorChange?.(e.target.value)}
+                      className="w-full h-10 border border-gray-300 rounded-md"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      자막 스타일:
+                    </label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="box"
+                          checked={subtitleStyle === "box"}
+                          onChange={() => onSubtitleStyleChange?.("box")}
+                          className="mr-2"
+                        />
+                        <span className="text-sm">배경</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="outline"
+                          checked={subtitleStyle === "outline"}
+                          onChange={() => onSubtitleStyleChange?.("outline")}
+                          className="mr-2"
+                        />
+                        <span className="text-sm">테두리</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      자막 표시:
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={showSubtitles}
+                        onChange={(e) =>
+                          onShowSubtitlesChange?.(e.target.checked)
+                        }
+                        className="mr-2"
+                      />
+                      <span className="text-sm">자막 표시</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* 병합된 영상 프리뷰 */}
+                {mergedVideoUrl && (
+                  <div className="my-4">
+                    <h4 className="text-md font-medium text-gray-900 mb-2">
+                      병합된 영상 프리뷰
+                    </h4>
+                    <div className="bg-black rounded-lg overflow-hidden">
+                      <video
+                        src={mergedVideoUrl}
+                        controls
+                        className="w-full h-auto"
+                        onError={(e) => {
+                          console.error("병합된 영상 로드 실패:", e);
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+                {/* 다운로드 버튼 */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={onMergeAndDownload}
+                    disabled={isMerging}
+                    className="flex-1 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isMerging ? "병합 중..." : "영상 병합 및 다운로드"}
+                  </button>
+                  {mergedVideoUrl && (
+                    <button
+                      onClick={onDownload}
+                      className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                    >
+                      다운로드
+                    </button>
+                  )}
+                </div>
+
+                {/* 병합 진행 상태 */}
+                {isMerging && (
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <div className="flex items-center mb-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                      <span className="text-sm text-blue-700">
+                        {mergeProgress || "영상을 병합하고 있습니다..."}
+                      </span>
+                    </div>
+                    {mergeProgressMessages.length > 0 && (
+                      <div className="mt-2 max-h-32 overflow-y-auto bg-white p-2 rounded text-xs border">
+                        {mergeProgressMessages.map((msg, index) => (
+                          <div key={index} className="text-gray-600 mb-1">
+                            {msg}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div className="border-t pt-4">
@@ -567,132 +693,6 @@ export default function VideoPreview({
               <div className="text-6xl mb-4">🎬</div>
               <p>영상을 생성해주세요</p>
             </div>
-          </div>
-        )}
-
-        {/* 자막 설정 및 다운로드 섹션 */}
-        {videos.length > 0 && (
-          <div className="rounded-lg mt-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              자막 설정 및 다운로드
-            </h3>
-
-            {/* 자막 설정 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  자막 색상:
-                </label>
-                <input
-                  type="color"
-                  value={subtitleColor}
-                  onChange={(e) => onSubtitleColorChange?.(e.target.value)}
-                  className="w-full h-10 border border-gray-300 rounded-md"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  자막 스타일:
-                </label>
-                <div className="flex gap-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="box"
-                      checked={subtitleStyle === "box"}
-                      onChange={() => onSubtitleStyleChange?.("box")}
-                      className="mr-2"
-                    />
-                    <span className="text-sm">배경</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="outline"
-                      checked={subtitleStyle === "outline"}
-                      onChange={() => onSubtitleStyleChange?.("outline")}
-                      className="mr-2"
-                    />
-                    <span className="text-sm">테두리</span>
-                  </label>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  자막 표시:
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={showSubtitles}
-                    onChange={(e) => onShowSubtitlesChange?.(e.target.checked)}
-                    className="mr-2"
-                  />
-                  <span className="text-sm">자막 표시</span>
-                </label>
-              </div>
-            </div>
-
-            {/* 다운로드 버튼 */}
-            <div className="flex gap-2">
-              <button
-                onClick={onMergeAndDownload}
-                disabled={isMerging}
-                className="flex-1 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isMerging ? "병합 중..." : "영상 병합 및 다운로드"}
-              </button>
-              {mergedVideoUrl && (
-                <button
-                  onClick={onDownload}
-                  className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
-                >
-                  📥 다운로드
-                </button>
-              )}
-            </div>
-
-            {/* 병합 진행 상태 */}
-            {isMerging && (
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <div className="flex items-center mb-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                  <span className="text-sm text-blue-700">
-                    {mergeProgress || "영상을 병합하고 있습니다..."}
-                  </span>
-                </div>
-                {mergeProgressMessages.length > 0 && (
-                  <div className="mt-2 max-h-32 overflow-y-auto bg-white p-2 rounded text-xs border">
-                    {mergeProgressMessages.map((msg, index) => (
-                      <div key={index} className="text-gray-600 mb-1">
-                        {msg}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* 병합된 영상 프리뷰 */}
-            {mergedVideoUrl && (
-              <div className="mt-4">
-                <h4 className="text-md font-medium text-gray-900 mb-2">
-                  병합된 영상 프리뷰
-                </h4>
-                <div className="bg-black rounded-lg overflow-hidden">
-                  <video
-                    src={mergedVideoUrl}
-                    controls
-                    className="w-full h-auto"
-                    onError={(e) => {
-                      console.error("병합된 영상 로드 실패:", e);
-                    }}
-                  />
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
