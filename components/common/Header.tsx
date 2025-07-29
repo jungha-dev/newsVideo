@@ -8,7 +8,6 @@ import { auth, db } from "@/lib/firebase";
 import { useRouter, usePathname } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import GoogleLoginButton from "@/components/GoogleLoginButton";
-import FacebookLoginButton from "@/components/FacebookLoginButton";
 import { Settings, LogOut, User } from "lucide-react";
 
 type MenuGroup = {
@@ -18,52 +17,47 @@ type MenuGroup = {
 };
 
 const MENUS: MenuGroup[] = [
-  {
-    id: "image",
-    label: "Image",
-    items: [
-      { href: "/image/charaters", label: "Create" },
-      { href: "/image/generated-img", label: "CharacterList" },
-    ],
-  },
-  {
-    id: "video",
-    label: "Video",
-    items: [
-      { href: "/video/multi-generate", label: "Generate" },
-      {
-        href: "/video/kling-v1-6-pro/connected-videos",
-        label: "Connected Videos",
-      },
-      { href: "/video/merge", label: "Merge" },
-      { href: "/video/my-create/video-group", label: "My Create" },
-      { href: "/video/news", label: "News Videos" },
-    ],
-  },
-  {
-    id: "blog",
-    label: "Blog",
-    items: [
-      { href: "/blog/blog", label: "Blog" },
-      { href: "/blog/blogNotion", label: "Notion Blog" },
-      { href: "/blog/blogGoogle", label: "Google Blog" },
-    ],
-  },
-  {
-    id: "tools",
-    label: "Tools",
-    items: [
-      { href: "/crawler", label: "Crawler" },
-      { href: "/news", label: "News" },
-    ],
-  },
+  // {
+  //   id: "image",
+  //   label: "Image",
+  //   items: [
+  //     { href: "/image/charaters", label: "Create" },
+  //     { href: "/image/generated-img", label: "CharacterList" },
+  //   ],
+  // },
+  // {
+  //   id: "video",
+  //   label: "Video",
+  //   items: [
+  //     { href: "/video/multi-generate", label: "Generate" },
+  //     {
+  //       href: "/video/kling-v1-6-pro/connected-videos",
+  //       label: "Connected Videos",
+  //     },
+  //     { href: "/video/merge", label: "Merge" },
+  //     { href: "/video/my-create/video-group", label: "My Create" },
+  //     { href: "/video/news", label: "News Videos" },
+  //   ],
+  // },
+  // {
+  //   id: "tools",
+  //   label: "Tools",
+  //   items: [
+  //     { href: "/crawler", label: "Crawler" },
+  //     { href: "/news", label: "News" },
+  //   ],
+  // },
 ];
 
 // 단순 링크 메뉴 (드롭다운 없음)
 const SIMPLE_LINKS = [
   {
-    href: "/video/kling-v1-6-pro/projects",
-    label: "AniVideo",
+    href: "/news",
+    label: "News",
+  },
+  {
+    href: "/video/news",
+    label: "News Videos",
   },
 ];
 
@@ -318,7 +312,6 @@ export default function Header() {
           ) : (
             <div className="flex items-center gap-2">
               <GoogleLoginButton />
-              <FacebookLoginButton />
             </div>
           )}
         </div>

@@ -3,7 +3,6 @@ import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import { ReactNode } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
-import FacebookSDK from "../components/FacebookSDK";
 
 export const metadata = {
   title: "팔레트(Palette)",
@@ -38,7 +37,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="ko">
       <body className="bg-white text-gray-900">
         <AuthProvider>
-          <FacebookSDK />
           <Header />
           <main className="min-h-screen">{children}</main>
           <Footer />
