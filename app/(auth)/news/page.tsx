@@ -353,7 +353,7 @@ Please compose the video based on the following blog content:
     // 확인 팝업 표시
     setConfirmModalData({
       title: "비디오 생성 확인",
-      message: `선택된 모델: ${
+      message: `SelectedVideoModel: ${
         selectedVideoModel === "veo-3"
           ? "Veo-3 (Google)"
           : selectedVideoModel === "kling-v2"
