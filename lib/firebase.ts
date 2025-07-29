@@ -85,7 +85,7 @@ console.log("기존 Firebase 앱 수:", getApps().length);
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 console.log("Firebase 앱 초기화 완료:", app.name);
 
-export const db = getFirestore(app);
+export const db = getFirestore(app, "news-video");
 export const storage = getStorage(app);
 export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();

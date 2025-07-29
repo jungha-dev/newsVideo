@@ -25,10 +25,6 @@ const extractStoragePath = (url: string): string | null => {
       pathSegments[4] === "o"
     ) {
       const extractedPath = decodeURIComponent(pathSegments.slice(5).join("/"));
-
-      // 새로운 구조와 기존 구조 모두 지원
-      // 새로운 구조: users/{userId}/uploads/videos/...
-      // 기존 구조: videos/{taskId}.mp4
       return extractedPath;
     }
 
