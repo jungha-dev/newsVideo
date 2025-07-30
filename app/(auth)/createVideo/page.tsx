@@ -1287,7 +1287,9 @@ Please compose the video based on the following blog content:
                   size="md"
                   className="w-54 mb-6"
                 >
-                  {isVideoModelDetailsCollapsed ? "세부설정 보기" : "접기"}
+                  {isVideoModelDetailsCollapsed
+                    ? "View settings"
+                    : "Close settings"}
                   <svg
                     className={`w-4 h-4 ml-2 transition-transform ${
                       isVideoModelDetailsCollapsed ? "" : "rotate-180"
