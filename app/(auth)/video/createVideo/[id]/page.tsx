@@ -316,7 +316,7 @@ export default function NewsVideoDetailPage() {
     setError("");
 
     try {
-      // Scene 추가 시작 플래그 설정
+      // Add Scenes 시작 플래그 설정
       isRegeneratingRef.current = true;
 
       const response = await fetch(`/api/video/news/generate`, {
@@ -334,7 +334,7 @@ export default function NewsVideoDetailPage() {
               imageUrl: addSceneForm.imageUrl.trim() || "",
             },
           ],
-          isAddScene: true, // 새로운 Scene 추가 플래그
+          isAddScene: true, // 새로운 Add Scenes 플래그
           title: video.title, // 기존 비디오 제목
           prompts: [addSceneForm.image_prompt.trim()], // 임시 값
           narrations: [addSceneForm.narration.trim()], // 임시 값
@@ -769,7 +769,7 @@ export default function NewsVideoDetailPage() {
                 size="sm"
                 className="text-xs"
               >
-                Scene 추가
+                Add Scenes
               </Button>
             </div>
           </div>
@@ -979,7 +979,7 @@ export default function NewsVideoDetailPage() {
               </div>
             )}
 
-            {/* Scene 추가 폼 */}
+            {/* Add Scenes 폼 */}
             {showAddSceneForm && (
               <div className="border rounded-lg p-3 transition-colors border-green-300 bg-green-50">
                 <div className="flex items-center justify-between mb-3">
@@ -1062,7 +1062,7 @@ export default function NewsVideoDetailPage() {
                         isAddingScene
                       }
                     >
-                      {isAddingScene ? "추가 중..." : "Scene 추가"}
+                      {isAddingScene ? "추가 중..." : "Add Scenes"}
                     </Button>
                     <Button
                       onClick={handleCancelAddScene}

@@ -152,7 +152,7 @@ Please compose the video based on the following blog content:
   );
   const [showPromptSettings, setShowPromptSettings] = useState(false);
 
-  // 직접 Scene 추가 관련 상태
+  // 직접 Add Scenes 관련 상태
   const [showManualSceneInput, setShowManualSceneInput] = useState(false);
   const [manualScenes, setManualScenes] = useState<Scene[]>([]);
   const [newSceneImagePrompt, setNewSceneImagePrompt] = useState("");
@@ -448,7 +448,7 @@ Please compose the video based on the following blog content:
     setActiveTab("scenario");
     setSceneCount(2);
     setIsScenarioCollapsed(false);
-    // 직접 Scene 추가 관련 초기화
+    // 직접 Add Scenes 관련 초기화
     setShowManualSceneInput(false);
     setManualScenes([]);
     setNewSceneImagePrompt("");
@@ -495,7 +495,7 @@ Please compose the video based on the following blog content:
     setVideoItems((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // 직접 Scene 추가 관련 함수들
+  // 직접 Add Scenes 관련 함수들
   const addManualScene = () => {
     if (newSceneImagePrompt.trim() && newSceneNarration.trim()) {
       const newScene: Scene = {
@@ -919,7 +919,6 @@ Please compose the video based on the following blog content:
                                 DEFAULT_SYSTEM_PROMPT_TEMPLATE
                               );
                             }}
-                            variant="outline"
                             size="sm"
                           >
                             Reset
@@ -939,7 +938,7 @@ Please compose the video based on the following blog content:
                   </div>
                 )}
 
-                {/* 직접 Scene 추가 섹션 - 시나리오가 생성된 후에만 보임 */}
+                {/* 직접 Add Scenes 섹션 - 시나리오가 생성된 후에만 보임 */}
                 {videoScenario && (
                   <div className="border-t pt-4 mt-4">
                     <div className="flex items-center justify-between mb-4">

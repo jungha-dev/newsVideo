@@ -18,8 +18,8 @@ interface NewsVideoRequest {
   aspectRatio: string;
   duration: number;
   veo3Resolution?: "720p" | "1080p";
-  videoId?: string; // 기존 비디오 ID (Scene 추가 시)
-  isAddScene?: boolean; // Scene 추가 플래그
+  videoId?: string; // 기존 비디오 ID (Add Scenes 시)
+  isAddScene?: boolean; // Add Scenes 플래그
 }
 
 export async function POST(request: NextRequest) {
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     // 유효성 검사
     if (isAddScene && existingVideoId) {
-      // Scene 추가 시 유효성 검사
+      // Add Scenes 시 유효성 검사
       if (!scenes || scenes.length === 0) {
         return NextResponse.json(
           { error: "At least one scene is required" },
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     const videoId = existingVideoId || uuidv4();
 
     if (isAddScene && existingVideoId) {
-      // 기존 비디오에 Scene 추가
+      // 기존 비디오에 Add Scenes
       const existingVideoRef = db
         .collection("users")
         .doc(uid)
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
       const currentScenes = existingVideoData.scenes || [];
       const newSceneNumber = currentScenes.length + 1;
 
-      // 새 Scene 추가
+      // 새 Add Scenes
       const newScene = {
         ...scenes[0], // 첫 번째 Scene만 사용
         scene_number: newSceneNumber,

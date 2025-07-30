@@ -47,7 +47,7 @@ interface VideoScenarioListProps {
   onAddSceneImage?: (sceneIndex: number, imageUrl: string) => void;
   onAddSceneVideo?: (sceneIndex: number, videoUrl: string) => void;
   onUpdateScene?: (sceneIndex: number, updatedScene: Scene) => void;
-  // Scene 추가 관련 props
+  // Add Scenes 관련 props
   onAddScene?: () => void;
   // Generated Video 저장 관련 props
   onSaveNewsVideo?: () => void;
@@ -254,7 +254,7 @@ export default function VideoScenarioList({
           <div className="flex gap-2">
             {onAddScene && (
               <Button onClick={onAddScene} variant="outline" size="sm">
-                Scene 추가
+                Add Scenes
               </Button>
             )}
             {onMerge && (
