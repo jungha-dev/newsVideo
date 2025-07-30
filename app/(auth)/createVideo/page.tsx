@@ -56,31 +56,35 @@ export default function NewsPage() {
 
   // 기본 프롬프트 템플릿 상수
   const DEFAULT_BLOG_PROMPT_TEMPLATE = `Below is the blog content.
-Please generate 1-minute video script in **English** based on this content.
+Please generate a video script in **English** based on this content.
 
 Requirements:
-- 1-minute video scenario
-- Total of {sceneCount} scenes (e.g., 6)
+- Video length = {sceneCount} scenes × 5 seconds each (total {sceneCount * 5} seconds)
+- Total of {sceneCount} scenes
 - For each scene:
-  • Image prompt (for AI video generation) — include visual elements such as camera angle, composition, mood, or environment  
-  • Narration sentence (for video audio) — short and emotionally resonant  
+  • Image prompt (for AI video generation) — include:
+      - Camera angle and camera movement (e.g., dolly, pan, tracking shot)
+      - Composition and visual details (environment, mood, lighting)
+      - Subject movement (what the people or objects are doing)
+      - Transition hint to the next scene for natural flow
+  • Narration sentence (for video audio) — short and emotionally resonant
 - Ensure the scenes transition naturally and form a cohesive storyline.
 - Please output the result in the JSON format example below.
 - Keep the visual tone consistent (e.g., warm, cinematic, minimalistic) across all scenes.
 
 [Example Output Format]
 {
-  "title": "Video Title",
-  "scenario": "Summary of the overall video flow in 1-2 sentences.",
+  "title": "Morning Journey",
+  "scenario": "A calming start to the day that gradually builds into an inspiring journey through city life.",
   "scenes": [
     {
       "scene_number": 1,
-      "image_prompt": "Low-angle shot of a woman drinking coffee by a sunny window. Warm tone, elegant and cozy mood.",
+      "image_prompt": "Low-angle dolly-in shot of a woman slowly lifting a coffee cup by a sunlit window, steam rising, warm cinematic tone, soft focus background, natural morning light, subtle camera movement forward.",
       "narration": "The day begins with a warm cup of coffee."
     },
     {
       "scene_number": 2,
-      "image_prompt": "Side-tracking shot of people commuting through a busy city street. Morning light, business suits, bustling atmosphere.",
+      "image_prompt": "Side-tracking shot following a man walking through a bustling city street, morning sunlight reflecting on glass buildings, people passing by in motion blur, smooth tracking camera movement, transition fade toward next scene.",
       "narration": "Even in busy daily life, we move forward toward our dreams."
     }
   ]
@@ -724,10 +728,7 @@ Please compose the video based on the following blog content:
 
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
         {/* 입력 섹션 */}
-        <Section
-          variant="underline"
-          className={isScenarioCollapsed ? "!mb-0 !pb-0" : ""}
-        >
+        <Section className={isScenarioCollapsed ? "!mb-0 !pb-0" : ""}>
           <div className="flex items-center justify-between pb-4">
             <h2 className="text-xl font-semibold">Input Settings</h2>
             {videoScenario && (
@@ -825,28 +826,42 @@ Please compose the video based on the following blog content:
                           (_, i) => i + 1
                         ).map((num) => ({
                           value: num.toString(),
-                          label: `${num} scenes (${Math.round(
-                            60 / num
-                          )}s each)`,
+                          label: `${num} scenes (${num * 5}s total)`,
                         }))}
                         className="w-full"
                       />
                     </div>
 
-                    {/* 프롬프트 설정 버튼 */}
-                    <div className="border-t pt-4">
+                    <div className="pt-4 flex gap-2">
                       <Button
                         onClick={() =>
                           setShowPromptSettings(!showPromptSettings)
                         }
-                        variant="normal"
+                        variant="secondary"
                         size="sm"
-                        className="w-full"
+                        className="flex-1"
                       >
                         {showPromptSettings
                           ? "prompt settings close"
                           : "prompt settings open"}
                       </Button>
+                      {(prompt.trim() ||
+                        systemPrompt.trim() ||
+                        blogContent.trim() ||
+                        videoPrompt.trim() ||
+                        generatedText ||
+                        videoScenario ||
+                        generatedVideoUrl ||
+                        manualScenes.length > 0) && (
+                        <Button
+                          onClick={handleClear}
+                          variant="secondary"
+                          size="sm"
+                          className="flex-1"
+                        >
+                          Clear All
+                        </Button>
+                      )}
                     </div>
 
                     {/* 프롬프트 설정 섹션 */}
@@ -914,6 +929,7 @@ Please compose the video based on the following blog content:
                     )}
 
                     <Button
+                      variant="primary"
                       onClick={handleGenerateScenario}
                       disabled={loading || !blogContent.trim()}
                       className="w-full"
@@ -923,136 +939,138 @@ Please compose the video based on the following blog content:
                   </div>
                 )}
 
-                {/* 직접 Scene 추가 섹션 - 모든 탭에서 보임 */}
-                <div className="border-t pt-4 mt-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-sm font-medium">Add Scenes</h4>
-                    <Button
-                      onClick={() =>
-                        setShowManualSceneInput(!showManualSceneInput)
-                      }
-                      variant="normal"
-                      size="sm"
-                    >
-                      {showManualSceneInput ? "Collapse" : "Add Scene"}
-                    </Button>
-                  </div>
+                {/* 직접 Scene 추가 섹션 - 시나리오가 생성된 후에만 보임 */}
+                {videoScenario && (
+                  <div className="border-t pt-4 mt-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-sm font-medium">Add Scenes</h4>
+                      <Button
+                        onClick={() =>
+                          setShowManualSceneInput(!showManualSceneInput)
+                        }
+                        variant="normal"
+                        size="sm"
+                      >
+                        {showManualSceneInput ? "Collapse" : "Add Scene"}
+                      </Button>
+                    </div>
 
-                  {showManualSceneInput && (
-                    <div className="space-y-4">
-                      {/* 새 Scene 입력 폼 */}
-                      <div className="border rounded-lg p-4 space-y-3">
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Image Prompt
-                          </label>
-                          <Textarea
-                            value={newSceneImagePrompt}
-                            onChange={(e) =>
-                              setNewSceneImagePrompt(e.target.value)
-                            }
-                            placeholder="이미지 프롬프트를 입력하세요 (예: A woman drinking coffee by a sunny window. Warm tone, elegant feeling.)"
-                            rows={3}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Narration
-                          </label>
-                          <Textarea
-                            value={newSceneNarration}
-                            onChange={(e) =>
-                              setNewSceneNarration(e.target.value)
-                            }
-                            placeholder="나레이션을 입력하세요 (예: The day begins with a warm cup of coffee.)"
-                            rows={2}
-                          />
-                        </div>
-
-                        <Button
-                          onClick={() => {
-                            addManualScene();
-                            // 입력 필드에 포커스 다시 설정
-                            setTimeout(() => {
-                              const imagePromptInput = document.querySelector(
-                                'textarea[placeholder*="이미지 프롬프트"]'
-                              ) as HTMLTextAreaElement;
-                              if (imagePromptInput) {
-                                imagePromptInput.focus();
+                    {showManualSceneInput && (
+                      <div className="space-y-4">
+                        {/* 새 Scene 입력 폼 */}
+                        <div className="border rounded-lg p-4 space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium mb-2">
+                              Image Prompt
+                            </label>
+                            <Textarea
+                              value={newSceneImagePrompt}
+                              onChange={(e) =>
+                                setNewSceneImagePrompt(e.target.value)
                               }
-                            }, 100);
-                          }}
-                          disabled={
-                            !newSceneImagePrompt.trim() ||
-                            !newSceneNarration.trim()
-                          }
-                          variant="primary"
-                          size="sm"
-                          className="w-full"
-                        >
-                          Add Scene
-                        </Button>
-                      </div>
+                              placeholder="이미지 프롬프트를 입력하세요 (예: A woman drinking coffee by a sunny window. Warm tone, elegant feeling.)"
+                              rows={3}
+                            />
+                          </div>
 
-                      {/* 추가된 Scene 목록 */}
-                      {manualScenes.length > 0 && (
-                        <div className="space-y-3">
-                          <h5 className="text-sm font-medium">
-                            Added Scenes ({manualScenes.length})
-                          </h5>
-                          <div className="space-y-3">
-                            {manualScenes.map((scene, index) => (
-                              <div
-                                key={index}
-                                className="bg-gray-50 border rounded-lg p-3"
-                              >
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className="text-sm font-medium text-gray-700">
-                                    Scene {scene.scene_number}
-                                  </span>
-                                  <button
-                                    onClick={() => removeManualScene(index)}
-                                    className="text-red-500 hover:text-red-700 text-sm"
-                                  >
-                                    Delete
-                                  </button>
-                                </div>
-                                <div className="space-y-2">
-                                  <div>
-                                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                                      Image Prompt
-                                    </label>
-                                    <p className="text-xs text-gray-800 bg-white p-2 rounded border">
-                                      {scene.image_prompt}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                                      Narration
-                                    </label>
-                                    <p className="text-xs text-gray-800 bg-white p-2 rounded border">
-                                      {scene.narration}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
+                          <div>
+                            <label className="block text-sm font-medium mb-2">
+                              Narration
+                            </label>
+                            <Textarea
+                              value={newSceneNarration}
+                              onChange={(e) =>
+                                setNewSceneNarration(e.target.value)
+                              }
+                              placeholder="나레이션을 입력하세요 (예: The day begins with a warm cup of coffee.)"
+                              rows={2}
+                            />
                           </div>
 
                           <Button
-                            onClick={createManualVideoScenario}
-                            disabled={manualScenes.length === 0}
+                            onClick={() => {
+                              addManualScene();
+                              // 입력 필드에 포커스 다시 설정
+                              setTimeout(() => {
+                                const imagePromptInput = document.querySelector(
+                                  'textarea[placeholder*="이미지 프롬프트"]'
+                                ) as HTMLTextAreaElement;
+                                if (imagePromptInput) {
+                                  imagePromptInput.focus();
+                                }
+                              }, 100);
+                            }}
+                            disabled={
+                              !newSceneImagePrompt.trim() ||
+                              !newSceneNarration.trim()
+                            }
                             variant="primary"
+                            size="sm"
                             className="w-full"
                           >
-                            Generate Scenario ({manualScenes.length} scenes)
+                            Add Scene
                           </Button>
                         </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+
+                        {/* 추가된 Scene 목록 */}
+                        {manualScenes.length > 0 && (
+                          <div className="space-y-3">
+                            <h5 className="text-sm font-medium">
+                              Added Scenes ({manualScenes.length})
+                            </h5>
+                            <div className="space-y-3">
+                              {manualScenes.map((scene, index) => (
+                                <div
+                                  key={index}
+                                  className="bg-gray-50 border rounded-lg p-3"
+                                >
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-gray-700">
+                                      Scene {scene.scene_number}
+                                    </span>
+                                    <button
+                                      onClick={() => removeManualScene(index)}
+                                      className="text-red-500 hover:text-red-700 text-sm"
+                                    >
+                                      Delete
+                                    </button>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <div>
+                                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                                        Image Prompt
+                                      </label>
+                                      <p className="text-xs text-gray-800 bg-white p-2 rounded border">
+                                        {scene.image_prompt}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                                        Narration
+                                      </label>
+                                      <p className="text-xs text-gray-800 bg-white p-2 rounded border">
+                                        {scene.narration}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            <Button
+                              onClick={createManualVideoScenario}
+                              disabled={manualScenes.length === 0}
+                              variant="primary"
+                              className="w-full"
+                            >
+                              Generate Scenario ({manualScenes.length} scenes)
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Veo-3 비디오 생성 탭 */}
                 {activeTab === "video" && (
@@ -1124,13 +1142,6 @@ Please compose the video based on the following blog content:
                     </Button>
                   </div>
                 )}
-                <Button
-                  onClick={handleClear}
-                  variant="normal"
-                  className="w-full"
-                >
-                  Clear All
-                </Button>
               </div>
             </>
           )}
