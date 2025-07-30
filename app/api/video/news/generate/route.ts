@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
         updated_at: now,
       };
 
-      // Firestore에 Scene 비디오 저장
+      // Firestore에 Scene 비디오 Save
       await db
         .collection("users")
         .doc(uid)
@@ -244,7 +244,7 @@ export async function POST(request: NextRequest) {
         updatedAt: now,
       };
 
-      // Firestore에 저장
+      // Firestore에 Save
       await db
         .collection("users")
         .doc(uid)
@@ -323,7 +323,7 @@ export async function POST(request: NextRequest) {
           updated_at: now,
         };
 
-        // Firestore에 Scene 비디오 저장
+        // Firestore에 Scene 비디오 Save
         await db
           .collection("users")
           .doc(uid)

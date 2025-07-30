@@ -277,7 +277,7 @@ export default function HomePage() {
   const [interiorPanel3, setInteriorPanel3] = useState("");
   const [interiorPanel4, setInteriorPanel4] = useState("");
 
-  // 저장 관련 상태
+  // Save 관련 상태
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saveTitle, setSaveTitle] = useState("");
   const [savingImage, setSavingImage] = useState(false);
@@ -347,7 +347,7 @@ export default function HomePage() {
       ) as string[];
 
       setAvailableCategories(uniqueCategories);
-      setCategoryList(data.categories); // 카테고리 객체 배열 저장
+      setCategoryList(data.categories); // 카테고리 객체 배열 Save
     } catch (error) {
       console.error("카테고리 불러오기 오류:", error);
       setApiError(
@@ -466,7 +466,7 @@ export default function HomePage() {
     setUploadError("");
   };
 
-  // 저장 버튼 클릭 시 업로드 실행
+  // Save 버튼 클릭 시 업로드 실행
   const handleSaveCharacter = async () => {
     if (!isAuthenticated) {
       setUploadError("로그인이 필요합니다.");
@@ -993,7 +993,7 @@ export default function HomePage() {
     setShowEditDropdown(null);
   };
 
-  // 이미지 이름 수정 저장
+  // 이미지 이름 수정 Save
   const saveEditCharacter = async () => {
     if (!editingCharacter || !editingCharacterName.trim() || !user) return;
 
@@ -1690,10 +1690,10 @@ export default function HomePage() {
     setInteriorPanel4("");
   };
 
-  // 저장 관련 함수들
+  // Save 관련 함수들
   const handleSaveGeneratedImage = async () => {
     if (!resultImage) {
-      setSaveError("저장할 이미지가 없습니다.");
+      setSaveError("Save할 이미지가 없습니다.");
       return;
     }
 
@@ -1754,7 +1754,7 @@ export default function HomePage() {
         };
       }
 
-      // API를 통해 이미지 저장
+      // API를 통해 이미지 Save
       const requestBody = {
         imageUrl: resultImage,
         title: finalTitle,
@@ -1791,7 +1791,7 @@ export default function HomePage() {
             : [],
       };
 
-      console.log("저장할 데이터:", requestBody);
+      console.log("Save할 데이터:", requestBody);
 
       const response = await fetch("/api/firebase-images/generated", {
         method: "POST",
@@ -1804,12 +1804,12 @@ export default function HomePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "이미지 저장에 실패했습니다.");
+        throw new Error(errorData.error || "이미지 Save에 실패했습니다.");
       }
 
       const result = await response.json();
 
-      setSaveSuccess("이미지가 성공적으로 저장되었습니다!");
+      setSaveSuccess("이미지가 성공적으로 Save되었습니다!");
       setSaveTitle("");
 
       // 2초 후 모달 닫기 및 성공 메시지 제거
@@ -1818,11 +1818,11 @@ export default function HomePage() {
         setSaveSuccess("");
       }, 2000);
     } catch (error) {
-      console.error("이미지 저장 오류:", error);
+      console.error("이미지 Save 오류:", error);
       setSaveError(
         error instanceof Error
           ? error.message
-          : "이미지 저장 중 오류가 발생했습니다."
+          : "이미지 Save 중 오류가 발생했습니다."
       );
     } finally {
       setSavingImage(false);
@@ -1831,7 +1831,7 @@ export default function HomePage() {
 
   const handleOpenSaveModal = () => {
     if (!resultImage) {
-      alert("저장할 이미지가 없습니다.");
+      alert("Save할 이미지가 없습니다.");
       return;
     }
     setShowSaveModal(true);
@@ -2453,7 +2453,7 @@ export default function HomePage() {
                               d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
                             />
                           </svg>
-                          저장
+                          Save
                         </Button>
                       )}
                     </div>
@@ -2642,13 +2642,13 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* 저장 모달 */}
+            {/* Save 모달 */}
             {showSaveModal && (
               <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-50">
                 <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">
-                      생성된 이미지 저장
+                      생성된 이미지 Save
                     </h3>
                     <button
                       onClick={handleCloseSaveModal}
@@ -2658,12 +2658,12 @@ export default function HomePage() {
                     </button>
                   </div>
 
-                  {/* 저장할 이미지 미리보기 */}
+                  {/* Save할 이미지 미리보기 */}
                   {resultImage && (
                     <div className="mb-4">
                       <img
                         src={resultImage}
-                        alt="저장할 이미지"
+                        alt="Save할 이미지"
                         className="w-full rounded-lg max-h-48 object-contain"
                       />
                     </div>
@@ -2673,7 +2673,7 @@ export default function HomePage() {
                   <div className="space-y-4">
                     <div>
                       <Input
-                        label="저장할 제목 (선택사항)"
+                        label="Save할 제목 (선택사항)"
                         placeholder="예: 만화 스타일 캐릭터, 판타지 배경 (비워두면 자동 생성)"
                         value={saveTitle}
                         onChange={(e) => setSaveTitle(e.target.value)}
@@ -2783,7 +2783,7 @@ export default function HomePage() {
                       loading={savingImage}
                       className="flex-1"
                     >
-                      {savingImage ? "저장 중..." : "저장"}
+                      {savingImage ? "Save 중..." : "Save"}
                     </Button>
                   </div>
                 </div>

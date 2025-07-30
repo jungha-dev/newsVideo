@@ -205,7 +205,7 @@ export async function POST(request: NextRequest) {
       expires: "03-01-2500", // 매우 긴 만료 기간
     });
 
-    // Firestore에 이미지 정보 저장 (새로운 구조: users/{uid}/characters)
+    // Firestore에 이미지 정보 Save (새로운 구조: users/{uid}/characters)
     const characterData = {
       name: fileName,
       url: url,

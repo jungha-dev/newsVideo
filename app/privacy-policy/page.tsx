@@ -128,7 +128,7 @@ export default function PrivacyPolicyPage() {
               <ul className="list-disc pl-6 space-y-2">
                 <li>
                   <strong>Google Firebase:</strong> 사용자 인증, 데이터베이스,
-                  파일 저장
+                  파일 Save
                 </li>
                 <li>
                   <strong>Replicate:</strong> AI 이미지 생성 서비스

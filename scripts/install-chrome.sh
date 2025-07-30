@@ -36,7 +36,7 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if command -v apt-get &> /dev/null; then
         echo "Ubuntu/Debian 시스템에서 Chrome을 설치합니다..."
         
-        # Google Chrome 저장소 추가
+        # Google Chrome Save소 추가
         wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
         echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
         
@@ -59,7 +59,7 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     elif command -v yum &> /dev/null; then
         echo "CentOS/RHEL 시스템에서 Chrome을 설치합니다..."
         
-        # Google Chrome 저장소 추가
+        # Google Chrome Save소 추가
         sudo tee /etc/yum.repos.d/google-chrome.repo << EOM
 [google-chrome]
 name=google-chrome

@@ -80,7 +80,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         setPreviewUrls([]);
       }
 
-      // 현재 파일들을 이전 파일로 저장
+      // 현재 파일들을 이전 파일로 Save
       prevFilesRef.current = [...currentFiles];
     }
   }, [currentFiles, showPreview, previewUrls]);

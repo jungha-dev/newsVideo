@@ -24,7 +24,7 @@ async function verifyUser(request: NextRequest) {
   }
 }
 
-// 생성된 이미지 저장 API
+// 생성된 이미지 Save API
 export async function POST(request: NextRequest) {
   try {
     // 사용자 인증 확인
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
       expires: "03-01-2500", // 매우 긴 만료 기간
     });
 
-    // Firestore에 생성된 이미지 정보 저장
+    // Firestore에 생성된 이미지 정보 Save
     const generatedImageData = {
       name: fileName,
       url: url,
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "생성된 이미지가 성공적으로 저장되었습니다.",
+      message: "생성된 이미지가 성공적으로 Save되었습니다.",
       generatedImageId: docRef.id,
       title: title.trim(),
       url: url,
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: "이미지 저장에 실패했습니다.",
+        error: "이미지 Save에 실패했습니다.",
       },
       { status: 500 }
     );

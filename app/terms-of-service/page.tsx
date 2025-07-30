@@ -21,7 +21,7 @@ export default function TermsOfServicePage() {
             <ul className="list-disc pl-6 space-y-2">
               <li>AI 기반 이미지 생성 서비스</li>
               <li>블로그 작성 및 관리 서비스</li>
-              <li>이미지 저장 및 관리 서비스</li>
+              <li>이미지 Save 및 관리 서비스</li>
               <li>카테고리 관리 서비스</li>
             </ul>
           </div>

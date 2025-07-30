@@ -375,7 +375,7 @@ const Card: React.FC<CardProps> = ({
           />
           <div className="flex gap-2">
             <Button variant="primary" size="sm" onClick={handleSave}>
-              저장
+              Save
             </Button>
             <Button variant="outline" size="sm" onClick={handleCancel}>
               취소

@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
                   "Error saving video to Firebase Storage:",
                   storageError
                 );
-                // Firebase Storage 저장 실패해도 원본 Replicate URL 유지
+                // Firebase Storage Save 실패해도 원본 Replicate URL 유지
                 console.log(
                   `⚠️ Firebase Storage 업로드 실패, 원본 URL 유지: ${klingData.output}`
                 );

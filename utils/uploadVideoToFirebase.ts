@@ -9,7 +9,7 @@ import {
 /**
  * Runway MP4 URL을 Firebase Storage에 업로드하고 다운로드 URL을 반환.
  * @param videoUrl   Runway output[0] 의 .mp4 주소
- * @param taskId     동일 이름으로 저장
+ * @param taskId     동일 이름으로 Save
  * @param onProgress (0~100) 업로드 퍼센트 콜백
  */
 export async function uploadVideoToFirebase(

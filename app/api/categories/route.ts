@@ -283,7 +283,7 @@ export async function POST(request: NextRequest) {
 
     const nextOrder = existingCategories.docs.length;
 
-    // Firestore에 카테고리 정보 저장
+    // Firestore에 카테고리 정보 Save
     const categoryData = {
       name: name.trim(),
       description: description?.trim() || "",

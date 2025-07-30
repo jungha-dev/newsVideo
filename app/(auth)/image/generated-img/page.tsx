@@ -269,7 +269,7 @@ export default function GeneratedImagesPage() {
     }
   };
 
-  // 전체 선택/해제
+  // Select All/해제
   const toggleSelectAll = () => {
     if (selectedImages.size === filteredImages.length) {
       setSelectedImages(new Set());
@@ -444,7 +444,7 @@ export default function GeneratedImagesPage() {
                     >
                       {selectedImages.size === filteredImages.length
                         ? "전체 해제"
-                        : "전체 선택"}
+                        : "Select All"}
                     </Button>
 
                     <Button
@@ -479,12 +479,12 @@ export default function GeneratedImagesPage() {
                 <div className="text-gray-500 text-lg mb-2">
                   {searchTerm
                     ? "검색 결과가 없습니다."
-                    : "저장된 이미지가 없습니다."}
+                    : "Save된 이미지가 없습니다."}
                 </div>
                 <p className="text-gray-400 text-sm">
                   {searchTerm
                     ? "다른 검색어를 시도해보세요."
-                    : "캐릭터 생성 페이지에서 이미지를 생성하고 저장해보세요."}
+                    : "캐릭터 생성 페이지에서 이미지를 생성하고 Save해보세요."}
                 </p>
               </div>
             ) : (

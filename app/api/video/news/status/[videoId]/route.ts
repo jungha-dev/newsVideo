@@ -83,7 +83,7 @@ export async function GET(
                 updated_at: new Date(),
               };
 
-              // 완료된 경우 비디오 URL 저장
+              // 완료된 경우 비디오 URL Save
               if (
                 replicateData.status === "succeeded" &&
                 replicateData.output

@@ -866,7 +866,7 @@ export default function NewsVideoDetailPage() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Scene Info</h3>
             <div className="flex items-center gap-2">
-              {/* 전체 선택/해제 체크박스 */}
+              {/* Select All/해제 체크박스 */}
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -877,13 +877,13 @@ export default function NewsVideoDetailPage() {
                   onChange={toggleAllScenes}
                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                 />
-                <span className="text-sm text-gray-600">전체 선택</span>
+                <span className="text-sm text-gray-600">Select All</span>
               </div>
 
               {hasUnsavedChanges && (
                 <>
                   <span className="text-sm text-orange-600 bg-orange-50 px-2 py-1 rounded">
-                    변경사항이 있습니다. 변경사항을 저장하시겠습니까?
+                    There are unsaved changes. Would you like to save them?
                   </span>
                   <Button
                     onClick={handleSaveChanges}
@@ -891,7 +891,7 @@ export default function NewsVideoDetailPage() {
                     size="sm"
                     className="text-xs"
                   >
-                    저장
+                    Save
                   </Button>
                 </>
               )}

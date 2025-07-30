@@ -560,7 +560,7 @@ export default function CharacterSelector({
                   loading={uploading}
                   className="flex-1"
                 >
-                  {uploading ? "저장 중..." : "저장"}
+                  {uploading ? "Save 중..." : "Save"}
                 </Button>
               </div>
             </div>
@@ -671,7 +671,7 @@ export default function CharacterSelector({
                   loading={editingImageLoading}
                   className="flex-1"
                 >
-                  {editingImageLoading ? "저장 중..." : "저장"}
+                  {editingImageLoading ? "Save 중..." : "Save"}
                 </Button>
               </div>
             </div>

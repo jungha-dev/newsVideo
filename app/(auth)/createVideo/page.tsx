@@ -696,7 +696,7 @@ Please compose the video based on the following blog content:
       const uploadData = await uploadResponse.json();
       const videoUrl = uploadData.url;
 
-      // Firebase Firestore에 저장
+      // Firebase Firestore에 Save
       const newsVideoData: NewsVideoCreateData = {
         title: videoScenario.title,
         description: videoScenario.scenario,

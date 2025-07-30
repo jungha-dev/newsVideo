@@ -34,7 +34,7 @@ export default function ConnectedVideoProjectsPage() {
   const [newProjectName, setNewProjectName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
-  // ✅ 로그인 후 ID 토큰을 __session 쿠키에 저장
+  // ✅ 로그인 후 ID 토큰을 __session 쿠키에 Save
   useEffect(() => {
     const setSessionCookie = async () => {
       const user = auth.currentUser;

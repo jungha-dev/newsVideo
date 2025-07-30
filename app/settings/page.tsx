@@ -196,10 +196,10 @@ export default function SettingsPage() {
         updatedAt: new Date(),
       });
 
-      setMessage("프로필이 성공적으로 저장되었습니다!");
+      setMessage("프로필이 성공적으로 Save되었습니다!");
     } catch (error) {
-      console.error("프로필 저장 실패:", error);
-      setMessage("프로필 저장에 실패했습니다.");
+      console.error("프로필 Save 실패:", error);
+      setMessage("프로필 Save에 실패했습니다.");
     } finally {
       setSaving(false);
     }
@@ -387,7 +387,7 @@ export default function SettingsPage() {
                 className="flex items-center gap-2"
               >
                 <Save size={16} />
-                {saving ? "저장 중..." : "저장"}
+                {saving ? "Save 중..." : "Save"}
               </Button>
             </div>
           </div>

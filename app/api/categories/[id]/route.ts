@@ -161,7 +161,7 @@ export async function PUT(
 
         await file.save(resizedBuffer, {
           metadata: {
-            contentType: "image/png", // 리사이즈 후 PNG로 저장
+            contentType: "image/png", // 리사이즈 후 PNG로 Save
           },
         });
 

@@ -55,7 +55,7 @@ export default function ConnectedVideoProjectDetailPage() {
   const [sortedVideos, setSortedVideos] = useState<VideoGeneration[]>([]);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
-  // ✅ 로그인 후 ID 토큰을 __session 쿠키에 저장
+  // ✅ 로그인 후 ID 토큰을 __session 쿠키에 Save
   useEffect(() => {
     const setSessionCookie = async () => {
       const user = auth.currentUser;

@@ -23,10 +23,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [approved, setApproved] = useState(false);
 
-  // 사용자 정보를 Firestore에 저장하는 함수
+  // 사용자 정보를 Firestore에 Save하는 함수
   const saveUserToFirestore = async (firebaseUser: User) => {
     try {
-      console.log("=== 사용자 정보 저장 시작 ===");
+      console.log("=== 사용자 정보 Save 시작 ===");
       console.log("사용자 UID:", firebaseUser.uid);
       console.log("사용자 이메일:", firebaseUser.email);
       console.log("사용자 이름:", firebaseUser.displayName);
@@ -36,9 +36,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userSnap = await getDoc(userRef);
       const now = new Date();
 
-      // 사용자가 이미 존재하지 않는 경우에만 저장
+      // 사용자가 이미 존재하지 않는 경우에만 Save
       if (!userSnap.exists()) {
-        console.log("새 사용자 - Firestore에 저장");
+        console.log("새 사용자 - Firestore에 Save");
         const userData = {
           email: firebaseUser.email,
           name:
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
 
         await setDoc(userRef, userData);
-        console.log("✅ 새 사용자 정보 저장 완료");
+        console.log("✅ 새 사용자 정보 Save 완료");
       } else {
         console.log("기존 사용자 - 로그인 시간 업데이트");
         // 기존 사용자의 경우 마지막 로그인 시간과 업데이트 시간만 업데이트
@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log("✅ 기존 사용자 정보 업데이트 완료");
       }
     } catch (error) {
-      console.error("❌ 사용자 정보 저장 중 오류:", error);
+      console.error("❌ 사용자 정보 Save 중 오류:", error);
       console.error("오류 상세:", {
         code: (error as any)?.code,
         message: (error as any)?.message,
@@ -191,7 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               if (firebaseUser) {
                 console.log("✅ 사용자 로그인됨");
 
-                // ✅ 새 사용자 정보를 Firestore에 저장
+                // ✅ 새 사용자 정보를 Firestore에 Save
                 await saveUserToFirestore(firebaseUser);
 
                 // ✅ Firestore 승인 체크
@@ -236,7 +236,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   setApproved(false);
                 }
 
-                // ✅ 토큰을 백엔드로 보내 쿠키 저장
+                // ✅ 토큰을 백엔드로 보내 쿠키 Save
                 try {
                   console.log("토큰 생성 중...");
                   const token = await firebaseUser.getIdToken(true);

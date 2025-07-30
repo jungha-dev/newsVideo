@@ -372,7 +372,7 @@ export default function CategoryManager({
                         onClick={handleSaveEdit}
                         disabled={!editName.trim()}
                       >
-                        저장
+                        Save
                       </Button>
                       <Button variant="secondary" onClick={handleCancelEdit}>
                         취소

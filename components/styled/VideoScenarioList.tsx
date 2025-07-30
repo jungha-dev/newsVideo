@@ -49,7 +49,7 @@ interface VideoScenarioListProps {
   onUpdateScene?: (sceneIndex: number, updatedScene: Scene) => void;
   // Add Scenes 관련 props
   onAddScene?: () => void;
-  // Generated Video 저장 관련 props
+  // Generated Video Save 관련 props
   onSaveNewsVideo?: () => void;
   isSaving?: boolean;
 }
@@ -356,7 +356,7 @@ export default function VideoScenarioList({
                   size="sm"
                   className="flex-1"
                 >
-                  {isSaving ? "저장 중..." : "Generated Video로 저장"}
+                  {isSaving ? "Save 중..." : "Generated Video로 Save"}
                 </Button>
               )}
             </div>

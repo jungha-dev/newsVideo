@@ -62,7 +62,7 @@ export default function ConnectedVideosPage() {
   ); // 선택된 프로젝트의 이미지들
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
-  // ✅ 로그인 후 ID 토큰을 __session 쿠키에 저장
+  // ✅ 로그인 후 ID 토큰을 __session 쿠키에 Save
   useEffect(() => {
     const setSessionCookie = async () => {
       const user = auth.currentUser;
@@ -572,7 +572,7 @@ export default function ConnectedVideosPage() {
                     });
                     setGeneratedVideos(project.videos || []);
 
-                    // 기존 프로젝트 선택 시 해당 프로젝트의 이미지들을 별도 상태로 저장
+                    // 기존 프로젝트 선택 시 해당 프로젝트의 이미지들을 별도 상태로 Save
                     setSelectedProjectImages(project.images || []);
                     setFormData((prev) => ({
                       ...prev,

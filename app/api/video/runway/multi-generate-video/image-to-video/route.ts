@@ -454,7 +454,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // longvideos 그룹 정보 Firestore 저장 시도 (실패해도 비디오는 성공)
+    // longvideos 그룹 정보 Firestore Save 시도 (실패해도 비디오는 성공)
     try {
       await db
         .collection("users")
@@ -485,10 +485,10 @@ export async function POST(req: NextRequest) {
             duration: 5,
           },
         });
-      console.log("✅ Long Video 그룹 Firestore 저장 성공");
+      console.log("✅ Long Video 그룹 Firestore Save 성공");
     } catch (firestoreError) {
       console.warn(
-        "⚠️ Long Video 그룹 Firestore 저장 실패 (비디오는 성공):",
+        "⚠️ Long Video 그룹 Firestore Save 실패 (비디오는 성공):",
         firestoreError
       );
     }

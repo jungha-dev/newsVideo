@@ -106,7 +106,7 @@ export default function LongVideoDetailPage() {
         isSelected: true,
       }));
 
-    // 세션 스토리지에 데이터 저장
+    // 세션 스토리지에 데이터 Save
     sessionStorage.setItem("editVideos", JSON.stringify(editVideos));
     sessionStorage.setItem("editSource", `longvideo_${longvideo.id}`);
 
