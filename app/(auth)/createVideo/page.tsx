@@ -584,6 +584,22 @@ Please compose the video based on the following blog content:
     }
   };
 
+  const handleDeleteScene = (sceneIndex: number) => {
+    if (!videoScenario || videoScenario.scenes.length <= 1) return;
+
+    const updatedScenes = videoScenario.scenes
+      .filter((_, index) => index !== sceneIndex)
+      .map((scene, index) => ({
+        ...scene,
+        scene_number: index + 1,
+      }));
+
+    setVideoScenario({
+      ...videoScenario,
+      scenes: updatedScenes,
+    });
+  };
+
   const handleMerge = async () => {
     setIsLoadingMerge(true);
     setMergeError(null);
@@ -1236,6 +1252,7 @@ Please compose the video based on the following blog content:
                   onAddSceneVideo={handleAddSceneVideo}
                   onUpdateScene={handleUpdateScene}
                   onAddScene={handleAddScene}
+                  onDeleteScene={handleDeleteScene}
                   onSaveNewsVideo={handleSaveNewsVideo}
                   isSaving={loading}
                   selectedVideoModel={selectedVideoModel}

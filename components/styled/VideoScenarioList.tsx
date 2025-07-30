@@ -52,6 +52,8 @@ interface VideoScenarioListProps {
   onUpdateScene?: (sceneIndex: number, updatedScene: Scene) => void;
   // Add Scenes 관련 props
   onAddScene?: () => void;
+  // Delete Scene 관련 props
+  onDeleteScene?: (sceneIndex: number) => void;
   // Generated Video Save 관련 props
   onSaveNewsVideo?: () => void;
   isSaving?: boolean;
@@ -81,6 +83,7 @@ export default function VideoScenarioList({
   onAddSceneVideo,
   onUpdateScene,
   onAddScene,
+  onDeleteScene,
   onSaveNewsVideo,
   isSaving = false,
   selectedVideoModel,
@@ -212,7 +215,7 @@ export default function VideoScenarioList({
 
   return (
     <div className="space-y-4">
-      <div className="bg-secondary-light border border-secondary-dark rounded-lg p-4">
+      <div className="bg-white border border-secondary-dark rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-2">{scenario.title}</h3>
         <p className=" text-sm">{scenario.scenario}</p>
       </div>
@@ -289,30 +292,6 @@ export default function VideoScenarioList({
             {onAddScene && (
               <Button onClick={onAddScene} variant="outline" size="sm">
                 Add Scenes
-              </Button>
-            )}
-            {onMerge && (
-              <Button
-                onClick={() => {
-                  const selectedVideos = videoItems.filter(
-                    (v) => v.isSelected === true
-                  );
-                  console.log("Selected videos for merge:", selectedVideos);
-                  console.log("All video items:", videoItems);
-                  onMerge();
-                }}
-                disabled={
-                  isMerging ||
-                  videoItems.filter((v) => v.isSelected === true).length === 0
-                }
-                variant="primary"
-                size="sm"
-              >
-                {isMerging
-                  ? "병합 중..."
-                  : `영상 병합 (${
-                      videoItems.filter((v) => v.isSelected === true).length
-                    }개)`}
               </Button>
             )}
           </div>
@@ -446,7 +425,28 @@ export default function VideoScenarioList({
                 <span className="text-sm font-medium text-gray-600">
                   Scene {scene.scene_number}
                 </span>
-                <span className="text-xs text-gray-500">30s</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500">
+                    {selectedVideoModel === "veo-3" ? "8s" : "5s"}
+                  </span>
+                  {onDeleteScene && scenario.scenes.length > 1 && (
+                    <button
+                      onClick={() => {
+                        if (
+                          confirm(
+                            `Are you sure you want to delete Scene ${scene.scene_number}?`
+                          )
+                        ) {
+                          onDeleteScene(index);
+                        }
+                      }}
+                      className="text-red-500 hover:text-red-700 text-xs bg-transparent border-none p-1 cursor-pointer"
+                      title="Delete Scene"
+                    >
+                      🗑️
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* 생성된 영상 표시 */}
@@ -624,7 +624,9 @@ export default function VideoScenarioList({
                       }}
                       className="mr-1"
                     />
-                    <span className="text-xs text-gray-500">아나운서 포함</span>
+                    <span className="text-xs text-gray-500">
+                      including the news anchor
+                    </span>
                   </div>
                 </div>
               )}
@@ -637,7 +639,7 @@ export default function VideoScenarioList({
                   className="flex-1 text-xs"
                   disabled={selectedVideoModel === "veo-3"}
                 >
-                  {selectedVideoModel === "veo-3" ? "" : "📷 이미지 추가"}
+                  {selectedVideoModel === "veo-3" ? "" : "📷 Add Image"}
                 </Button>
               </div>
 
@@ -679,6 +681,15 @@ export default function VideoScenarioList({
                         ...scene,
                         narration: e.target.value,
                       };
+
+                      // 아나운서 포함이 체크된 경우 Image Prompt도 함께 업데이트
+                      if (
+                        selectedVideoModel === "veo-3" &&
+                        newsAnchorIncluded[index]
+                      ) {
+                        updatedScene.image_prompt = `${NEWS_ANCHOR_PROMPT} ${e.target.value}`;
+                      }
+
                       if (onUpdateScene) {
                         onUpdateScene(index, updatedScene);
                       }
