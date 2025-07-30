@@ -744,7 +744,7 @@ export default function NewsVideoDetailPage() {
 
   if (!user) {
     return (
-      <div className="container max-w-6xl mx-auto px-4 py-8">
+      <div className="container max-w-7xl mx-auto px-4 py-8 mt-8">
         <PageTitle title="Generated Video" />
         <div className="text-center py-8">
           <p className="text-gray-600">Login is required.</p>
@@ -755,7 +755,7 @@ export default function NewsVideoDetailPage() {
 
   if (loading) {
     return (
-      <div className="container max-w-6xl mx-auto px-4 py-8">
+      <div className="container max-w-7xl mx-auto px-4 py-8 mt-8">
         <PageTitle title="Generated Video" />
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
@@ -767,7 +767,7 @@ export default function NewsVideoDetailPage() {
 
   if (error || !video) {
     return (
-      <div className="container max-w-7xl mx-auto px-4 py-8">
+      <div className="container max-w-7xl mx-auto px-4 py-8 mt-8">
         <PageTitle title="Generated Video" />
         <div className="text-center py-8">
           <div className="text-4xl mb-4">❌</div>
@@ -781,7 +781,7 @@ export default function NewsVideoDetailPage() {
   }
 
   return (
-    <div className="container max-w-6xl mx-auto px-4 py-8">
+    <div className="container max-w-7xl mx-auto px-4 py-8 mt-8">
       <div className="space-y-6">
         <div className="bg-white border border-gray-200 rounded-lg">
           {video.status === "failed" ? (
@@ -862,7 +862,7 @@ export default function NewsVideoDetailPage() {
         </div>
 
         {/* Scene Info */}
-        <div className="bg-white rounded-lg mt-40">
+        <div className="bg-white rounded-lg mt-20">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Scene Info</h3>
             <div className="flex items-center gap-2">
