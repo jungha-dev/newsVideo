@@ -59,8 +59,6 @@ export default function NewsVideoListPage() {
 
   return (
     <div className="container max-w-6xl mx-auto px-4 py-8">
-      <PageTitle title="Generated Video" />
-
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
           {error}
@@ -73,7 +71,7 @@ export default function NewsVideoListPage() {
           <p className="text-gray-600 mt-2">Loading...</p>
         </div>
       ) : videos.length === 0 ? (
-        <div className="text-center py-8">
+        <div className="text-center mt-[20vh] py-8">
           <div className="text-4xl mb-4">🎬</div>
           <p className="text-gray-600 mb-4">
             There are no generated videos yet.
@@ -83,79 +81,83 @@ export default function NewsVideoListPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {videos.map((video) => (
-            <Link key={video.id} href={`/video/createVideo/${video.id}`}>
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-                {/* 썸네일 */}
-                <div className="aspect-video bg-gray-100 relative">
-                  {video.thumbnail ? (
-                    <img
-                      src={video.thumbnail}
-                      alt={video.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="text-4xl">🎬</div>
-                    </div>
-                  )}
+        <div>
+          {" "}
+          <PageTitle title="Generated Video" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {videos.map((video) => (
+              <Link key={video.id} href={`/video/createVideo/${video.id}`}>
+                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                  {/* 썸네일 */}
+                  <div className="aspect-video bg-gray-100 relative">
+                    {video.thumbnail ? (
+                      <img
+                        src={video.thumbnail}
+                        alt={video.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="text-4xl">🎬</div>
+                      </div>
+                    )}
 
-                  {/* 상태 배지 */}
-                  <div className="absolute top-2 right-2">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        video.status === "completed"
-                          ? "bg-green-100 text-green-800"
+                    {/* 상태 배지 */}
+                    <div className="absolute top-2 right-2">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          video.status === "completed"
+                            ? "bg-secondary text-black"
+                            : video.status === "processing"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {video.status === "completed"
+                          ? "Completed"
                           : video.status === "processing"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {video.status === "completed"
-                        ? "Completed"
-                        : video.status === "processing"
-                        ? "Processing"
-                        : "Failed"}
-                    </span>
-                  </div>
-
-                  {/* 처리 중일 때 로딩 애니메이션 */}
-                  {video.status === "processing" && (
-                    <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                    </div>
-                  )}
-                </div>
-
-                {/* 정보 */}
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                    {video.title}
-                  </h3>
-
-                  {video.description && (
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                      {video.description}
-                    </p>
-                  )}
-
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>{video.scenes.length}개 Scene</span>
-                    <span>{formatDate(video.createdAt)}</span>
-                  </div>
-
-                  {video.model && (
-                    <div className="mt-2">
-                      <span className="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
-                        {video.model}
+                          ? "Processing"
+                          : "Failed"}
                       </span>
                     </div>
-                  )}
+
+                    {/* 처리 중일 때 로딩 애니메이션 */}
+                    {video.status === "processing" && (
+                      <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 정보 */}
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                      {video.title}
+                    </h3>
+
+                    {video.description && (
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                        {video.description}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>{video.scenes.length}개 Scene</span>
+                      <span>{formatDate(video.createdAt)}</span>
+                    </div>
+
+                    {video.model && (
+                      <div className="mt-2">
+                        <span className="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+                          {video.model}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>

@@ -242,7 +242,7 @@ export default function ConnectedVideoProjectDetailPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "succeeded":
-        return "bg-green-100 text-green-800";
+        return "bg-secondary text-black";
       case "failed":
         return "bg-red-100 text-red-800";
       case "processing":

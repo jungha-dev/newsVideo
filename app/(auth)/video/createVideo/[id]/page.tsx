@@ -277,7 +277,7 @@ export default function NewsVideoDetailPage() {
     switch (status) {
       case "completed":
       case "succeeded":
-        return "bg-green-100 text-green-800";
+        return "bg-secondary text-black";
       case "processing":
       case "starting":
         return "bg-yellow-100 text-yellow-800";
@@ -913,7 +913,7 @@ export default function NewsVideoDetailPage() {
               <div
                 key={index}
                 className={`border rounded-lg p-3 transition-colors border-gray-200 hover:border-gray-300 ${
-                  selectedScenes.has(index) ? "border-blue-300 bg-blue-50" : ""
+                  selectedScenes.has(index) ? "" : ""
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
@@ -1034,7 +1034,7 @@ export default function NewsVideoDetailPage() {
 
             {/* Regenerate 입력 폼 */}
             {showRegenerateForm && (
-              <div className="border rounded-lg p-3 transition-colors border-blue-300 bg-blue-50">
+              <div className="border rounded-lg p-3 transition-colors ">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-medium text-sm text-blue-900">
                     Scene {regenerateSceneIndex! + 1} Regenerate Scene
@@ -1127,12 +1127,10 @@ export default function NewsVideoDetailPage() {
 
             {/* Add Scenes 폼 */}
             {showAddSceneForm && (
-              <div className="border rounded-lg p-3 transition-colors border-green-300 bg-green-50">
+              <div className="border rounded-lg p-3 transition-colors ">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-sm text-green-900">
-                    Add Scene
-                  </h4>
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  <h4 className="font-medium text-sm">Add Scene</h4>
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-secondary text-black">
                     Add Scene Mode
                   </span>
                 </div>
@@ -1151,7 +1149,7 @@ export default function NewsVideoDetailPage() {
                           image_prompt: e.target.value,
                         }))
                       }
-                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
                       rows={2}
                       placeholder="Please enter image prompt"
                     />
@@ -1170,7 +1168,7 @@ export default function NewsVideoDetailPage() {
                           narration: e.target.value,
                         }))
                       }
-                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
                       rows={2}
                       placeholder="please enter narration"
                     />
@@ -1190,7 +1188,7 @@ export default function NewsVideoDetailPage() {
                           imageUrl: e.target.value,
                         }))
                       }
-                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
                       placeholder="https://example.com/image.jpg"
                     />
                   </div>
@@ -1201,7 +1199,6 @@ export default function NewsVideoDetailPage() {
                       onClick={handleAddSceneSubmit}
                       variant="primary"
                       size="sm"
-                      className="flex-1 text-xs py-1 bg-green-600 hover:bg-green-700"
                       disabled={
                         !addSceneForm.image_prompt.trim() ||
                         !addSceneForm.narration.trim() ||

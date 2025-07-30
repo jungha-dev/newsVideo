@@ -895,7 +895,7 @@ export default function ConnectedVideosPage() {
 
                 {/* 상태 요약 */}
                 <div className="flex gap-2">
-                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">
+                  <span className="px-2 py-1 bg-secondary text-black text-xs rounded">
                     완료: {getStatusCount(generatedVideos, "succeeded")}
                   </span>
                   <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
@@ -915,7 +915,7 @@ export default function ConnectedVideosPage() {
                     <span
                       className={`px-2 py-1 rounded text-xs ${
                         video.status === "succeeded"
-                          ? "bg-green-100 text-green-800"
+                          ? "bg-secondary text-black"
                           : video.status === "failed"
                           ? "bg-red-100 text-red-800"
                           : video.status === "processing"
@@ -1009,7 +1009,7 @@ export default function ConnectedVideosPage() {
                       <span
                         className={`px-2 py-1 rounded text-xs ${
                           video.status === "succeeded"
-                            ? "bg-green-100 text-green-800"
+                            ? "bg-secondary text-black"
                             : video.status === "failed"
                             ? "bg-red-100 text-red-800"
                             : "bg-gray-100 text-gray-800"

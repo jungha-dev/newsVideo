@@ -22,6 +22,7 @@ import {
 import { NewsVideoCreateData } from "@/lib/types/newsVideo";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import BackgroundCircles from "@/components/common/BackgroundCircles";
 
 interface TextGenerationResponse {
   text: string;
@@ -723,19 +724,17 @@ Please compose the video based on the following blog content:
   };
 
   return (
-    <div className="container max-w-6xl mx-auto px-4 py-8">
-      <div className="my-20">
-        <PageTitle
-          variant="centered"
-          title="AI Content Generation"
-          subtitle="Turn Your Content into Stunning Videos"
-        />
+    <div className="container max-w-5xl mx-auto px-4 py-8">
+      <BackgroundCircles />
+      <div className="mt-[20vh] flex flex-col justify-center items-center text-center">
+        <span className="text-5xl font-bold">AI Content Generation</span>
+        <span className="py-4">Turn Your Content into Stunning Videos</span>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
         {/* 입력 섹션 */}
         <Section className={isScenarioCollapsed ? "!mb-0 !pb-0" : ""}>
           <div className="flex items-center justify-between pb-4">
-            <h2 className="text-xl font-semibold">Input Settings</h2>
+            <h2 className="text-xl font-semibold"></h2>
             <div className="flex items-center gap-2">
               <Button
                 onClick={() => setShowPromptSettings(!showPromptSettings)}
@@ -850,44 +849,6 @@ Please compose the video based on the following blog content:
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Number of Scenes
-                      </label>
-                      <Select
-                        value={sceneCount.toString()}
-                        onChange={(value) => setSceneCount(parseInt(value))}
-                        options={Array.from(
-                          { length: 30 },
-                          (_, i) => i + 1
-                        ).map((num) => ({
-                          value: num.toString(),
-                          label: `${num} scenes (${num * 5}s total)`,
-                        }))}
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div className="pt-4">
-                      {(prompt.trim() ||
-                        systemPrompt.trim() ||
-                        blogContent.trim() ||
-                        videoPrompt.trim() ||
-                        generatedText ||
-                        videoScenario ||
-                        generatedVideoUrl ||
-                        manualScenes.length > 0) && (
-                        <Button
-                          onClick={handleClear}
-                          variant="secondary"
-                          size="sm"
-                          className="w-full"
-                        >
-                          Clear All
-                        </Button>
-                      )}
-                    </div>
-
                     {/* 프롬프트 설정 섹션 */}
                     {showPromptSettings && (
                       <div className="border border-secondary rounded-lg p-4 space-y-4 bg-gray-50">
@@ -951,14 +912,56 @@ Please compose the video based on the following blog content:
                       </div>
                     )}
 
-                    <Button
-                      variant="primary"
-                      onClick={handleGenerateScenario}
-                      disabled={loading || !blogContent.trim()}
-                      className="w-full"
-                    >
-                      {loading ? "Generating..." : "Generate Scenario"}
-                    </Button>
+                    {blogContent.trim() && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Number of Scenes
+                          </label>
+                          <Select
+                            value={sceneCount.toString()}
+                            onChange={(value) => setSceneCount(parseInt(value))}
+                            options={Array.from(
+                              { length: 30 },
+                              (_, i) => i + 1
+                            ).map((num) => ({
+                              value: num.toString(),
+                              label: `${num} scenes (${num * 5}s total)`,
+                            }))}
+                            className="w-full"
+                          />
+                        </div>
+
+                        <div className="pt-4">
+                          {(prompt.trim() ||
+                            systemPrompt.trim() ||
+                            blogContent.trim() ||
+                            videoPrompt.trim() ||
+                            generatedText ||
+                            videoScenario ||
+                            generatedVideoUrl ||
+                            manualScenes.length > 0) && (
+                            <Button
+                              onClick={handleClear}
+                              variant="secondary"
+                              size="sm"
+                              className="w-full"
+                            >
+                              Clear All
+                            </Button>
+                          )}
+                        </div>
+
+                        <Button
+                          variant="primary"
+                          onClick={handleGenerateScenario}
+                          disabled={loading || !blogContent.trim()}
+                          className="w-full"
+                        >
+                          {loading ? "Generating..." : "Generate Scenario"}
+                        </Button>
+                      </>
+                    )}
                   </div>
                 )}
 

@@ -289,7 +289,7 @@ export default function VideoPreview({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* 왼쪽: 프로젝트 정보 */}
-      <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+      <div className="rounded-lg p-6 space-y-4">
         <div>
           <div className="flex justify-between items-start mb-2">
             <h2 className="text-2xl font-bold text-gray-900">
@@ -315,7 +315,7 @@ export default function VideoPreview({
               <span
                 className={`px-2 py-1 rounded-full text-xs font-medium ${
                   info.status === "completed"
-                    ? "bg-green-100 text-green-800"
+                    ? "bg-secondary text-black"
                     : info.status === "processing"
                     ? "bg-yellow-100 text-yellow-800"
                     : info.status === "failed"
@@ -448,7 +448,7 @@ export default function VideoPreview({
             {videos.length > 0 && (
               <div className="rounded-lg mt-8">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Subtitle Settings and Download
+                  Settings
                 </h3>
 
                 {/* 자막 설정 */}
