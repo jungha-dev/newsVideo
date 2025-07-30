@@ -582,15 +582,18 @@ export default function VideoScenarioList({
               )}
               {selectedVideoModel === "veo-3" && (
                 <div className="flex gap-2 mb-3">
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={newsAnchorIncluded[index] || false}
-                      onChange={(e) => {
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-gray-500">
+                      Including the news anchor
+                    </span>
+                    <button
+                      onClick={() => {
+                        const newValue = !(newsAnchorIncluded[index] || false);
+
                         if (onNewsAnchorIncludedChange) {
                           onNewsAnchorIncludedChange({
                             ...newsAnchorIncluded,
-                            [index]: e.target.checked,
+                            [index]: newValue,
                           });
                         }
 
@@ -598,7 +601,7 @@ export default function VideoScenarioList({
                         if (onUpdateScene) {
                           const scene = scenario.scenes[index];
 
-                          if (e.target.checked) {
+                          if (newValue) {
                             // 체크할 때: 원래 프롬프트를 저장하고 아나운서 프롬프트로 변경
                             setOriginalPrompts((prev) => ({
                               ...prev,
@@ -622,11 +625,18 @@ export default function VideoScenarioList({
                           }
                         }
                       }}
-                      className="mr-1"
-                    />
-                    <span className="text-xs text-gray-500">
-                      including the news anchor
-                    </span>
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-offset-2 ${
+                        newsAnchorIncluded[index] ? "bg-primary" : "bg-gray-300"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                          newsAnchorIncluded[index]
+                            ? "translate-x-5"
+                            : "translate-x-1"
+                        }`}
+                      />
+                    </button>
                   </div>
                 </div>
               )}

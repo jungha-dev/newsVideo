@@ -866,43 +866,6 @@ export default function NewsVideoDetailPage() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Scene Info</h3>
             <div className="flex items-center gap-2">
-              {/* Select All/해제 체크박스 */}
-              <div className="flex items-center gap-2">
-                <label className="flex items-center cursor-pointer">
-                  <div className="relative mr-2">
-                    <input
-                      type="checkbox"
-                      checked={
-                        selectedScenes.size === video.scenes.length &&
-                        video.scenes.length > 0
-                      }
-                      onChange={toggleAllScenes}
-                      className="sr-only"
-                    />
-                    <div
-                      className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
-                        selectedScenes.size === video.scenes.length &&
-                        video.scenes.length > 0
-                          ? "border-primary bg-primary"
-                          : "border-gray-300 bg-white"
-                      }`}
-                    >
-                      {selectedScenes.size === video.scenes.length &&
-                        video.scenes.length > 0 && (
-                          <svg
-                            className="w-6 h-6 text-white"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                          </svg>
-                        )}
-                    </div>
-                  </div>
-                  <span className="text-sm text-gray-600">Select All</span>
-                </label>
-              </div>
-
               {hasUnsavedChanges && (
                 <>
                   <span className="text-sm text-orange-600 bg-orange-50 px-2 py-1 rounded">
