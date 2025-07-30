@@ -736,16 +736,20 @@ Please compose the video based on the following blog content:
         <Section className={isScenarioCollapsed ? "!mb-0 !pb-0" : ""}>
           <div className="flex items-center justify-between pb-4">
             <h2 className="text-xl font-semibold">Input Settings</h2>
-            {videoScenario && (
+            <div className="flex items-center gap-2">
               <Button
-                onClick={() => setIsScenarioCollapsed(!isScenarioCollapsed)}
-                variant="normal"
+                onClick={() => setShowPromptSettings(!showPromptSettings)}
+                variant="secondary"
                 size="sm"
+                title={
+                  showPromptSettings
+                    ? "Close prompt settings"
+                    : "Open prompt settings"
+                }
               >
-                {isScenarioCollapsed ? "View Details" : "Collapse"}
                 <svg
-                  className={`w-4 h-4 ml-2 transition-transform ${
-                    isScenarioCollapsed ? "" : "rotate-180"
+                  className={`w-4 h-4 transition-transform ${
+                    showPromptSettings ? "rotate-90" : ""
                   }`}
                   fill="none"
                   stroke="currentColor"
@@ -755,11 +759,41 @@ Please compose the video based on the following blog content:
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
               </Button>
-            )}
+              {videoScenario && (
+                <Button
+                  onClick={() => setIsScenarioCollapsed(!isScenarioCollapsed)}
+                  variant="normal"
+                  size="sm"
+                >
+                  {isScenarioCollapsed ? "View Details" : "Collapse"}
+                  <svg
+                    className={`w-4 h-4 ml-2 transition-transform ${
+                      isScenarioCollapsed ? "" : "rotate-180"
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </Button>
+              )}
+            </div>
           </div>
 
           {!isScenarioCollapsed && (
@@ -834,19 +868,7 @@ Please compose the video based on the following blog content:
                       />
                     </div>
 
-                    <div className="pt-4 flex gap-2">
-                      <Button
-                        onClick={() =>
-                          setShowPromptSettings(!showPromptSettings)
-                        }
-                        variant="secondary"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        {showPromptSettings
-                          ? "prompt settings close"
-                          : "prompt settings open"}
-                      </Button>
+                    <div className="pt-4">
                       {(prompt.trim() ||
                         systemPrompt.trim() ||
                         blogContent.trim() ||
@@ -859,7 +881,7 @@ Please compose the video based on the following blog content:
                           onClick={handleClear}
                           variant="secondary"
                           size="sm"
-                          className="flex-1"
+                          className="w-full"
                         >
                           Clear All
                         </Button>
