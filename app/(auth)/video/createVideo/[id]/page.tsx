@@ -72,6 +72,46 @@ export default function NewsVideoDetailPage() {
   const previousStatusRef = useRef<string | undefined>(undefined);
   const isRegeneratingRef = useRef<boolean>(false);
 
+  // 체크된 씬들을 관리하는 상태 - scene_number로 관리
+  const [selectedScenes, setSelectedScenes] = useState<Set<number>>(new Set());
+
+  // 비디오가 로드되면 모든 씬을 기본으로 체크 (scene_number 사용)
+  useEffect(() => {
+    if (video && video.scenes.length > 0 && selectedScenes.size === 0) {
+      setSelectedScenes(
+        new Set(video.scenes.map((scene) => scene.scene_number - 1))
+      );
+    }
+  }, [video]);
+
+  // 씬 체크박스 토글 함수 - scene_number 사용
+  const toggleSceneSelection = (sceneIndex: number) => {
+    setSelectedScenes((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(sceneIndex)) {
+        newSet.delete(sceneIndex);
+      } else {
+        newSet.add(sceneIndex);
+      }
+      return newSet;
+    });
+  };
+
+  // 모든 씬 선택/해제 함수
+  const toggleAllScenes = () => {
+    if (!video) return;
+
+    if (selectedScenes.size === video.scenes.length) {
+      setSelectedScenes(new Set());
+    } else {
+      setSelectedScenes(new Set(video.scenes.map((_, index) => index)));
+    }
+  };
+
+  // 체크된 씬들만 필터링
+  const selectedSceneList =
+    video?.scenes?.filter((_, index) => selectedScenes.has(index)) || [];
+
   const videoId = params.id as string;
 
   useEffect(() => {
@@ -441,6 +481,30 @@ export default function NewsVideoDetailPage() {
       scene.scene_number = index + 1;
     });
 
+    // selectedScenes 인덱스 재매핑
+    const newSelectedScenes = new Set<number>();
+    selectedScenes.forEach((selectedIndex) => {
+      let newIndex = selectedIndex;
+
+      if (selectedIndex === fromIndex) {
+        // 이동된 씬
+        newIndex = toIndex;
+      } else if (fromIndex < toIndex) {
+        // 뒤로 이동하는 경우
+        if (selectedIndex > fromIndex && selectedIndex <= toIndex) {
+          newIndex = selectedIndex - 1;
+        }
+      } else if (fromIndex > toIndex) {
+        // 앞으로 이동하는 경우
+        if (selectedIndex >= toIndex && selectedIndex < fromIndex) {
+          newIndex = selectedIndex + 1;
+        }
+      }
+
+      newSelectedScenes.add(newIndex);
+    });
+
+    setSelectedScenes(newSelectedScenes);
     setModifiedScenes(newScenes);
     setHasUnsavedChanges(true);
 
@@ -726,7 +790,9 @@ export default function NewsVideoDetailPage() {
             </div>
           ) : video.scenes.some((scene) => scene.videoUrl) ? (
             <VideoPreview
-              videos={(modifiedScenes.length > 0
+              videos={(selectedSceneList.length > 0
+                ? selectedSceneList
+                : modifiedScenes.length > 0
                 ? modifiedScenes
                 : video.scenes
               )
@@ -742,10 +808,14 @@ export default function NewsVideoDetailPage() {
               projectInfo={{
                 name: video.title,
                 created_at: new Date().toISOString(),
-                totalVideos: video.scenes.filter((scene) => scene.videoUrl)
-                  .length,
-                completedCount: video.scenes.filter((scene) => scene.videoUrl)
-                  .length,
+                totalVideos: (selectedSceneList.length > 0
+                  ? selectedSceneList
+                  : video.scenes
+                ).filter((scene) => scene.videoUrl).length,
+                completedCount: (selectedSceneList.length > 0
+                  ? selectedSceneList
+                  : video.scenes
+                ).filter((scene) => scene.videoUrl).length,
                 processingCount: 0,
                 failedCount: 0,
               }}
@@ -796,6 +866,20 @@ export default function NewsVideoDetailPage() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Scene Info</h3>
             <div className="flex items-center gap-2">
+              {/* 전체 선택/해제 체크박스 */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={
+                    selectedScenes.size === video.scenes.length &&
+                    video.scenes.length > 0
+                  }
+                  onChange={toggleAllScenes}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <span className="text-sm text-gray-600">전체 선택</span>
+              </div>
+
               {hasUnsavedChanges && (
                 <>
                   <span className="text-sm text-orange-600 bg-orange-50 px-2 py-1 rounded">
@@ -826,12 +910,23 @@ export default function NewsVideoDetailPage() {
             {video.scenes.map((scene, index) => (
               <div
                 key={index}
-                className={`border rounded-lg p-3 transition-colors border-gray-200 hover:border-gray-300`}
+                className={`border rounded-lg p-3 transition-colors border-gray-200 hover:border-gray-300 ${
+                  selectedScenes.has(index) ? "border-blue-300 bg-blue-50" : ""
+                }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-sm">
-                    Scene {scene.scene_number}
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    {/* 개별 씬 체크박스 */}
+                    <input
+                      type="checkbox"
+                      checked={selectedScenes.has(index)}
+                      onChange={() => toggleSceneSelection(index)}
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                    <h4 className="font-medium text-sm">
+                      Scene {scene.scene_number}
+                    </h4>
+                  </div>
                   <div className="flex items-center gap-1">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
