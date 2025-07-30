@@ -114,6 +114,24 @@ export default function NewsVideoDetailPage() {
 
   const videoId = params.id as string;
 
+  // 더보기 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest(".relative")) {
+        const menus = document.querySelectorAll('[id^="menu-"]');
+        menus.forEach((menu) => {
+          menu.classList.add("hidden");
+        });
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   useEffect(() => {
     if (videoId) {
       loadVideo();
@@ -467,6 +485,89 @@ export default function NewsVideoDetailPage() {
       imageUrl: "",
     });
     setError("");
+  };
+
+  const handleCopyPrompt = async (sceneIndex: number) => {
+    if (!video) return;
+
+    const scene = video.scenes[sceneIndex];
+    try {
+      await navigator.clipboard.writeText(scene.image_prompt);
+      console.log("✅ Prompt copied to clipboard");
+    } catch (error) {
+      console.error("Failed to copy prompt:", error);
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = scene.image_prompt;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      console.log("✅ Prompt copied to clipboard (fallback)");
+    }
+  };
+
+  const handleDeleteScene = async (sceneIndex: number) => {
+    if (!video || video.scenes.length <= 1) return;
+
+    const sceneToDelete = video.scenes[sceneIndex];
+    if (
+      confirm(
+        `Are you sure you want to delete Scene ${sceneToDelete.scene_number}?`
+      )
+    ) {
+      try {
+        const updatedScenes = video.scenes
+          .filter((_, index) => index !== sceneIndex)
+          .map((scene, index) => ({
+            ...scene,
+            scene_number: index + 1,
+          }));
+
+        // Firebase에서 비디오 업데이트 및 Storage에서 비디오 파일 삭제
+        const response = await fetch(`/api/video/news/update-scenes`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            videoId: videoId,
+            scenes: updatedScenes,
+            deletedSceneIndex: sceneIndex, // 삭제된 Scene의 인덱스 전달
+          }),
+        });
+
+        if (response.ok) {
+          // 로컬 상태 업데이트
+          setVideo({
+            ...video,
+            scenes: updatedScenes,
+          });
+
+          // 선택된 씬들도 업데이트
+          const newSelectedScenes = new Set<number>();
+          selectedScenes.forEach((selectedIndex) => {
+            if (selectedIndex < sceneIndex) {
+              newSelectedScenes.add(selectedIndex);
+            } else if (selectedIndex > sceneIndex) {
+              newSelectedScenes.add(selectedIndex - 1);
+            }
+          });
+          setSelectedScenes(newSelectedScenes);
+
+          console.log(
+            `✅ Scene ${sceneToDelete.scene_number} deleted successfully`
+          );
+        } else {
+          const errorData = await response.json();
+          console.error("Failed to delete scene:", errorData);
+          alert("Failed to delete scene. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error deleting scene:", error);
+        alert("Failed to delete scene. Please try again.");
+      }
+    }
   };
 
   const handleSceneOrderChange = (fromIndex: number, toIndex: number) => {
@@ -892,7 +993,7 @@ export default function NewsVideoDetailPage() {
               </Button>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {video.scenes.map((scene, index) => (
               <div
                 key={index}
@@ -935,13 +1036,79 @@ export default function NewsVideoDetailPage() {
                     </label>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                        getSceneStatus(scene, index)
-                      )}`}
-                    >
-                      {getStatusText(getSceneStatus(scene, index))}
-                    </span>
+                    {getSceneStatus(scene, index) !== "completed" && (
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          getSceneStatus(scene, index)
+                        )}`}
+                      >
+                        {getStatusText(getSceneStatus(scene, index))}
+                      </span>
+                    )}
+                    {video.scenes.length > 1 && (
+                      <div className="relative">
+                        <button
+                          onClick={() => {
+                            const menuId = `menu-${index}`;
+                            const menu = document.getElementById(menuId);
+                            if (menu) {
+                              menu.classList.toggle("hidden");
+                            }
+                          }}
+                          className="text-gray-500 hover:text-gray-700 text-xs bg-transparent border-none cursor-pointer p-1"
+                          title="More options"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                          </svg>
+                        </button>
+                        <div
+                          id={`menu-${index}`}
+                          className="absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-10 hidden"
+                        >
+                          <button
+                            onClick={() => handleCopyPrompt(index)}
+                            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                              />
+                            </svg>
+                            Copy Prompt
+                          </button>
+                          <button
+                            onClick={() => handleDeleteScene(index)}
+                            className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -979,32 +1146,8 @@ export default function NewsVideoDetailPage() {
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <strong className="block mb-1 text-xs">
-                        Narration :
+                        Description :
                       </strong>
-                      <div className="flex items-center gap-1">
-                        <strong className="text-gray-400">Prompt</strong>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(scene.image_prompt);
-                          }}
-                          className="text-gray-400 hover:text-gray-600 rounded transition-colors"
-                          title="Copy prompt"
-                        >
-                          <svg
-                            className="w-6 h-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                            />
-                          </svg>
-                        </button>
-                      </div>
                     </div>
                     <textarea
                       value={
@@ -1057,7 +1200,7 @@ export default function NewsVideoDetailPage() {
                   {/* 나레이션 입력 */}
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Narration :
+                      Description :
                     </label>
                     <textarea
                       value={regenerateForm.narration}

@@ -12,12 +12,26 @@ export default function NewsVideoListPage() {
   const [videos, setVideos] = useState<NewsVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [thumbnails, setThumbnails] = useState<{ [key: string]: string }>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const videosPerPage = 40;
 
   useEffect(() => {
     if (user) {
       loadVideos();
     }
   }, [user]);
+
+  // videos가 로드되면 첫 번째 씬의 영상에서 썸네일 생성
+  useEffect(() => {
+    videos.forEach((video) => {
+      // 첫 번째 씬의 영상이 있는 경우 썸네일 생성
+      const firstSceneWithVideo = video.scenes.find((scene) => scene.videoUrl);
+      if (firstSceneWithVideo?.videoUrl) {
+        generateThumbnail(firstSceneWithVideo.videoUrl, video.id);
+      }
+    });
+  }, [videos]);
 
   const loadVideos = async () => {
     if (!user) return;
@@ -37,13 +51,51 @@ export default function NewsVideoListPage() {
   };
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+
+    return `${year}.${month}.${day} ${hours}:${minutes}`;
+  };
+
+  // 페이징 계산
+  const totalPages = Math.ceil(videos.length / videosPerPage);
+  const startIndex = (currentPage - 1) * videosPerPage;
+  const endIndex = startIndex + videosPerPage;
+  const currentVideos = videos.slice(startIndex, endIndex);
+
+  // 영상에서 썸네일 생성
+  const generateThumbnail = (videoUrl: string, videoId: string) => {
+    if (thumbnails[videoId]) return; // 이미 썸네일이 있으면 생성하지 않음
+
+    const video = document.createElement("video");
+    video.crossOrigin = "anonymous";
+    video.src = videoUrl;
+    video.currentTime = 0.1; // 0.1초 지점에서 썸네일 생성
+
+    video.addEventListener("loadeddata", () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 320;
+      canvas.height = 180;
+      const ctx = canvas.getContext("2d");
+
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const thumbnailUrl = canvas.toDataURL("image/jpeg", 0.8);
+        setThumbnails((prev) => ({
+          ...prev,
+          [videoId]: thumbnailUrl,
+        }));
+      }
+    });
+
+    video.addEventListener("error", () => {
+      console.error("Failed to load video for thumbnail:", videoUrl);
+    });
+
+    video.load();
   };
 
   if (!user) {
@@ -58,7 +110,7 @@ export default function NewsVideoListPage() {
   }
 
   return (
-    <div className="container max-w-6xl mx-auto px-4 py-8">
+    <div className="container max-w-8xl mx-auto px-4 py-16">
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
           {error}
@@ -84,13 +136,19 @@ export default function NewsVideoListPage() {
         <div>
           {" "}
           <PageTitle title="Generated Video" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {videos.map((video) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {currentVideos.map((video) => (
               <Link key={video.id} href={`/video/createVideo/${video.id}`}>
                 <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
                   {/* 썸네일 */}
                   <div className="aspect-video bg-gray-100 relative">
-                    {video.thumbnail ? (
+                    {thumbnails[video.id] ? (
+                      <img
+                        src={thumbnails[video.id]}
+                        alt={video.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : video.thumbnail ? (
                       <img
                         src={video.thumbnail}
                         alt={video.title}
@@ -98,7 +156,7 @@ export default function NewsVideoListPage() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <div className="text-4xl">🎬</div>
+                        <div className="text-secondary-dark">Landering...</div>
                       </div>
                     )}
 
@@ -121,7 +179,7 @@ export default function NewsVideoListPage() {
                       </span>
                       {video.model && (
                         <div>
-                          <span className="inline-block bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded">
+                          <span className="inline-block bg-black/30 text-white text-xs px-2 py-1 rounded">
                             {video.model}
                           </span>
                         </div>
@@ -138,25 +196,58 @@ export default function NewsVideoListPage() {
 
                   {/* 정보 */}
                   <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-1">
                       {video.title}
                     </h3>
-
-                    {video.description && (
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-1">
-                        {video.description}
-                      </p>
-                    )}
-
                     <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>{video.scenes.length} Scene</span>
                       <span>{formatDate(video.createdAt)}</span>
+                      <span>{video.scenes.length} Scene</span>
                     </div>
                   </div>
                 </div>
               </Link>
             ))}
           </div>
+          {/* 페이징 컨트롤 */}
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center items-center gap-2">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+
+              <div className="flex gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-2 text-sm border rounded-md ${
+                        currentPage === page
+                          ? "bg-primary text-white border-primary"
+                          : "border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
+              </div>
+
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
