@@ -49,13 +49,13 @@ export default function AuthLayout({
   console.log("approved:", approved);
 
   if (loading) {
-    console.log("⏳ Checking login...");
+    console.log("Checking login...");
     return <div className="p-6">⏳ Checking login...</div>;
   }
 
   if (!user) {
-    console.log("🔒 Login is required.");
-    return <div className="p-6 text-red-600">🔒 Login is required.</div>;
+    console.log("Login is required.");
+    return <div className="p-6 text-red-600">Login is required.</div>;
   }
 
   if (!approved) {
@@ -68,6 +68,6 @@ export default function AuthLayout({
     );
   }
 
-  console.log("✅ Authenticated user - rendering page");
+  console.log("Authenticated user - rendering page");
   return <>{children}</>;
 }

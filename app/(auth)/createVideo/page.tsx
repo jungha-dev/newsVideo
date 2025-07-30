@@ -724,8 +724,13 @@ Please compose the video based on the following blog content:
 
   return (
     <div className="container max-w-6xl mx-auto px-4 py-8">
-      <PageTitle title="AI Content Generation" />
-
+      <div className="my-20">
+        <PageTitle
+          variant="centered"
+          title="AI Content Generation"
+          subtitle="Turn Your Content into Stunning Videos"
+        />
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
         {/* 입력 섹션 */}
         <Section className={isScenarioCollapsed ? "!mb-0 !pb-0" : ""}>
@@ -803,13 +808,10 @@ Please compose the video based on the following blog content:
                 {activeTab === "scenario" && (
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Blog Content
-                      </label>
                       <Textarea
                         value={blogContent}
                         onChange={(e) => setBlogContent(e.target.value)}
-                        placeholder="Enter blog content. A 1-minute video scenario will be generated based on this content..."
+                        placeholder="Enter blog content. A video scenario will be generated based on this content..."
                         rows={4}
                       />
                     </div>
@@ -866,7 +868,7 @@ Please compose the video based on the following blog content:
 
                     {/* 프롬프트 설정 섹션 */}
                     {showPromptSettings && (
-                      <div className="border rounded-lg p-4 space-y-4 bg-gray-50">
+                      <div className="border border-secondary rounded-lg p-4 space-y-4 bg-gray-50">
                         <h4 className="text-sm font-medium text-gray-900">
                           Prompt Settings
                         </h4>
