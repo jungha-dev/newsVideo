@@ -12,13 +12,13 @@ export default function AuthLayout({
 
   // loading 상태 변화 추적
   useEffect(() => {
-    console.log("🔄 AuthLayout loading 상태 변화:", loading);
+    console.log("🔄 AuthLayout loading state change:", loading);
   }, [loading]);
 
   // user 상태 변화 추적
   useEffect(() => {
     console.log(
-      "🔄 AuthLayout user 상태 변화:",
+      "🔄 AuthLayout user state change:",
       user
         ? {
             uid: user.uid,
@@ -31,10 +31,10 @@ export default function AuthLayout({
 
   // approved 상태 변화 추적
   useEffect(() => {
-    console.log("🔄 AuthLayout approved 상태 변화:", approved);
+    console.log("🔄 AuthLayout approved state change:", approved);
   }, [approved]);
 
-  console.log("=== AuthLayout 상태 ===");
+  console.log("=== AuthLayout state ===");
   console.log("loading:", loading);
   console.log(
     "user:",
@@ -49,25 +49,25 @@ export default function AuthLayout({
   console.log("approved:", approved);
 
   if (loading) {
-    console.log("⏳ 로그인 확인 중...");
-    return <div className="p-6">⏳ 로그인 확인 중...</div>;
+    console.log("⏳ Checking login...");
+    return <div className="p-6">⏳ Checking login...</div>;
   }
 
   if (!user) {
-    console.log("🔒 로그인이 필요합니다.");
-    return <div className="p-6 text-red-600">🔒 로그인이 필요합니다.</div>;
+    console.log("🔒 Login is required.");
+    return <div className="p-6 text-red-600">🔒 Login is required.</div>;
   }
 
   if (!approved) {
-    console.log("❌ 승인되지 않은 사용자입니다.");
+    console.log("❌ Unauthorized user.");
     return (
       <div className="p-6 text-red-600">
-        ❌ 승인되지 않은 사용자입니다. <br />
-        🔔 <strong>관리자에게 승인 요청을 해주세요.</strong>
+        ❌ Unauthorized user. <br />
+        🔔 <strong>Please request approval from the administrator.</strong>
       </div>
     );
   }
 
-  console.log("✅ 인증된 사용자 - 페이지 렌더링");
+  console.log("✅ Authenticated user - rendering page");
   return <>{children}</>;
 }

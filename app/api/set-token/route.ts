@@ -2,35 +2,35 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  console.log("=== set-token API 호출 ===");
+  console.log("=== set-token API call ===");
 
   try {
     const body = await req.json();
     const { token } = body;
 
-    console.log("토큰 존재 여부:", !!token);
-    console.log("토큰 길이:", token?.length);
+    console.log("Token existence:", !!token);
+    console.log("Token length:", token?.length);
 
     if (!token) {
-      console.error("❌ 토큰이 없습니다.");
+      console.error("❌ Token is missing.");
       return NextResponse.json({ error: "Missing token" }, { status: 400 });
     }
 
-    console.log("쿠키 설정 중...");
+    console.log("Setting cookie...");
     const response = NextResponse.json({ success: true });
 
-    // ✅ 쿠키 설정
+    // ✅ Setting cookie
     response.cookies.set("__session", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 5, // 5일
+      maxAge: 60 * 60 * 24 * 5, // 5 days
     });
 
-    console.log("✅ 토큰 쿠키 설정 완료");
-    console.log("환경:", process.env.NODE_ENV);
-    console.log("쿠키 설정:", {
+    console.log("✅ Token cookie set successfully");
+    console.log("Environment:", process.env.NODE_ENV);
+    console.log("Cookie settings:", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("❌ set-token API 오류:", error);
+    console.error("❌ set-token API error:", error);
     return NextResponse.json(
       { error: "Invalid request body" },
       { status: 400 }
