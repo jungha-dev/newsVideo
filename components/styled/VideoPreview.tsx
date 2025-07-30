@@ -447,10 +447,22 @@ export default function VideoPreview({
             {/* 자막 설정 및 다운로드 섹션 */}
             {videos.length > 0 && (
               <div className="rounded-lg mt-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Subscript settings
-                </h3>
-
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Subscript settings
+                  </h3>
+                  <div>
+                    <input
+                      type="checkbox"
+                      checked={showSubtitles}
+                      onChange={(e) =>
+                        onShowSubtitlesChange?.(e.target.checked)
+                      }
+                      className="mr-2"
+                    />
+                    <span className="text-sm">Show Subtitles</span>
+                  </div>
+                </div>
                 {/* 자막 설정 */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div>
@@ -461,7 +473,7 @@ export default function VideoPreview({
                       type="color"
                       value={subtitleColor}
                       onChange={(e) => onSubtitleColorChange?.(e.target.value)}
-                      className="w-full h-10 border border-gray-300 rounded-md"
+                      className="w-20 h-10 rounded-md"
                     />
                   </div>
 
@@ -469,7 +481,7 @@ export default function VideoPreview({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Text Style:
                     </label>
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 h-10 mx-auto">
                       <label className="flex items-center">
                         <input
                           type="radio"
@@ -478,7 +490,9 @@ export default function VideoPreview({
                           onChange={() => onSubtitleStyleChange?.("box")}
                           className="mr-2"
                         />
-                        <span className="text-sm">Background</span>
+                        <span className="text-md text-white font-black bg-black/50 p-1.5">
+                          Background
+                        </span>
                       </label>
                       <label className="flex items-center">
                         <input
@@ -488,26 +502,17 @@ export default function VideoPreview({
                           onChange={() => onSubtitleStyleChange?.("outline")}
                           className="mr-2"
                         />
-                        <span className="text-sm">Outline</span>
+                        <span
+                          className="text-md text-white font-black"
+                          style={{
+                            textShadow:
+                              "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000",
+                          }}
+                        >
+                          Outline
+                        </span>
                       </label>
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Show:
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={showSubtitles}
-                        onChange={(e) =>
-                          onShowSubtitlesChange?.(e.target.checked)
-                        }
-                        className="mr-2"
-                      />
-                      <span className="text-sm">Show</span>
-                    </label>
                   </div>
                 </div>
 
