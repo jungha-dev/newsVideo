@@ -106,9 +106,7 @@ export default function NewsVideoDetailPage() {
     // 즉시 한 번 상태 확인
     const checkStatus = async () => {
       try {
-        const response = await fetch(
-          `/api/video/createVideo/status/${videoId}`
-        );
+        const response = await fetch(`/api/video/news/status/${videoId}`);
         if (response.ok) {
           const data = await response.json();
           console.log("Polling update:", data.video.status);
@@ -253,7 +251,7 @@ export default function NewsVideoDetailPage() {
       // Regenerate 시작 플래그 설정
       isRegeneratingRef.current = true;
 
-      const response = await fetch(`/api/video/createVideo/regenerate-scene`, {
+      const response = await fetch(`/api/video/news/regenerate-scene`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -321,7 +319,7 @@ export default function NewsVideoDetailPage() {
       // Scene 추가 시작 플래그 설정
       isRegeneratingRef.current = true;
 
-      const response = await fetch(`/api/video/createVideo/generate`, {
+      const response = await fetch(`/api/video/news/generate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -420,7 +418,7 @@ export default function NewsVideoDetailPage() {
     if (!video || !hasUnsavedChanges) return;
 
     try {
-      const response = await fetch(`/api/video/createVideo/update-scenes`, {
+      const response = await fetch(`/api/video/news/update-scenes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -464,7 +462,7 @@ export default function NewsVideoDetailPage() {
 
       console.log("Merge request data:", requestBody);
 
-      const response = await fetch(`/api/video/createVideo/merge-videos`, {
+      const response = await fetch(`/api/video/news/merge-videos`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -530,9 +528,7 @@ export default function NewsVideoDetailPage() {
             `📤 Scene ${i + 1} Firebase Storage 업로드: ${scene.videoUrl}`
           );
 
-          const response = await fetch(
-            `/api/video/createVideo/status/${videoId}`
-          );
+          const response = await fetch(`/api/video/news/status/${videoId}`);
           if (response.ok) {
             const data = await response.json();
             console.log(
@@ -588,7 +584,7 @@ export default function NewsVideoDetailPage() {
       console.log(`📤 Scene ${sceneIndex + 1} Firebase Storage 업로드 시작...`);
       console.log(`📤 원본 URL: ${scene.videoUrl}`);
 
-      const response = await fetch(`/api/video/createVideo/status/${videoId}`);
+      const response = await fetch(`/api/video/news/status/${videoId}`);
       if (response.ok) {
         const data = await response.json();
         console.log(
