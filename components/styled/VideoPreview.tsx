@@ -448,14 +448,14 @@ export default function VideoPreview({
             {videos.length > 0 && (
               <div className="rounded-lg mt-8">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Settings
+                  Subscript settings
                 </h3>
 
                 {/* 자막 설정 */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Description Color:
+                      Color:
                     </label>
                     <input
                       type="color"
@@ -467,7 +467,7 @@ export default function VideoPreview({
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Subtitle Style:
+                      Text Style:
                     </label>
                     <div className="flex gap-4">
                       <label className="flex items-center">
@@ -495,7 +495,7 @@ export default function VideoPreview({
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Show Subtitles:
+                      Show:
                     </label>
                     <label className="flex items-center">
                       <input
@@ -506,7 +506,7 @@ export default function VideoPreview({
                         }
                         className="mr-2"
                       />
-                      <span className="text-sm">Show Subtitles</span>
+                      <span className="text-sm">Show</span>
                     </label>
                   </div>
                 </div>

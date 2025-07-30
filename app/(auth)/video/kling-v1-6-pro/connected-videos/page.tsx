@@ -113,7 +113,7 @@ export default function ConnectedVideosPage() {
 
     // 최대 2개 이미지 제한
     if (formData.images.length + files.length > 2) {
-      setError("최대 2개의 이미지만 업로드할 수 있습니다.");
+      setError("You can only upload up to 2 images.");
       return;
     }
 
@@ -162,7 +162,7 @@ export default function ConnectedVideosPage() {
       setUploadedFiles((prev) => [...prev, ...Array.from(files)]);
     } catch (error) {
       console.error("Upload error:", error);
-      setError("이미지 업로드에 실패했습니다.");
+      setError("Image upload failed.");
     } finally {
       setIsUploading(false);
     }
@@ -199,7 +199,7 @@ export default function ConnectedVideosPage() {
     if (newImageUrl.trim()) {
       // 최대 2개 이미지 제한
       if (formData.images.length >= 2) {
-        setError("최대 2개의 이미지만 추가할 수 있습니다.");
+        setError("You can only add up to 2 images.");
         return;
       }
 
@@ -217,7 +217,7 @@ export default function ConnectedVideosPage() {
     if (urls.length > 0) {
       // 최대 2개 이미지 제한
       if (formData.images.length + urls.length > 2) {
-        setError("최대 2개의 이미지만 추가할 수 있습니다.");
+        setError("You can only add up to 2 images.");
         return;
       }
 
@@ -254,17 +254,17 @@ export default function ConnectedVideosPage() {
   // 연결된 영상 생성
   const handleGenerateConnectedVideos = async () => {
     if (!user) {
-      setError("로그인이 필요합니다.");
+      setError("Login is required.");
       return;
     }
 
     if (formData.images.length !== 2) {
-      setError("정확히 2개의 이미지가 필요합니다.");
+      setError("Exactly 2 images are required.");
       return;
     }
 
     if (!formData.project_name.trim()) {
-      setError("프로젝트 이름을 입력해주세요.");
+      setError("Please enter a project name.");
       return;
     }
 
@@ -292,15 +292,17 @@ export default function ConnectedVideosPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "연결된 영상 생성에 실패했습니다.");
+        throw new Error(
+          errorData.error || "Failed to generate connected videos."
+        );
       }
 
       const data = await response.json();
 
       // 성공 메시지 표시
       const message = currentProject
-        ? `기존 프로젝트 "${currentProject.name}"에 새로운 영상이 추가되었습니다.`
-        : `연결된 영상 생성이 시작되었습니다. 프로젝트: ${data.project.name}`;
+        ? `New video added to existing project "${currentProject.name}".`
+        : `Connected video generation started. Project: ${data.project.name}`;
       setSuccessMessage(message);
 
       // 생성된 프로젝트의 영상들을 실시간으로 폴링
@@ -328,7 +330,7 @@ export default function ConnectedVideosPage() {
       setError(
         error instanceof Error
           ? error.message
-          : "연결된 영상 생성에 실패했습니다."
+          : "Failed to generate connected videos."
       );
     } finally {
       setIsGenerating(false);
@@ -338,17 +340,17 @@ export default function ConnectedVideosPage() {
   // 기존 프로젝트 선택 시 해당 프로젝트의 이미지들을 사용해서 영상 생성 시작
   const handleGenerateFromExistingProject = async (project: Project) => {
     if (!user) {
-      setError("로그인이 필요합니다.");
+      setError("Login is required.");
       return;
     }
 
     if (!project.images || project.images.length < 2) {
-      setError("선택된 프로젝트에 충분한 이미지가 없습니다.");
+      setError("Selected project has insufficient images.");
       return;
     }
 
     if (!project.name.trim()) {
-      setError("프로젝트 이름을 입력해주세요.");
+      setError("Please enter a project name.");
       return;
     }
 
@@ -374,14 +376,16 @@ export default function ConnectedVideosPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "연결된 영상 생성에 실패했습니다.");
+        throw new Error(
+          errorData.error || "Failed to generate connected videos."
+        );
       }
 
       const data = await response.json();
 
       // 성공 메시지 표시
       setSuccessMessage(
-        `연결된 영상 생성이 시작되었습니다. 프로젝트: ${data.project.name}`
+        `Connected video generation started. Project: ${data.project.name}`
       );
 
       // 생성된 프로젝트의 영상들을 실시간으로 폴링
@@ -408,7 +412,7 @@ export default function ConnectedVideosPage() {
       setError(
         error instanceof Error
           ? error.message
-          : "연결된 영상 생성에 실패했습니다."
+          : "Failed to generate connected videos."
       );
     } finally {
       setIsGenerating(false);
@@ -427,7 +431,7 @@ export default function ConnectedVideosPage() {
 
     // 영상이 없으면 폴링하지 않음
     if (!generatedVideos || generatedVideos.length === 0) {
-      console.log("폴링 중단: 영상이 없음");
+      console.log("Polling stopped: no videos");
       return;
     }
 
@@ -445,7 +449,7 @@ export default function ConnectedVideosPage() {
       initialExpectedVideoCount > 0
     ) {
       console.log(
-        `폴링 중단: 이미 모든 영상 완료 (${initialCompletedCount}/${initialExpectedVideoCount})`
+        `Polling stopped: all videos completed (${initialCompletedCount}/${initialExpectedVideoCount})`
       );
       return;
     }
@@ -476,7 +480,7 @@ export default function ConnectedVideosPage() {
             completedCount >= expectedVideoCount && expectedVideoCount > 0;
 
           console.log(
-            `폴링 상태: ${completedCount}/${expectedVideoCount} 영상 완료`,
+            `Polling status: ${completedCount}/${expectedVideoCount} videos completed`,
             {
               projectId: currentProject.id,
               totalVideos: updatedVideos.length,
@@ -496,7 +500,7 @@ export default function ConnectedVideosPage() {
             setIsGenerating(false);
             setGeneratedVideos(updatedVideos); // 마지막 상태 업데이트
             console.log(
-              `폴링 중단: ${completedCount}/${expectedVideoCount} 영상 완료`
+              `Polling stopped: ${completedCount}/${expectedVideoCount} videos completed`
             );
             return; // 폴링 중단
           }
@@ -507,7 +511,7 @@ export default function ConnectedVideosPage() {
       } catch (error) {
         console.error("Error polling video status:", error);
       }
-    }, 10000); // 10초마다 폴링
+    }, 10000); // 10 seconds
 
     pollingRef.current = pollInterval;
 
@@ -523,11 +527,11 @@ export default function ConnectedVideosPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="bg-white rounded-lg  p-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-6">
-          연결된 영상 생성 - Kling v1.6 Pro
+          Connected Video Generation
         </h1>
         <p className="text-gray-600 mb-8">
-          정확히 2장의 이미지를 업로드하면 두 이미지 사이를 연결하는 영상이
-          자동으로 생성됩니다.
+          Upload exactly 2 images to automatically generate a video connecting
+          the two images.
         </p>
 
         {/* 성공 메시지 */}
@@ -539,11 +543,11 @@ export default function ConnectedVideosPage() {
 
         {/* 프로젝트 선택/생성 */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">프로젝트</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Project</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                새 프로젝트 이름 *
+                New Project Name *
               </label>
               <input
                 type="text"
@@ -554,13 +558,13 @@ export default function ConnectedVideosPage() {
                     project_name: e.target.value,
                   }))
                 }
-                placeholder="프로젝트 이름을 입력하세요"
+                placeholder="Enter a project name"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                기존 프로젝트
+                Existing Project
               </label>
               <select
                 onChange={(e) => {
@@ -582,10 +586,10 @@ export default function ConnectedVideosPage() {
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               >
-                <option value="">프로젝트 선택</option>
+                <option value="">Select a project</option>
                 {projects.map((project) => (
                   <option key={project.id} value={project.id}>
-                    {project.name} ({(project.videos || []).length}개 영상)
+                    {project.name} ({(project.videos || []).length} videos)
                   </option>
                 ))}
               </select>
@@ -596,7 +600,7 @@ export default function ConnectedVideosPage() {
         {/* 이미지 업로드 */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            이미지 업로드
+            Image Upload
           </h2>
 
           {/* 업로드 방식 선택 */}
@@ -610,7 +614,7 @@ export default function ConnectedVideosPage() {
                     : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }`}
               >
-                파일 업로드
+                File Upload
               </button>
               <button
                 onClick={() => setUploadMethod("url")}
@@ -620,7 +624,7 @@ export default function ConnectedVideosPage() {
                     : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }`}
               >
-                URL 입력
+                URL Input
               </button>
             </div>
           </div>
@@ -641,10 +645,11 @@ export default function ConnectedVideosPage() {
                 htmlFor="image-upload"
                 className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
               >
-                {isUploading ? "업로드 중..." : "이미지 선택"}
+                {isUploading ? "Uploading..." : "Select Images"}
               </label>
               <p className="mt-2 text-sm text-gray-500">
-                정확히 2개의 이미지를 선택하여 연결 영상을 생성합니다.
+                Select exactly 2 images to generate a video connecting the two
+                images.
               </p>
             </div>
           )}
@@ -657,7 +662,7 @@ export default function ConnectedVideosPage() {
                   type="url"
                   value={newImageUrl}
                   onChange={(e) => setNewImageUrl(e.target.value)}
-                  placeholder="이미지 URL을 입력하세요"
+                  placeholder="Enter an image URL"
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
                 <Button
@@ -666,14 +671,13 @@ export default function ConnectedVideosPage() {
                   variant="primary"
                   size="sm"
                 >
-                  추가
+                  Add
                 </Button>
               </div>
 
               <p className="text-sm text-gray-500">
-                정확히 2개의 이미지 URL을 입력하세요. Generated Images에서
-                복사한 링크들을 한 줄에 하나씩 입력하거나, 직접 이미지 URL을
-                입력할 수 있습니다.
+                Enter exactly 2 image URLs. You can copy and paste image URLs
+                from Generated Images, or enter them directly.
               </p>
             </div>
           )}
@@ -683,14 +687,14 @@ export default function ConnectedVideosPage() {
         {formData.images.length > 0 && (
           <div className="mb-8">
             <h3 className="text-lg font-medium text-gray-800 mb-4">
-              이미지 순서 ({formData.images.length}개)
+              Image Order ({formData.images.length} images)
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {formData.images.map((imageUrl, index) => (
                 <div key={index} className="relative group">
                   <img
                     src={imageUrl}
-                    alt={`이미지 ${index + 1}`}
+                    alt={`Image ${index + 1}`}
                     className="w-full h-32 object-cover rounded-lg"
                   />
                   <div className="absolute top-2 left-2 bg-black/20 text-white text-xs px-2 py-1 rounded">
@@ -708,7 +712,7 @@ export default function ConnectedVideosPage() {
                     {index > 0 && (
                       <button
                         onClick={() => moveImage(index, index - 1)}
-                        className="bg-primary text-white p-1 rounded text-xs hover:bg-primary"
+                        className="bg-primary text-white py-1 px-4 rounded text-xs hover:bg-primary"
                       >
                         ↑
                       </button>
@@ -716,7 +720,7 @@ export default function ConnectedVideosPage() {
                     {index < formData.images.length - 1 && (
                       <button
                         onClick={() => moveImage(index, index + 1)}
-                        className="bg-primary text-white p-1 rounded text-xs hover:bg-primary"
+                        className="bg-primary text-white py-1 px-4 rounded text-xs hover:bg-primary"
                       >
                         ↓
                       </button>
@@ -731,12 +735,12 @@ export default function ConnectedVideosPage() {
         {/* 설정 */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            생성 설정
+            Generation Settings
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                영상 길이
+                Video Length
               </label>
               <select
                 value={formData.duration}
@@ -748,13 +752,13 @@ export default function ConnectedVideosPage() {
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               >
-                <option value={5}>5초</option>
-                <option value={10}>10초</option>
+                <option value={5}>5 seconds</option>
+                <option value={10}>10 seconds</option>
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                화면 비율
+                Aspect Ratio
               </label>
               <select
                 value={formData.aspect_ratio}
@@ -766,9 +770,9 @@ export default function ConnectedVideosPage() {
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               >
-                <option value="16:9">16:9 (가로)</option>
-                <option value="9:16">9:16 (세로)</option>
-                <option value="1:1">1:1 (정사각형)</option>
+                <option value="16:9">16:9 (horizontal)</option>
+                <option value="9:16">9:16 (vertical)</option>
+                <option value="1:1">1:1 (square)</option>
               </select>
             </div>
             <div>
@@ -790,15 +794,15 @@ export default function ConnectedVideosPage() {
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
               />
               <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>유연함 (0)</span>
-                <span>정확함 (1)</span>
+                <span>Flexible (0)</span>
+                <span>Precise (1)</span>
               </div>
             </div>
           </div>
 
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              프롬프트 (선택사항)
+              Prompt (optional)
             </label>
             <textarea
               value={formData.positive_prompt}
@@ -808,7 +812,7 @@ export default function ConnectedVideosPage() {
                   positive_prompt: e.target.value,
                 }))
               }
-              placeholder="영상에서 원하는 스타일, 분위기, 요소들을 자세히 설명하세요..."
+              placeholder="Describe the style, mood, and elements you want in the video..."
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               rows={3}
             />
@@ -816,7 +820,7 @@ export default function ConnectedVideosPage() {
 
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              제외할 요소 (선택사항)
+              Exclude Elements (optional)
             </label>
             <textarea
               value={formData.negative_prompt}
@@ -826,7 +830,7 @@ export default function ConnectedVideosPage() {
                   negative_prompt: e.target.value,
                 }))
               }
-              placeholder="영상에서 제외하고 싶은 요소들을 입력하세요..."
+              placeholder="Enter elements you want to exclude from the video..."
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               rows={3}
             />
@@ -839,10 +843,10 @@ export default function ConnectedVideosPage() {
           {formData.images.length === 2 && (
             <div className="text-center mb-4 p-4 bg-primary/10 border border-primary/40 rounded-lg">
               <p className="text-primary-dark font-medium">
-                예상 생성 영상: 1개
+                Expected Generated Videos: 1
               </p>
               <p className="text-primary text-sm mt-1">
-                2개 이미지 → 1개 연결 영상
+                2 images → 1 connected video
               </p>
             </div>
           )}
@@ -859,7 +863,9 @@ export default function ConnectedVideosPage() {
               size="lg"
               className="px-8 py-3"
             >
-              {isGenerating ? "연결된 영상 생성 중..." : "연결된 영상 생성하기"}
+              {isGenerating
+                ? "Generating Connected Videos..."
+                : "Generate Connected Videos"}
             </Button>
           </div>
         </div>
@@ -876,7 +882,7 @@ export default function ConnectedVideosPage() {
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-gray-800">
-                생성 중인 영상들 ({generatedVideos.length}개)
+                Generating Videos ({generatedVideos.length} videos)
               </h2>
               {/* 진행 상황 표시 */}
               <div className="flex items-center gap-4">
@@ -898,13 +904,13 @@ export default function ConnectedVideosPage() {
                 {/* 상태 요약 */}
                 <div className="flex gap-2">
                   <span className="px-2 py-1 bg-secondary text-black text-xs rounded">
-                    완료: {getStatusCount(generatedVideos, "succeeded")}
+                    Completed: {getStatusCount(generatedVideos, "succeeded")}
                   </span>
                   <span className="px-2 py-1 bg-primary/20 text-primary-dark text-xs rounded">
-                    처리중: {getStatusCount(generatedVideos, "processing")}
+                    Processing: {getStatusCount(generatedVideos, "processing")}
                   </span>
                   <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded">
-                    실패: {getStatusCount(generatedVideos, "failed")}
+                    Failed: {getStatusCount(generatedVideos, "failed")}
                   </span>
                 </div>
               </div>
@@ -913,7 +919,7 @@ export default function ConnectedVideosPage() {
               {generatedVideos.map((video, index) => (
                 <div key={video.id} className="border rounded-lg p-4">
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium">영상 {index + 1}</h3>
+                    <h3 className="font-medium">Video {index + 1}</h3>
                     <span
                       className={`px-2 py-1 rounded text-xs ${
                         video.status === "succeeded"
@@ -926,19 +932,19 @@ export default function ConnectedVideosPage() {
                       }`}
                     >
                       {video.status === "succeeded"
-                        ? "완료"
+                        ? "Completed"
                         : video.status === "failed"
-                        ? "실패"
+                        ? "Failed"
                         : video.status === "processing"
-                        ? "처리 중"
+                        ? "Processing"
                         : video.status === "starting"
-                        ? "시작 중"
+                        ? "Starting"
                         : "대기"}
                     </span>
                   </div>
                   <div className="text-sm text-gray-600 mb-2">
                     <p>
-                      이미지 {index + 1} → 이미지 {index + 2}
+                      Image {index + 1} → Image {index + 2}
                     </p>
                   </div>
                   {video.output && (
@@ -959,7 +965,7 @@ export default function ConnectedVideosPage() {
                           variant="outline"
                           size="sm"
                         >
-                          다운로드
+                          Download
                         </Button>
                         <Button
                           onClick={() =>
@@ -968,7 +974,7 @@ export default function ConnectedVideosPage() {
                           variant="outline"
                           size="sm"
                         >
-                          URL 복사
+                          Copy URL
                         </Button>
                       </div>
                     </div>
@@ -976,17 +982,17 @@ export default function ConnectedVideosPage() {
                   {video.output && video.output.includes("firebase") && (
                     <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
                       <p className="text-red-600 text-sm">
-                        ⚠️ Firebase Storage 접근 권한 문제로 영상을 불러올 수
-                        없습니다.
+                        ⚠️ Firebase Storage access permission problem. Unable to
+                        load video.
                       </p>
                       <p className="text-gray-600 text-xs mt-1">
-                        관리자가 이 문제를 해결하고 있습니다.
+                        The administrator is resolving this issue.
                       </p>
                     </div>
                   )}
                   {video.error && (
                     <p className="text-red-600 text-sm mt-2">
-                      오류: {video.error}
+                      Error: {video.error}
                     </p>
                   )}
                 </div>
@@ -1001,13 +1007,13 @@ export default function ConnectedVideosPage() {
           generatedVideos.length === 0 && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                {currentProject.name} 프로젝트 영상들
+                {currentProject.name} Project Videos
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {(currentProject.videos || []).map((video, index) => (
                   <div key={video.id} className="border rounded-lg p-4">
                     <div className="flex justify-between items-center mb-2">
-                      <h3 className="font-medium">영상 {index + 1}</h3>
+                      <h3 className="font-medium">Video {index + 1}</h3>
                       <span
                         className={`px-2 py-1 rounded text-xs ${
                           video.status === "succeeded"
@@ -1017,7 +1023,7 @@ export default function ConnectedVideosPage() {
                             : "bg-gray-100 text-gray-800"
                         }`}
                       >
-                        {video.status === "succeeded" ? "완료" : "실패"}
+                        {video.status === "succeeded" ? "Completed" : "Failed"}
                       </span>
                     </div>
                     {video.output && !video.output.includes("firebase") && (
@@ -1033,7 +1039,7 @@ export default function ConnectedVideosPage() {
                             errorDiv.className =
                               "text-red-600 text-sm p-2 bg-red-50 rounded";
                             errorDiv.textContent =
-                              "영상 로드 실패. 다시 시도해주세요.";
+                              "Video loading failed. Please try again.";
                             e.currentTarget.parentNode?.appendChild(errorDiv);
                           }}
                         />
