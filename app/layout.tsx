@@ -11,12 +11,12 @@ export const metadata = {
   authors: [{ name: "Palette" }],
   openGraph: {
     title: "팔레트(Palette)",
-    description: "콘텐츠 실험실 - lab.palette.com",
-    url: "https://lab.palette.com",
+    description: "콘텐츠 실험실 - https://lab.pltt.com",
+    url: "http://pltt.xyz",
     siteName: "팔레트(Palette)",
     images: [
       {
-        url: "https://lab.palette.com/og-image.png",
+        url: "http://pltt.xyz/og-image.png",
         width: 1200,
         height: 630,
       },
@@ -28,7 +28,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "팔레트(Palette)",
     description: "AI로 만드는 콘텐츠 실험실 - palette.com",
-    images: ["https://lab.palette.com/og-image.png"],
+    images: ["http://pltt.xyz/og-image.png"],
   },
 };
 

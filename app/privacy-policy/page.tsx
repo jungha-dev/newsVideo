@@ -176,7 +176,7 @@ export default function PrivacyPolicyPage() {
                 <p>
                   <strong>개인정보 보호책임자</strong>
                 </p>
-                <p>이메일: ingingteam@gmail.com</p>
+                <p>이메일: hello@pltt.xyz</p>
                 <p>연락처: 고객센터를 통해 문의</p>
               </div>
             </div>
@@ -210,8 +210,8 @@ export default function PrivacyPolicyPage() {
                 <p>
                   <strong>팔레트(Palette)</strong>
                 </p>
-                <p>이메일: ingingteam@gmail.com</p>
-                <p>웹사이트: https://lab.palette.com</p>
+                <p>이메일: hello@pltt.xyz</p>
+                <p>웹사이트: http://pltt.xyz</p>
               </div>
             </div>
           </section>

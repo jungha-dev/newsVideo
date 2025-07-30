@@ -209,8 +209,8 @@ export default function TermsOfServicePage() {
               <p>
                 <strong>문의사항</strong>
               </p>
-              <p>이메일: ingingteam@gmail.com</p>
-              <p>웹사이트: https://lab.palette.com</p>
+              <p>이메일: hello@pltt.xyz</p>
+              <p>웹사이트: http://pltt.xyz</p>
             </div>
           </div>
         </section>

@@ -231,7 +231,7 @@ export default function DataDeletionPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <h4 className="font-semibold text-gray-900 mb-2">문의</h4>
-                      <p className="text-sm">이메일: ingingteam@gmail.com</p>
+                      <p className="text-sm">이메일: hello@pltt.xyz</p>
                       <p className="text-sm">응답 시간: 영업일 기준 1-2일</p>
                     </div>
                   </div>
