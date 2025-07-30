@@ -353,7 +353,7 @@ export default function VideoPreview({
               <p className="text-xs text-gray-500 mb-2">
                 Select Start Image (Reorderable):
               </p>
-              <div className="grid grid-cols-5 gap-2 max-h-40 overflow-y-auto">
+              <div className="grid grid-cols-5 gap-2">
                 {videos.map((video, index) => {
                   return (
                     <div key={video.id} className="relative group">
@@ -451,15 +451,22 @@ export default function VideoPreview({
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">
                     Subscript settings
                   </h3>
-                  <div>
-                    <input
-                      type="checkbox"
-                      checked={showSubtitles}
-                      onChange={(e) =>
-                        onShowSubtitlesChange?.(e.target.checked)
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onShowSubtitlesChange?.(!showSubtitles)}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                        showSubtitles ? "bg-primary" : "bg-gray-300"
+                      }`}
+                      title={
+                        showSubtitles ? "Hide subtitles" : "Show subtitles"
                       }
-                      className="mr-2"
-                    />
+                    >
+                      <span
+                        className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                          showSubtitles ? "translate-x-5" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
                     <span className="text-sm">Show Subtitles</span>
                   </div>
                 </div>
@@ -483,25 +490,63 @@ export default function VideoPreview({
                     </label>
                     <div className="flex gap-4 h-10 mx-auto">
                       <label className="flex items-center">
-                        <input
-                          type="radio"
-                          value="box"
-                          checked={subtitleStyle === "box"}
-                          onChange={() => onSubtitleStyleChange?.("box")}
-                          className="mr-2"
-                        />
+                        <div className="relative mr-2">
+                          <input
+                            type="radio"
+                            value="box"
+                            checked={subtitleStyle === "box"}
+                            onChange={() => onSubtitleStyleChange?.("box")}
+                            className="sr-only"
+                          />
+                          <div
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                              subtitleStyle === "box"
+                                ? "border-primary bg-primary"
+                                : "border-gray-300 bg-white"
+                            }`}
+                          >
+                            {subtitleStyle === "box" && (
+                              <svg
+                                className="w-3 h-3 text-white"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
                         <span className="text-md text-white font-black bg-black/50 p-1.5">
                           Background
                         </span>
                       </label>
                       <label className="flex items-center">
-                        <input
-                          type="radio"
-                          value="outline"
-                          checked={subtitleStyle === "outline"}
-                          onChange={() => onSubtitleStyleChange?.("outline")}
-                          className="mr-2"
-                        />
+                        <div className="relative mr-2">
+                          <input
+                            type="radio"
+                            value="outline"
+                            checked={subtitleStyle === "outline"}
+                            onChange={() => onSubtitleStyleChange?.("outline")}
+                            className="sr-only"
+                          />
+                          <div
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                              subtitleStyle === "outline"
+                                ? "border-primary bg-primary"
+                                : "border-gray-300 bg-white"
+                            }`}
+                          >
+                            {subtitleStyle === "outline" && (
+                              <svg
+                                className="w-3 h-3 text-white"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
                         <span
                           className="text-md text-white font-black"
                           style={{
