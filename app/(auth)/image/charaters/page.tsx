@@ -2562,7 +2562,7 @@ export default function HomePage() {
 
             {/* 이미지 확대 모달 */}
             {showImageModal && selectedImageForModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+              <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4">
                 <div className="relative max-w-4xl max-h-[90vh] bg-white rounded-lg overflow-hidden">
                   {/* 모달 헤더 */}
                   <div className="flex justify-between items-center p-4 border-b border-secondary bg-gray-50">

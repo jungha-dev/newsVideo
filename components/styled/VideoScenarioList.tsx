@@ -57,6 +57,9 @@ interface VideoScenarioListProps {
   isSaving?: boolean;
   // Video Model 관련 props
   selectedVideoModel?: "kling-v2" | "veo-3" | "hailuo-02";
+  // 아나운서 포함 관련 props
+  newsAnchorIncluded?: { [key: number]: boolean };
+  onNewsAnchorIncludedChange?: (value: { [key: number]: boolean }) => void;
 }
 
 export default function VideoScenarioList({
@@ -81,18 +84,43 @@ export default function VideoScenarioList({
   onSaveNewsVideo,
   isSaving = false,
   selectedVideoModel,
+  newsAnchorIncluded = {},
+  onNewsAnchorIncludedChange,
 }: VideoScenarioListProps) {
   const [showImageUrlModal, setShowImageUrlModal] = useState(false);
   const [imageUrlInput, setImageUrlInput] = useState("");
   const [sceneMediaModals, setSceneMediaModals] = useState<{
     [key: number]: { show: boolean; type: "image" | "video"; url: string };
   }>({});
+  const [originalPrompts, setOriginalPrompts] = useState<{
+    [key: number]: string;
+  }>({});
 
   if (!scenario) return null;
 
   const handleGenerateAll = () => {
+    // 각 scene의 image_prompt를 실제로 업데이트
+    scenario.scenes.forEach((scene, index) => {
+      if (selectedVideoModel === "veo-3" && newsAnchorIncluded[index]) {
+        const updatedScene = {
+          ...scene,
+          image_prompt: `${NEWS_ANCHOR_PROMPT} ${scene.narration}`,
+        };
+        if (onUpdateScene) {
+          onUpdateScene(index, updatedScene);
+        }
+      }
+    });
+
+    // 업데이트된 scene들의 image_prompt를 사용
     const prompts = scenario.scenes.map((scene) => scene.image_prompt);
-    const narrations = scenario.scenes.map((scene) => scene.narration);
+    // 아나운서 포함이 체크된 scene의 경우 나레이션을 빈 문자열로 설정
+    const narrations = scenario.scenes.map((scene, index) => {
+      if (selectedVideoModel === "veo-3" && newsAnchorIncluded[index]) {
+        return ""; // 나레이션을 빈 문자열로 설정
+      }
+      return scene.narration;
+    });
     onGenerateAll(prompts, narrations);
   };
 
@@ -552,12 +580,54 @@ export default function VideoScenarioList({
                   </div>
                 </div>
               )}
-              <div className="flex gap-2 mb-3">
-                <div>
-                  <span className="text-xs text-gray-500">아나운서 포함</span>
-                  <input type="checkbox" checked={false} className="mr-1" />
+              {selectedVideoModel === "veo-3" && (
+                <div className="flex gap-2 mb-3">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newsAnchorIncluded[index] || false}
+                      onChange={(e) => {
+                        if (onNewsAnchorIncludedChange) {
+                          onNewsAnchorIncludedChange({
+                            ...newsAnchorIncluded,
+                            [index]: e.target.checked,
+                          });
+                        }
+
+                        // Image Prompt 실시간 업데이트
+                        if (onUpdateScene) {
+                          const scene = scenario.scenes[index];
+
+                          if (e.target.checked) {
+                            // 체크할 때: 원래 프롬프트를 저장하고 아나운서 프롬프트로 변경
+                            setOriginalPrompts((prev) => ({
+                              ...prev,
+                              [index]: scene.image_prompt,
+                            }));
+
+                            const updatedScene = {
+                              ...scene,
+                              image_prompt: `${NEWS_ANCHOR_PROMPT} ${scene.narration}`,
+                            };
+                            onUpdateScene(index, updatedScene);
+                          } else {
+                            // 체크 해제할 때: 원래 프롬프트로 복원
+                            const originalPrompt =
+                              originalPrompts[index] || scene.image_prompt;
+                            const updatedScene = {
+                              ...scene,
+                              image_prompt: originalPrompt,
+                            };
+                            onUpdateScene(index, updatedScene);
+                          }
+                        }
+                      }}
+                      className="mr-1"
+                    />
+                    <span className="text-xs text-gray-500">아나운서 포함</span>
+                  </div>
                 </div>
-              </div>
+              )}
               {/* 미디어 추가 버튼들 */}
               <div className="flex gap-2 mb-3">
                 <Button
@@ -567,9 +637,7 @@ export default function VideoScenarioList({
                   className="flex-1 text-xs"
                   disabled={selectedVideoModel === "veo-3"}
                 >
-                  {selectedVideoModel === "veo-3"
-                    ? `${NEWS_ANCHOR_PROMPT} ${scene.narration}`
-                    : "📷 이미지 추가"}
+                  {selectedVideoModel === "veo-3" ? "" : "📷 이미지 추가"}
                 </Button>
               </div>
 

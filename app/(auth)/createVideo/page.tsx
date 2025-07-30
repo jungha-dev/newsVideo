@@ -144,6 +144,11 @@ Please compose the video based on the following blog content:
   const [isVideoModelDetailsCollapsed, setIsVideoModelDetailsCollapsed] =
     useState(true);
 
+  // 아나운서 포함 상태
+  const [newsAnchorIncluded, setNewsAnchorIncluded] = useState<{
+    [key: number]: boolean;
+  }>({});
+
   // Blog Content 프롬프트 설정 관련 상태
   const [blogPromptTemplate, setBlogPromptTemplate] = useState(
     DEFAULT_BLOG_PROMPT_TEMPLATE
@@ -1234,6 +1239,8 @@ Please compose the video based on the following blog content:
                   onSaveNewsVideo={handleSaveNewsVideo}
                   isSaving={loading}
                   selectedVideoModel={selectedVideoModel}
+                  newsAnchorIncluded={newsAnchorIncluded}
+                  onNewsAnchorIncludedChange={setNewsAnchorIncluded}
                 />
               </div>
             )}
@@ -1530,11 +1537,35 @@ Please compose the video based on the following blog content:
             {videoScenario && (
               <Button
                 onClick={() => {
+                  // 각 scene의 image_prompt를 실제로 업데이트
+                  videoScenario.scenes.forEach((scene, index) => {
+                    if (
+                      selectedVideoModel === "veo-3" &&
+                      newsAnchorIncluded[index]
+                    ) {
+                      const updatedScene = {
+                        ...scene,
+                        image_prompt: `The news anchor is wearing a clean and elegant white blouse with no logos or prints, sleeves neatly rolled up, confidently standing in a modern news studio.  and a short-haired, neat-looking Asian female news anchor excitedly says: ${scene.narration}`,
+                      };
+                      handleUpdateScene(index, updatedScene);
+                    }
+                  });
+
+                  // 업데이트된 scene들의 image_prompt를 사용
                   const prompts = videoScenario.scenes.map(
                     (scene) => scene.image_prompt
                   );
+                  // 아나운서 포함이 체크된 scene의 경우 나레이션을 빈 문자열로 설정
                   const narrations = videoScenario.scenes.map(
-                    (scene) => scene.narration
+                    (scene, index) => {
+                      if (
+                        selectedVideoModel === "veo-3" &&
+                        newsAnchorIncluded[index]
+                      ) {
+                        return ""; // 나레이션을 빈 문자열로 설정
+                      }
+                      return scene.narration;
+                    }
                   );
                   handleGenerateAllVideos(prompts, narrations);
                 }}
@@ -1565,18 +1596,18 @@ Please compose the video based on the following blog content:
 
             {/* 생성 완료 시 상세 페이지 링크 */}
             {currentVideoId && !generatingVideos && (
-              <div className="mt-4 p-4 bg-primary/20 border border-primary/40 rounded-lg">
+              <div className="mt-4 p-4 border border-primary/10 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-primary-dark font-medium">
-                      ✅ News video generation complete!
+                    <p className="text-primary-dark font-bold">
+                      News video generation complete!
                     </p>
                     <p className="text-primary text-sm">
                       Check the results on the details page.
                     </p>
                   </div>
                   <Link href={`/video/createVideo/${currentVideoId}`}>
-                    <Button variant="primary" size="sm">
+                    <Button variant="secondary" size="sm">
                       View Details Page
                     </Button>
                   </Link>
