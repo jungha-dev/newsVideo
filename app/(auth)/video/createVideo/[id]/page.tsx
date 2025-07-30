@@ -601,15 +601,15 @@ export default function NewsVideoDetailPage() {
         const blob = new Blob([bytes], { type: "video/mp4" });
         const url = URL.createObjectURL(blob);
         setMergedVideoUrl(url);
-        setMergeProgress("병합 완료!");
+        setMergeProgress("Merge completed!");
       } else {
         const errorData = await response.json();
-        console.error("병합 API 에러:", errorData);
-        setError(errorData.error || "영상 병합에 실패했습니다.");
+        console.error("Merge API error:", errorData);
+        setError(errorData.error || "Video merge failed.");
       }
     } catch (error) {
       console.error("Error merging videos:", error);
-      setError("영상 병합 중 오류가 발생했습니다.");
+      setError("Error merging videos.");
     } finally {
       setIsMerging(false);
     }
@@ -631,21 +631,21 @@ export default function NewsVideoDetailPage() {
     if (!video || !user) return;
 
     try {
-      console.log("📤 Firebase Storage 업로드 시작...");
+      console.log("📤 Firebase Storage upload started...");
 
       // 각 Scene에 대해 Firebase Storage 업로드
       for (let i = 0; i < video.scenes.length; i++) {
         const scene = video.scenes[i];
         if (scene.videoUrl) {
           console.log(
-            `📤 Scene ${i + 1} Firebase Storage 업로드: ${scene.videoUrl}`
+            `📤 Scene ${i + 1} Firebase Storage upload: ${scene.videoUrl}`
           );
 
           const response = await fetch(`/api/video/news/status/${videoId}`);
           if (response.ok) {
             const data = await response.json();
             console.log(
-              `✅ Scene ${i + 1} Firebase Storage 업로드 완료:`,
+              `✅ Scene ${i + 1} Firebase Storage upload completed:`,
               data
             );
 
@@ -667,19 +667,19 @@ export default function NewsVideoDetailPage() {
             }
           } else {
             console.error(
-              `❌ Scene ${i + 1} Firebase Storage 업로드 실패:`,
+              `❌ Scene ${i + 1} Firebase Storage upload failed:`,
               response.statusText
             );
           }
         }
       }
 
-      console.log("🎉 Firebase Storage 업로드 완료!");
+      console.log("🎉 Firebase Storage upload completed!");
 
       // 업데이트된 데이터 다시 로드
       await loadVideo();
     } catch (error) {
-      console.error("❌ Firebase Storage 업로드 실패:", error);
+      console.error("❌ Firebase Storage upload failed:", error);
     }
   };
 
@@ -690,18 +690,20 @@ export default function NewsVideoDetailPage() {
     try {
       const scene = video.scenes[sceneIndex];
       if (!scene.videoUrl) {
-        console.log(`❌ Scene ${sceneIndex + 1}: 비디오 URL이 없습니다.`);
+        console.log(`❌ Scene ${sceneIndex + 1}: No video URL.`);
         return;
       }
 
-      console.log(`📤 Scene ${sceneIndex + 1} Firebase Storage 업로드 시작...`);
-      console.log(`📤 원본 URL: ${scene.videoUrl}`);
+      console.log(
+        `📤 Scene ${sceneIndex + 1} Firebase Storage upload started...`
+      );
+      console.log(`📤 Original URL: ${scene.videoUrl}`);
 
       const response = await fetch(`/api/video/news/status/${videoId}`);
       if (response.ok) {
         const data = await response.json();
         console.log(
-          `✅ Scene ${sceneIndex + 1} Firebase Storage 업로드 완료:`,
+          `✅ Scene ${sceneIndex + 1} Firebase Storage upload completed:`,
           data
         );
 
@@ -728,13 +730,13 @@ export default function NewsVideoDetailPage() {
         await loadVideo();
       } else {
         console.error(
-          `❌ Scene ${sceneIndex + 1} Firebase Storage 업로드 실패:`,
+          `❌ Scene ${sceneIndex + 1} Firebase Storage upload failed:`,
           response.statusText
         );
       }
     } catch (error) {
       console.error(
-        `❌ Scene ${sceneIndex + 1} Firebase Storage 업로드 실패:`,
+        `❌ Scene ${sceneIndex + 1} Firebase Storage upload failed:`,
         error
       );
     }
@@ -745,7 +747,7 @@ export default function NewsVideoDetailPage() {
       <div className="container max-w-6xl mx-auto px-4 py-8">
         <PageTitle title="Generated Video" />
         <div className="text-center py-8">
-          <p className="text-gray-600">로그인이 필요합니다.</p>
+          <p className="text-gray-600">Login is required.</p>
         </div>
       </div>
     );
@@ -757,7 +759,7 @@ export default function NewsVideoDetailPage() {
         <PageTitle title="Generated Video" />
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-gray-600 mt-2">비디오를 불러오는 중...</p>
+          <p className="text-gray-600 mt-2">Loading video...</p>
         </div>
       </div>
     );
@@ -851,12 +853,12 @@ export default function NewsVideoDetailPage() {
             <div className="bg-gray-100 rounded aspect-video flex items-center justify-center">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-400 mx-auto mb-4"></div>
-                <p className="text-gray-600">비디오 생성 중...</p>
+                <p className="text-gray-600">Generating video...</p>
               </div>
             </div>
           ) : (
             <div className="bg-gray-100 rounded aspect-video flex items-center justify-center">
-              <p className="text-gray-600">비디오가 없습니다</p>
+              <p className="text-gray-600">No video</p>
             </div>
           )}
         </div>
@@ -951,7 +953,7 @@ export default function NewsVideoDetailPage() {
                           src={(scene as any).firebaseUrl || scene.videoUrl}
                           type="video/mp4"
                         />
-                        브라우저가 비디오를 지원하지 않습니다.
+                        Browser does not support video.
                       </video>
                     </div>
                   </div>
@@ -959,12 +961,12 @@ export default function NewsVideoDetailPage() {
                   <div className="mb-3 bg-gray-100 rounded-lg aspect-video flex items-center justify-center">
                     <div className="text-center">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400 mx-auto mb-1"></div>
-                      <p className="text-xs text-gray-600">생성 중...</p>
+                      <p className="text-xs text-gray-600">Generating...</p>
                     </div>
                   </div>
                 ) : (
                   <div className="mb-3 bg-gray-100 rounded-lg aspect-video flex items-center justify-center">
-                    <p className="text-xs text-gray-600">비디오 없음</p>
+                    <p className="text-xs text-gray-600">No video</p>
                   </div>
                 )}
 
@@ -986,7 +988,7 @@ export default function NewsVideoDetailPage() {
                       }
                       className="w-full text-gray-700 bg-gray-50 p-1 rounded text-xs border border-gray-200 focus:border-blue-300 focus:ring-1 focus:ring-blue-300 resize-none"
                       rows={2}
-                      placeholder="나레이션을 입력하세요"
+                      placeholder="Please enter narration"
                     />
                   </div>
                 </div>
@@ -1035,10 +1037,10 @@ export default function NewsVideoDetailPage() {
               <div className="border rounded-lg p-3 transition-colors border-blue-300 bg-blue-50">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-medium text-sm text-blue-900">
-                    Scene {regenerateSceneIndex! + 1} Regenerate
+                    Scene {regenerateSceneIndex! + 1} Regenerate Scene
                   </h4>
                   <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    편집 모드
+                    Edit Mode
                   </span>
                 </div>
 
@@ -1058,7 +1060,7 @@ export default function NewsVideoDetailPage() {
                       }
                       className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       rows={2}
-                      placeholder="이미지 프롬프트를 입력하세요"
+                      placeholder="Please enter image prompt"
                     />
                   </div>
 
@@ -1077,14 +1079,14 @@ export default function NewsVideoDetailPage() {
                       }
                       className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       rows={2}
-                      placeholder="나레이션을 입력하세요"
+                      placeholder="Please enter narration"
                     />
                   </div>
 
                   {/* 이미지 URL 입력 */}
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
-                      이미지 URL (선택사항):
+                      Image URL (optional):
                     </label>
                     <input
                       type="url"

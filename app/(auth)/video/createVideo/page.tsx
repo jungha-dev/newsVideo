@@ -51,7 +51,7 @@ export default function NewsVideoListPage() {
       <div className="container max-w-6xl mx-auto px-4 py-8">
         <PageTitle title="Generated Video" />
         <div className="text-center py-8">
-          <p className="text-gray-600">로그인이 필요합니다.</p>
+          <p className="text-gray-600">Please login.</p>
         </div>
       </div>
     );
@@ -70,16 +70,16 @@ export default function NewsVideoListPage() {
       {loading ? (
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-gray-600 mt-2">비디오를 불러오는 중...</p>
+          <p className="text-gray-600 mt-2">Loading...</p>
         </div>
       ) : videos.length === 0 ? (
         <div className="text-center py-8">
           <div className="text-4xl mb-4">🎬</div>
           <p className="text-gray-600 mb-4">
-            아직 생성된 Generated Video가 없습니다.
+            There are no generated videos yet.
           </p>
           <Link href="/create">
-            <Button variant="primary">첫 번째 Generated Video 만들기</Button>
+            <Button variant="primary">Create the first generated video</Button>
           </Link>
         </div>
       ) : (
@@ -113,10 +113,10 @@ export default function NewsVideoListPage() {
                       }`}
                     >
                       {video.status === "completed"
-                        ? "완료"
+                        ? "Completed"
                         : video.status === "processing"
-                        ? "처리중"
-                        : "실패"}
+                        ? "Processing"
+                        : "Failed"}
                     </span>
                   </div>
 

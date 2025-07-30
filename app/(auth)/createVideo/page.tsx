@@ -213,7 +213,7 @@ Please compose the video based on the following blog content:
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "텍스트 생성에 실패했습니다.");
+        throw new Error(data.error || "Text generation failed.");
       }
 
       setGeneratedText(data.text);

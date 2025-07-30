@@ -332,13 +332,13 @@ export default function HomePage() {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("API Error Response:", errorText);
-        throw new Error(`카테고리를 불러올 수 없습니다. (${response.status})`);
+        throw new Error(`Failed to load categories. (${response.status})`);
       }
 
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || "카테고리 데이터를 불러올 수 없습니다.");
+        throw new Error(data.error || "Failed to load categories.");
       }
 
       // 중복 제거된 카테고리 이름 배열 생성
@@ -349,11 +349,9 @@ export default function HomePage() {
       setAvailableCategories(uniqueCategories);
       setCategoryList(data.categories); // 카테고리 객체 배열 Save
     } catch (error) {
-      console.error("카테고리 불러오기 오류:", error);
+      console.error("Category load error:", error);
       setApiError(
-        error instanceof Error
-          ? error.message
-          : "카테고리를 불러오는 중 오류가 발생했습니다."
+        error instanceof Error ? error.message : "Failed to load categories."
       );
     } finally {
       setLoadingCategories(false);
@@ -374,7 +372,7 @@ export default function HomePage() {
       // 사용자 토큰 가져오기
       const token = await user?.getIdToken();
       if (!token) {
-        throw new Error("인증 토큰을 가져올 수 없습니다.");
+        throw new Error("Failed to get authentication token.");
       }
 
       // API를 통해 이미지 정보 가져오기 (서버 사이드에서 signed URL 생성)
@@ -407,17 +405,17 @@ export default function HomePage() {
       console.error("Error fetching characters via API:", error);
 
       // 더 자세한 오류 정보 표시
-      let errorMessage = "이미지 정보를 불러오는데 실패했습니다.";
+      let errorMessage = "Failed to load image information.";
 
       if (error instanceof Error) {
         if (error.message.includes("401")) {
-          errorMessage = "로그인이 필요합니다. 다시 로그인해주세요.";
+          errorMessage = "Login is required. Please login again.";
         } else if (error.message.includes("500")) {
-          errorMessage = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+          errorMessage = "Server error occurred. Please try again later.";
         } else if (error.message.includes("NetworkError")) {
-          errorMessage = "네트워크 연결을 확인해주세요.";
+          errorMessage = "Please check your network connection.";
         } else {
-          errorMessage = `오류: ${error.message}`;
+          errorMessage = `Error: ${error.message}`;
         }
       }
 
@@ -436,7 +434,7 @@ export default function HomePage() {
 
     // 로그인 확인
     if (!isAuthenticated) {
-      setUploadError("로그인이 필요합니다.");
+      setUploadError("Login is required.");
       return;
     }
 
@@ -450,7 +448,7 @@ export default function HomePage() {
     ];
     if (!allowedTypes.includes(file.type)) {
       setUploadError(
-        "지원하지 않는 파일 형식입니다. PNG, JPEG, GIF, WebP만 가능합니다."
+        "Unsupported file format. Only PNG, JPEG, GIF, WebP are supported."
       );
       return;
     }
@@ -458,7 +456,7 @@ export default function HomePage() {
     // 파일 크기 검증 (10MB 제한)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      setUploadError("파일 크기가 너무 큽니다. 최대 10MB까지 가능합니다.");
+      setUploadError("File size is too large. Maximum 10MB.");
       return;
     }
 
@@ -469,17 +467,17 @@ export default function HomePage() {
   // Save 버튼 클릭 시 업로드 실행
   const handleSaveCharacter = async () => {
     if (!isAuthenticated) {
-      setUploadError("로그인이 필요합니다.");
+      setUploadError("Login is required.");
       return;
     }
 
     if (!selectedFile) {
-      setUploadError("파일을 선택해주세요.");
+      setUploadError("Please select a file.");
       return;
     }
 
     if (!characterName.trim()) {
-      setUploadError("이미지 이름을 입력해주세요.");
+      setUploadError("Please enter an image name.");
       return;
     }
 
@@ -498,7 +496,7 @@ export default function HomePage() {
       // 사용자 토큰 가져오기
       const token = await user?.getIdToken();
       if (!token) {
-        throw new Error("인증 토큰을 가져올 수 없습니다.");
+        throw new Error("Failed to get authentication token.");
       }
 
       // 업로드 진행률 시뮬레이션
@@ -526,14 +524,12 @@ export default function HomePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "업로드에 실패했습니다.");
+        throw new Error(errorData.error || "Upload failed.");
       }
 
       const result = await response.json();
 
-      setUploadSuccess(
-        `이미지 "${characterName}"이(가) 성공적으로 업로드되었습니다!`
-      );
+      setUploadSuccess(`Image "${characterName}" uploaded successfully!`);
 
       // 폼 초기화
       setCharacterName("");
@@ -553,9 +549,7 @@ export default function HomePage() {
     } catch (error) {
       console.error("Upload error:", error);
       setUploadError(
-        error instanceof Error
-          ? error.message
-          : "업로드 중 오류가 발생했습니다."
+        error instanceof Error ? error.message : "Upload error occurred."
       );
       setUploadProgress(0);
     } finally {
@@ -702,7 +696,7 @@ export default function HomePage() {
   }, [firebaseImages]); // firebaseImages가 변경될 때마다 실행
 
   const handleGenerate = async () => {
-    if (!imageUrl) return alert("이미지 URL이 필요합니다.");
+    if (!imageUrl) return alert("Image URL is required.");
 
     let finalPrompt = prompt;
 
@@ -712,7 +706,7 @@ export default function HomePage() {
       if (!comicPrompt) return;
       finalPrompt = comicPrompt;
     } else {
-      if (!prompt) return alert("프롬프트가 필요합니다.");
+      if (!prompt) return alert("Prompt is required.");
     }
 
     setLoading(true);
@@ -812,7 +806,7 @@ export default function HomePage() {
       await fetchFirebaseImages();
     } catch (error) {
       console.error("Error deleting character:", error);
-      alert("이미지 삭제 중 오류가 발생했습니다. 다시 시도해주세요.");
+      alert("Error deleting image. Please try again.");
     } finally {
       setDeleting(false);
       setCharacterToDelete(null);
@@ -883,7 +877,7 @@ export default function HomePage() {
 
     // 모든 패널이 입력되었는지 확인
     if (panels.some((panel) => !panel.trim())) {
-      alert(`모든 ${comicMode}개 패널을 입력해주세요.`);
+      alert(`Please enter all ${comicMode} panels.`);
       return null;
     }
 
@@ -1088,7 +1082,7 @@ export default function HomePage() {
       // 사용자 토큰 가져오기
       const token = await user?.getIdToken();
       if (!token) {
-        throw new Error("인증 토큰을 가져올 수 없습니다.");
+        throw new Error("Failed to get authentication token.");
       }
 
       // FormData를 사용하여 API로 업로드
@@ -1145,8 +1139,8 @@ export default function HomePage() {
         hasNewFile: !!editImageFile,
       });
       alert(
-        `이미지 편집 중 오류가 발생했습니다: ${
-          error instanceof Error ? error.message : "알 수 없는 오류"
+        `Error editing image: ${
+          error instanceof Error ? error.message : "Unknown error"
         }`
       );
     } finally {
@@ -1157,7 +1151,7 @@ export default function HomePage() {
   const handleDeleteEditImage = async () => {
     if (!editingImage) return;
 
-    if (!confirm("정말로 이 이미지를 삭제하시겠습니까?")) {
+    if (!confirm("Are you sure you want to delete this image?")) {
       return;
     }
 
@@ -1166,7 +1160,7 @@ export default function HomePage() {
       // 사용자 토큰 가져오기
       const token = await user?.getIdToken();
       if (!token) {
-        throw new Error("인증 토큰을 가져올 수 없습니다.");
+        throw new Error("Failed to get authentication token.");
       }
 
       // API를 통해 이미지 삭제
@@ -1179,7 +1173,7 @@ export default function HomePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `삭제 실패: ${response.status}`);
+        throw new Error(errorData.error || `Delete failed: ${response.status}`);
       }
 
       const result = await response.json();
@@ -1191,10 +1185,10 @@ export default function HomePage() {
 
       handleCloseEditModal();
     } catch (error) {
-      console.error("이미지 삭제 오류:", error);
+      console.error("Image delete error:", error);
       alert(
-        `이미지 삭제 중 오류가 발생했습니다: ${
-          error instanceof Error ? error.message : "알 수 없는 오류"
+        `Image delete error: ${
+          error instanceof Error ? error.message : "Unknown error"
         }`
       );
     } finally {
@@ -1225,12 +1219,12 @@ export default function HomePage() {
   // 카테고리 추가 함수 (기존 모달용)
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) {
-      setCategoryError("카테고리 이름을 입력해주세요.");
+      setCategoryError("Please enter a category name.");
       return;
     }
 
     if (availableCategories.includes(newCategoryName.trim())) {
-      setCategoryError("이미 존재하는 카테고리입니다.");
+      setCategoryError("Category already exists.");
       return;
     }
 
@@ -1241,7 +1235,7 @@ export default function HomePage() {
       // 사용자 토큰 가져오기
       const token = await user?.getIdToken();
       if (!token) {
-        throw new Error("인증 토큰을 가져올 수 없습니다.");
+        throw new Error("Failed to get authentication token.");
       }
 
       // FormData를 사용하여 API로 업로드
@@ -1263,7 +1257,7 @@ export default function HomePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "카테고리Failed to add.");
+        throw new Error(errorData.error || "Category failed to add.");
       }
 
       const result = await response.json();
@@ -1284,11 +1278,9 @@ export default function HomePage() {
         categoryImageInputRef.current.value = "";
       }
     } catch (error) {
-      console.error("카테고리 추가 중 오류:", error);
+      console.error("Category add error:", error);
       setCategoryError(
-        error instanceof Error
-          ? error.message
-          : "카테고리 추가 중 오류가 발생했습니다."
+        error instanceof Error ? error.message : "Category add error occurred."
       );
     } finally {
       setAddingCategory(false);
@@ -1302,18 +1294,18 @@ export default function HomePage() {
     image?: File
   ) => {
     if (!name.trim()) {
-      throw new Error("카테고리 이름을 입력해주세요.");
+      throw new Error("Please enter a category name.");
     }
 
     if (availableCategories.includes(name.trim())) {
-      throw new Error("이미 존재하는 카테고리입니다.");
+      throw new Error("Category already exists.");
     }
 
     try {
       // 사용자 토큰 가져오기
       const token = await user?.getIdToken();
       if (!token) {
-        throw new Error("인증 토큰을 가져올 수 없습니다.");
+        throw new Error("Failed to get authentication token.");
       }
 
       // FormData를 사용하여 API로 업로드
@@ -1335,7 +1327,7 @@ export default function HomePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "카테고리Failed to add.");
+        throw new Error(errorData.error || "Category failed to add.");
       }
 
       const result = await response.json();
@@ -1343,7 +1335,7 @@ export default function HomePage() {
       // 카테고리 목록 새로고침
       await fetchCategories();
     } catch (error) {
-      console.error("카테고리 추가 중 오류:", error);
+      console.error("Category add error:", error);
       throw error;
     }
   };
@@ -1389,7 +1381,7 @@ export default function HomePage() {
     ];
     if (!allowedTypes.includes(file.type)) {
       setCategoryError(
-        "지원하지 않는 파일 형식입니다. PNG, JPEG, GIF, WebP만 가능합니다."
+        "Unsupported file format. Only PNG, JPEG, GIF, WebP are supported."
       );
       return;
     }
@@ -1397,7 +1389,7 @@ export default function HomePage() {
     // 파일 크기 검증 (5MB 제한)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      setCategoryError("파일 크기가 너무 큽니다. 최대 5MB까지 가능합니다.");
+      setCategoryError("File size is too large. Maximum 5MB.");
       return;
     }
 
@@ -1435,16 +1427,16 @@ export default function HomePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        alert(`카테고리 수정 실패: ${errorData.error}`);
+        alert(`Category update failed: ${errorData.error}`);
         return;
       }
 
       // 성공 시 카테고리 목록 새로고침
       await fetchCategories();
-      alert("카테고리가 성공적으로 수정되었습니다.");
+      alert("Category updated successfully.");
     } catch (error) {
-      console.error("카테고리 수정 오류:", error);
-      alert("카테고리 수정 중 오류가 발생했습니다.");
+      console.error("Category update error:", error);
+      alert("Category update error occurred.");
     }
   };
 
@@ -1474,8 +1466,8 @@ export default function HomePage() {
       // 성공 시 카테고리 목록 새로고침
       await fetchCategories();
     } catch (error) {
-      console.error("카테고리 순서 변경 오류:", error);
-      alert("카테고리 순서 변경 중 오류가 발생했습니다.");
+      console.error("Category reorder error:", error);
+      alert("Category reorder error occurred.");
     }
   };
 
@@ -1503,16 +1495,16 @@ export default function HomePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        alert(`카테고리 삭제 실패: ${errorData.error}`);
+        alert(`Category delete failed: ${errorData.error}`);
         return;
       }
 
       // 성공 시 카테고리 목록과 이미지 목록 새로고침
       await Promise.all([fetchCategories(), fetchFirebaseImages()]);
-      alert("카테고리가 성공적으로 삭제되었습니다.");
+      alert("Category deleted successfully.");
     } catch (error) {
-      console.error("카테고리 삭제 오류:", error);
-      alert("카테고리 삭제 중 오류가 발생했습니다.");
+      console.error("Category delete error:", error);
+      alert("Category delete error occurred.");
     }
   };
 
@@ -1545,7 +1537,7 @@ export default function HomePage() {
 
   const handleGenerateInterior = async () => {
     if (!user || selectedCharacters.length === 0) {
-      alert("캐릭터를 선택해주세요.");
+      alert("Please select a character.");
       return;
     }
 
@@ -1595,8 +1587,8 @@ export default function HomePage() {
         setResultImage(data.imageUrl);
       }
     } catch (error) {
-      console.error("멀티 이미지 생성 생성 오류:", error);
-      let errorMessage = "멀티 이미지 생성 생성 중 오류가 발생했습니다.";
+      console.error("Multi-image generation error:", error);
+      let errorMessage = "Multi-image generation error occurred.";
 
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -1604,8 +1596,8 @@ export default function HomePage() {
         errorMessage = JSON.stringify(error);
       }
 
-      console.error("상세 에러 정보:", error);
-      alert(`멀티 이미지 생성 생성 실패: ${errorMessage}`);
+      console.error("Detailed error information:", error);
+      alert(`Multi-image generation failed: ${errorMessage}`);
     } finally {
       setGeneratingInterior(false);
     }
@@ -1622,7 +1614,7 @@ export default function HomePage() {
 
     // 모든 패널이 입력되었는지 확인
     if (panels.some((panel) => !panel.trim())) {
-      alert(`모든 ${interiorComicMode}개 Scene을 입력해주세요.`);
+      alert(`Please enter all ${interiorComicMode} scenes.`);
       return null;
     }
 
@@ -1693,7 +1685,7 @@ export default function HomePage() {
   // Save 관련 함수들
   const handleSaveGeneratedImage = async () => {
     if (!resultImage) {
-      setSaveError("Save할 이미지가 없습니다.");
+      setSaveError("No image to save.");
       return;
     }
 
@@ -1708,7 +1700,7 @@ export default function HomePage() {
       // 사용자 토큰 가져오기
       const token = await user?.getIdToken();
       if (!token) {
-        throw new Error("인증 토큰을 가져올 수 없습니다.");
+        throw new Error("Failed to get authentication token.");
       }
 
       // 현재 사용된 프롬프트와 옵션 정보 수집
@@ -1804,12 +1796,12 @@ export default function HomePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "이미지 Save에 실패했습니다.");
+        throw new Error(errorData.error || "Image save failed.");
       }
 
       const result = await response.json();
 
-      setSaveSuccess("이미지가 성공적으로 Save되었습니다!");
+      setSaveSuccess("Image saved successfully!");
       setSaveTitle("");
 
       // 2초 후 모달 닫기 및 성공 메시지 제거
@@ -1818,11 +1810,9 @@ export default function HomePage() {
         setSaveSuccess("");
       }, 2000);
     } catch (error) {
-      console.error("이미지 Save 오류:", error);
+      console.error("Image save error:", error);
       setSaveError(
-        error instanceof Error
-          ? error.message
-          : "이미지 Save 중 오류가 발생했습니다."
+        error instanceof Error ? error.message : "Image save error occurred."
       );
     } finally {
       setSavingImage(false);
@@ -1831,7 +1821,7 @@ export default function HomePage() {
 
   const handleOpenSaveModal = () => {
     if (!resultImage) {
-      alert("Save할 이미지가 없습니다.");
+      alert("No image to save.");
       return;
     }
     setShowSaveModal(true);
@@ -1854,7 +1844,7 @@ export default function HomePage() {
 
   const handleImageUrlConfirm = () => {
     if (inputImageUrl.trim()) {
-      console.log("이미지 URL 설정:", inputImageUrl.trim());
+      console.log("Image URL set:", inputImageUrl.trim());
       setImageUrl(inputImageUrl.trim());
       setSelectedImageInfo(null); // 기존 선택된 이미지 정보 초기화
       setInputImageUrl(""); // 입력 필드 초기화
@@ -1889,7 +1879,7 @@ export default function HomePage() {
     try {
       const token = await user?.getIdToken();
       if (!token) {
-        throw new Error("인증 토큰을 가져올 수 없습니다.");
+        throw new Error("Failed to get authentication token.");
       }
 
       const response = await fetch("/api/firebase-images/generated", {
@@ -1919,7 +1909,7 @@ export default function HomePage() {
 
   return (
     <PageLayout
-      title="캐릭터 생성"
+      title="Character Creation"
       // subtitle="이미지를 업로드하여 영상을 생성하세요."
     >
       <div>
@@ -1938,19 +1928,19 @@ export default function HomePage() {
         {/* 인증 상태 확인 */}
         {authLoading ? (
           <div className="text-center py-8">
-            <div className="text-lg">인증 상태를 확인하는 중...</div>
+            <div className="text-lg">Checking authentication status...</div>
           </div>
         ) : !isAuthenticated ? (
           <div className="text-center py-8">
             <div className="bg-yellow-50 border-1 border-yellow-200 rounded-lg p-6 max-w-md mx-auto">
               <div className="text-yellow-800 text-lg font-semibold mb-2">
-                로그인이 필요합니다
+                Login is required
               </div>
               <p className="text-yellow-700 text-sm mb-4">
-                이미지 이미지를 관리하고 만화를 생성하려면 로그인해주세요.
+                To manage images and create comics, please login.
               </p>
               <a href="/login" className="inline-block">
-                <Button variant="primary">로그인하기</Button>
+                <Button variant="primary">Login</Button>
               </a>
             </div>
           </div>
@@ -1967,7 +1957,7 @@ export default function HomePage() {
                   }`}
                   onClick={() => handleTabChange("character")}
                 >
-                  단일 이미지
+                  Single Image
                 </button>
                 <button
                   className={`px-4 py-2 rounded-t-lg font-semibold border-b-2 transition-all duration-150 ${
@@ -1977,14 +1967,14 @@ export default function HomePage() {
                   }`}
                   onClick={() => handleTabChange("interior")}
                 >
-                  다중 이미지
+                  Multi-image
                 </button>
               </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* 왼쪽: 이미지 선택 및 설정 */}
+              {/* Left: Image selection and settings */}
               <div className="space-y-6">
-                {/* 기존 캐릭터 기능 */}
+                {/* Existing character functionality */}
                 {activeTab === "character" && (
                   <>
                     <CharacterSelector
@@ -2058,10 +2048,10 @@ export default function HomePage() {
                     />
                   </>
                 )}
-                {/* 멀티 이미지 생성 다중선택/생성 UI */}
+                {/* Multi-image generation multiple selection/creation UI */}
                 {activeTab === "interior" && (
                   <div className="space-y-6">
-                    {/* 멀티 이미지 생성 탭에서도 CharacterSelector의 카테고리 기능 사용 */}
+                    {/* CharacterSelector's category functionality also used in multi-image generation tab */}
                     <CharacterSelector
                       firebaseImages={firebaseImages}
                       loadingImages={loadingImages}
@@ -2128,24 +2118,24 @@ export default function HomePage() {
                       onImageUrlConfirm={handleImageUrlConfirm}
                     />
 
-                    {/* 다중 이미지 생성 모드 설정 */}
+                    {/* Multi-image generation mode settings */}
                     <div className="grid grid-cols-4 gap-4">
                       <Select
                         value={interiorComicMode}
                         onChange={setInteriorComicMode}
                         options={[
-                          { value: "1", label: "1컷" },
-                          { value: "2", label: "2컷" },
-                          { value: "4", label: "4컷" },
+                          { value: "1", label: "1 panel" },
+                          { value: "2", label: "2 panels" },
+                          { value: "4", label: "4 panels" },
                         ]}
                       />
                       <Select
                         value={interiorComicLayout}
                         onChange={setInteriorComicLayout}
                         options={[
-                          { value: "horizontal", label: "가로 배치" },
-                          { value: "vertical", label: "세로 배치" },
-                          { value: "grid", label: "격자 배치" },
+                          { value: "horizontal", label: "Horizontal layout" },
+                          { value: "vertical", label: "Vertical layout" },
+                          { value: "grid", label: "Grid layout" },
                         ]}
                       />
                       <Select
