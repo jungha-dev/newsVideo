@@ -49,9 +49,21 @@ export default function NewsVideoDetailPage() {
     []
   );
 
-  // Scene별 상태 계산
+  // 각 씬의 개별 상태를 관리하는 상태 추가
+  const [sceneVideos, setSceneVideos] = useState<any[]>([]);
+
+  // Scene별 상태 계산 - 개별 씬 비디오 상태 확인
   const getSceneStatus = (scene: any, index: number) => {
+    // 씬에 videoUrl이 있으면 완료
     if (scene.videoUrl) return "completed";
+
+    // sceneVideos에서 해당 씬의 상태 확인
+    const sceneVideo = sceneVideos.find((sv) => sv.sceneIndex === index);
+    if (sceneVideo) {
+      return sceneVideo.status;
+    }
+
+    // 기본 상태
     if (video?.status === "processing") return "processing";
     if (video?.status === "failed") return "failed";
     return "pending";
@@ -72,26 +84,28 @@ export default function NewsVideoDetailPage() {
   useEffect(() => {
     const currentStatus = video?.status;
 
-    // Regenerate 중이 아니고 처리 중이 아니면 폴링하지 않음
-    if (!isRegeneratingRef.current && currentStatus !== "processing") {
+    // 각 씬의 개별 상태 확인
+    const hasIncompleteScenes = sceneVideos.some(
+      (sv) => sv.status === "starting" || sv.status === "processing"
+    );
+
+    // Add Scenes 중이거나 Regenerate 중이거나 처리 중이면 폴링
+    const shouldPoll =
+      isRegeneratingRef.current ||
+      currentStatus === "processing" ||
+      hasIncompleteScenes;
+
+    console.log("Polling check:", {
+      isRegenerating: isRegeneratingRef.current,
+      currentStatus,
+      hasIncompleteScenes,
+      sceneVideosCount: sceneVideos.length,
+      shouldPoll,
+    });
+
+    if (!shouldPoll) {
       if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-        pollingRef.current = null;
-      }
-      return;
-    }
-
-    // 상태가 변경되지 않았으면 아무것도 하지 않음
-    if (currentStatus === previousStatusRef.current) {
-      return;
-    }
-
-    // 이전 상태 업데이트
-    previousStatusRef.current = currentStatus;
-
-    if (!video || currentStatus !== "processing") {
-      // 처리 중이 아니면 폴링 중단
-      if (pollingRef.current) {
+        console.log("Stopping polling - no active processes");
         clearInterval(pollingRef.current);
         pollingRef.current = null;
       }
@@ -100,8 +114,16 @@ export default function NewsVideoDetailPage() {
 
     // 이미 폴링 중이면 중복 시작하지 않음
     if (pollingRef.current) {
+      console.log("Polling already active, skipping");
       return;
     }
+
+    console.log("Starting polling...", {
+      isRegenerating: isRegeneratingRef.current,
+      currentStatus,
+      hasIncompleteScenes,
+      sceneVideosCount: sceneVideos.length,
+    });
 
     // 즉시 한 번 상태 확인
     const checkStatus = async () => {
@@ -112,10 +134,20 @@ export default function NewsVideoDetailPage() {
           console.log("Polling update:", data.video.status);
           setVideo(data.video);
 
+          // 씬 비디오 데이터도 함께 업데이트
+          await loadSceneVideos();
+
+          // 모든 씬이 완료되었는지 확인
+          const updatedSceneVideos = data.sceneVideos || [];
+          const allScenesCompleted = updatedSceneVideos.every(
+            (sv) => sv.status === "completed" || sv.status === "failed"
+          );
+
           // 완료되면 폴링 중단
           if (
-            data.video.status === "completed" ||
-            data.video.status === "failed"
+            (data.video.status === "completed" ||
+              data.video.status === "failed") &&
+            allScenesCompleted
           ) {
             if (pollingRef.current) {
               clearInterval(pollingRef.current);
@@ -133,7 +165,7 @@ export default function NewsVideoDetailPage() {
     // 즉시 실행
     checkStatus();
 
-    // 10초마다 상태 확인 (폴링 간격 증가)
+    // 10초마다 상태 확인
     pollingRef.current = setInterval(checkStatus, 10000);
 
     return () => {
@@ -142,7 +174,7 @@ export default function NewsVideoDetailPage() {
         pollingRef.current = null;
       }
     };
-  }, [video?.status, videoId]);
+  }, [video?.status, videoId, sceneVideos]); // sceneVideos 의존성 다시 추가
 
   const loadVideo = async () => {
     try {
@@ -150,6 +182,8 @@ export default function NewsVideoDetailPage() {
       const videoData = await getNewsVideoById(user?.uid || "", videoId);
       if (videoData) {
         setVideo(videoData);
+        // 씬 비디오 데이터도 함께 로드
+        await loadSceneVideos();
       } else {
         setError("Video not found.");
       }
@@ -158,6 +192,21 @@ export default function NewsVideoDetailPage() {
       setError("Failed to load video.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 씬 비디오 데이터 로드
+  const loadSceneVideos = async () => {
+    if (!user || !videoId) return;
+
+    try {
+      const response = await fetch(`/api/video/news/scene-videos/${videoId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setSceneVideos(data.sceneVideos || []);
+      }
+    } catch (error) {
+      console.error("Error loading scene videos:", error);
     }
   };
 
@@ -1062,7 +1111,7 @@ export default function NewsVideoDetailPage() {
                         isAddingScene
                       }
                     >
-                      {isAddingScene ? "추가 중..." : "Add Scenes"}
+                      {isAddingScene ? "Generating..." : "Add Scenes"}
                     </Button>
                     <Button
                       onClick={handleCancelAddScene}
@@ -1070,7 +1119,7 @@ export default function NewsVideoDetailPage() {
                       size="sm"
                       className="flex-1 text-xs py-1"
                     >
-                      취소
+                      cancel
                     </Button>
                   </div>
                 </div>

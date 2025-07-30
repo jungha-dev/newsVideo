@@ -125,11 +125,16 @@ export async function POST(request: NextRequest) {
         updated_at: new Date(),
       });
 
-      // 메인 비디오 상태를 processing으로 변경
-      await db.collection("newsVideos").doc(videoId).update({
-        status: "processing",
-        updatedAt: new Date(),
-      });
+      // 메인 비디오 상태를 processing으로 변경 - 올바른 경로 사용
+      await db
+        .collection("users")
+        .doc(user.uid)
+        .collection("newsVideo")
+        .doc(videoId)
+        .update({
+          status: "processing",
+          updatedAt: new Date(),
+        });
 
       return NextResponse.json({
         success: true,
