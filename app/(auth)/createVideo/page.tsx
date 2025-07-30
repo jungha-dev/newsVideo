@@ -987,20 +987,7 @@ Please compose the video based on the following blog content:
 
                 {/* 직접 Add Scenes 섹션 - 시나리오가 생성된 후에만 보임 */}
                 {videoScenario && (
-                  <div className="border-t pt-4 mt-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-sm font-medium">Add Scenes</h4>
-                      <Button
-                        onClick={() =>
-                          setShowManualSceneInput(!showManualSceneInput)
-                        }
-                        variant="normal"
-                        size="sm"
-                      >
-                        {showManualSceneInput ? "Collapse" : "Add Scene"}
-                      </Button>
-                    </div>
-
+                  <div className="border-t border-secondary-light pt-4 mt-20">
                     {showManualSceneInput && (
                       <div className="space-y-4">
                         {/* 새 Scene 입력 폼 */}

@@ -301,7 +301,7 @@ export default function VideoScenarioList({
         {generatedVideos.length > 0 && (
           <div className="mb-4 p-3 bg-primary/10 border border-primary/40 rounded-lg">
             <p className="text-sm font-medium text-primary-dark mb-2">
-              생성된 영상들:
+              Generated videos:
             </p>
             <div className="flex flex-wrap gap-2">
               {generatedVideos.map((url, index) => (
@@ -311,7 +311,7 @@ export default function VideoScenarioList({
                   variant="outline"
                   size="sm"
                 >
-                  영상 {index + 1} 추가
+                  Add video {index + 1}
                 </Button>
               ))}
             </div>
@@ -322,7 +322,7 @@ export default function VideoScenarioList({
         {mergedVideoUrl && (
           <div className="mb-4 p-3 bg-primary/20 border border-primary/40 rounded-lg">
             <h5 className="text-sm font-medium text-primary-dark mb-2">
-              병합된 영상
+              Merged video
             </h5>
             <video
               src={mergedVideoUrl}
@@ -359,7 +359,7 @@ export default function VideoScenarioList({
                 size="sm"
                 className="flex-1"
               >
-                다운로드
+                Download
               </Button>
               {onSaveNewsVideo && (
                 <Button
@@ -381,7 +381,7 @@ export default function VideoScenarioList({
           <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
             <h5 className="text-sm font-medium mb-2">전체 설정</h5>
             <div className="flex gap-4 items-center mb-2">
-              <label className="text-xs">자막 색상:</label>
+              <label className="text-xs">Subtitle color:</label>
               <input
                 type="color"
                 value={globalColor}
@@ -390,7 +390,7 @@ export default function VideoScenarioList({
               />
             </div>
             <div className="flex gap-4 items-center">
-              <label className="text-xs">자막 스타일:</label>
+              <label className="text-xs">Subtitle style:</label>
               <label className="flex items-center">
                 <input
                   type="radio"
@@ -440,10 +440,20 @@ export default function VideoScenarioList({
                           onDeleteScene(index);
                         }
                       }}
-                      className="text-red-500 hover:text-red-700 text-xs bg-transparent border-none p-1 cursor-pointer"
+                      className="text-black hover:text-black/70 text-xs bg-transparent border-none cursor-pointer"
                       title="Delete Scene"
                     >
-                      🗑️
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                     </button>
                   )}
                 </div>
@@ -506,7 +516,7 @@ export default function VideoScenarioList({
                       }
                     }}
                     className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                    title="영상 삭제"
+                    title="Delete video"
                   >
                     ×
                   </button>
@@ -518,7 +528,7 @@ export default function VideoScenarioList({
                         자막
                       </label>
                       <textarea
-                        placeholder="자막을 입력하세요"
+                        placeholder="Enter the subtitle"
                         rows={2}
                         className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-light"
                       />
@@ -659,7 +669,7 @@ export default function VideoScenarioList({
                     Image Prompt
                     {scene.imageUrl && (
                       <span className="text-secondary-dark ml-1">
-                        (이미지 추가됨)
+                        (Image added)
                       </span>
                     )}
                   </label>
@@ -674,7 +684,7 @@ export default function VideoScenarioList({
                         onUpdateScene(index, updatedScene);
                       }
                     }}
-                    placeholder="이미지 프롬프트를 입력하세요..."
+                    placeholder="Enter the prompt for the image you want to generate..."
                     className="w-full text-xs text-gray-800 bg-white p-2 rounded border border-secondary-light resize-none"
                     rows={2}
                   />
@@ -721,7 +731,7 @@ export default function VideoScenarioList({
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">
-                이미지 URL 추가
+                Add Image URL
               </h3>
               <button
                 onClick={() => {
@@ -737,7 +747,7 @@ export default function VideoScenarioList({
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  이미지 URL
+                  Image URL
                 </label>
                 <input
                   type="url"
@@ -762,7 +772,7 @@ export default function VideoScenarioList({
                   }}
                   className="flex-1"
                 >
-                  취소
+                  Cancel
                 </Button>
                 <Button
                   variant="primary"
@@ -770,7 +780,7 @@ export default function VideoScenarioList({
                   disabled={!imageUrlInput.trim()}
                   className="flex-1"
                 >
-                  추가
+                  Add
                 </Button>
               </div>
             </div>
@@ -793,7 +803,7 @@ export default function VideoScenarioList({
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
                   Scene {scene.scene_number} -{" "}
-                  {modal.type === "image" ? "이미지" : "영상"} 추가
+                  {modal.type === "image" ? "Image" : "Video"} Add
                 </h3>
                 <button
                   onClick={() => closeSceneMediaModal(index)}
@@ -804,19 +814,9 @@ export default function VideoScenarioList({
               </div>
 
               <div className="space-y-4">
-                {modal.type === "image" && (
-                  <div className="p-3 bg-primary/10 border border-primary/40 rounded-lg">
-                    <p className="text-xs text-primary-dark">
-                      💡 이미지 추가 시 해당 Scene의 프롬프트가 자동으로 "Keep
-                      the image content unchanged and minimize actions."로
-                      변경됩니다.
-                    </p>
-                  </div>
-                )}
-
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    {modal.type === "image" ? "이미지" : "영상"} URL
+                    {modal.type === "image" ? "Image" : "Video"} URL
                   </label>
                   <input
                     type="url"
@@ -850,7 +850,7 @@ export default function VideoScenarioList({
                     onClick={() => closeSceneMediaModal(index)}
                     className="flex-1"
                   >
-                    취소
+                    Cancel
                   </Button>
                   <Button
                     variant="primary"
@@ -858,7 +858,7 @@ export default function VideoScenarioList({
                     disabled={!modal.url.trim()}
                     className="flex-1"
                   >
-                    추가
+                    Add
                   </Button>
                 </div>
               </div>
