@@ -3,6 +3,9 @@
 import React, { useState } from "react";
 import { Button } from "@/components/styled";
 
+const NEWS_ANCHOR_PROMPT =
+  "The news anchor is wearing a clean and elegant white blouse with no logos or prints, sleeves neatly rolled up, confidently standing in a modern news studio. A breaking news opening screen appears, and a short-haired, neat-looking Asian female news anchor excitedly says:";
+
 interface Scene {
   scene_number: number;
   image_prompt: string;
@@ -52,6 +55,8 @@ interface VideoScenarioListProps {
   // Generated Video Save 관련 props
   onSaveNewsVideo?: () => void;
   isSaving?: boolean;
+  // Video Model 관련 props
+  selectedVideoModel?: "kling-v2" | "veo-3" | "hailuo-02";
 }
 
 export default function VideoScenarioList({
@@ -75,6 +80,7 @@ export default function VideoScenarioList({
   onAddScene,
   onSaveNewsVideo,
   isSaving = false,
+  selectedVideoModel,
 }: VideoScenarioListProps) {
   const [showImageUrlModal, setShowImageUrlModal] = useState(false);
   const [imageUrlInput, setImageUrlInput] = useState("");
@@ -554,8 +560,11 @@ export default function VideoScenarioList({
                   variant="normal"
                   size="sm"
                   className="flex-1 text-xs"
+                  disabled={selectedVideoModel === "veo-3"}
                 >
-                  📷 이미지 추가
+                  {selectedVideoModel === "veo-3"
+                    ? `${NEWS_ANCHOR_PROMPT} ${scene.narration}`
+                    : "📷 이미지 추가"}
                 </Button>
               </div>
 

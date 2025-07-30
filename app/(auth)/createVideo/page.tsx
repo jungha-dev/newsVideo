@@ -1233,6 +1233,7 @@ Please compose the video based on the following blog content:
                   onAddScene={handleAddScene}
                   onSaveNewsVideo={handleSaveNewsVideo}
                   isSaving={loading}
+                  selectedVideoModel={selectedVideoModel}
                 />
               </div>
             )}
