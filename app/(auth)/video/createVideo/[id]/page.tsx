@@ -767,7 +767,7 @@ export default function NewsVideoDetailPage() {
 
   if (error || !video) {
     return (
-      <div className="container max-w-6xl mx-auto px-4 py-8">
+      <div className="container max-w-7xl mx-auto px-4 py-8">
         <PageTitle title="Generated Video" />
         <div className="text-center py-8">
           <div className="text-4xl mb-4">❌</div>
@@ -783,9 +783,7 @@ export default function NewsVideoDetailPage() {
   return (
     <div className="container max-w-6xl mx-auto px-4 py-8">
       <div className="space-y-6">
-        {/* 비디오 정보 */}
-        {/* 비디오 플레이어 */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="bg-white border border-gray-200 rounded-lg">
           {video.status === "failed" ? (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-800">Video generation failed.</p>
@@ -864,22 +862,45 @@ export default function NewsVideoDetailPage() {
         </div>
 
         {/* Scene Info */}
-        <div className="bg-white rounded-lg p-4">
+        <div className="bg-white rounded-lg mt-40">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Scene Info</h3>
             <div className="flex items-center gap-2">
               {/* Select All/해제 체크박스 */}
               <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={
-                    selectedScenes.size === video.scenes.length &&
-                    video.scenes.length > 0
-                  }
-                  onChange={toggleAllScenes}
-                  className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
-                />
-                <span className="text-sm text-gray-600">Select All</span>
+                <label className="flex items-center cursor-pointer">
+                  <div className="relative mr-2">
+                    <input
+                      type="checkbox"
+                      checked={
+                        selectedScenes.size === video.scenes.length &&
+                        video.scenes.length > 0
+                      }
+                      onChange={toggleAllScenes}
+                      className="sr-only"
+                    />
+                    <div
+                      className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                        selectedScenes.size === video.scenes.length &&
+                        video.scenes.length > 0
+                          ? "border-primary bg-primary"
+                          : "border-gray-300 bg-white"
+                      }`}
+                    >
+                      {selectedScenes.size === video.scenes.length &&
+                        video.scenes.length > 0 && (
+                          <svg
+                            className="w-6 h-6 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                          </svg>
+                        )}
+                    </div>
+                  </div>
+                  <span className="text-sm text-gray-600">Select All</span>
+                </label>
               </div>
 
               {hasUnsavedChanges && (
@@ -919,15 +940,36 @@ export default function NewsVideoDetailPage() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     {/* 개별 씬 체크박스 */}
-                    <input
-                      type="checkbox"
-                      checked={selectedScenes.has(index)}
-                      onChange={() => toggleSceneSelection(index)}
-                      className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
-                    />
-                    <h4 className="font-medium text-sm">
-                      Scene {scene.scene_number}
-                    </h4>
+                    <label className="flex items-center cursor-pointer">
+                      <div className="relative mr-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedScenes.has(index)}
+                          onChange={() => toggleSceneSelection(index)}
+                          className="sr-only"
+                        />
+                        <div
+                          className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                            selectedScenes.has(index)
+                              ? "border-primary bg-primary"
+                              : "border-gray-300 bg-white"
+                          }`}
+                        >
+                          {selectedScenes.has(index) && (
+                            <svg
+                              className="w-4 h-4 text-white"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+                      <h4 className="font-medium text-sm">
+                        Scene {scene.scene_number}
+                      </h4>
+                    </label>
                   </div>
                   <div className="flex items-center gap-1">
                     <span
@@ -972,13 +1014,35 @@ export default function NewsVideoDetailPage() {
 
                 <div className="text-xs text-gray-600 space-y-2">
                   <div>
-                    <strong className="block mb-1 text-xs">Prompt :</strong>
-                    <p className="text-gray-700 bg-gray-50 p-1 rounded text-xs line-clamp-2">
-                      {scene.image_prompt}
-                    </p>
-                  </div>
-                  <div>
-                    <strong className="block mb-1 text-xs">Narration :</strong>
+                    <div className="flex items-center justify-between mb-1">
+                      <strong className="block mb-1 text-xs">
+                        Narration :
+                      </strong>
+                      <div className="flex items-center gap-1">
+                        <strong className="text-gray-400">Prompt</strong>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(scene.image_prompt);
+                          }}
+                          className="text-gray-400 hover:text-gray-600 rounded transition-colors"
+                          title="Copy prompt"
+                        >
+                          <svg
+                            className="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
                     <textarea
                       value={
                         modifiedScenes[index]?.narration || scene.narration
@@ -991,43 +1055,6 @@ export default function NewsVideoDetailPage() {
                       placeholder="Please enter narration"
                     />
                   </div>
-                </div>
-
-                <div className="mt-3 flex gap-2">
-                  {(scene as any).firebaseUrl || scene.videoUrl ? (
-                    <Button
-                      onClick={() => {
-                        const link = document.createElement("a");
-                        link.href =
-                          (scene as any).firebaseUrl || scene.videoUrl!;
-                        link.download = `scene-${scene.scene_number}.mp4`;
-                        link.click();
-                      }}
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 text-xs py-1"
-                    >
-                      Download
-                    </Button>
-                  ) : null}
-                  {scene.videoUrl && !(scene as any).firebaseUrl && (
-                    <Button
-                      onClick={() => handleUploadSceneToFirebase(index)}
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 text-xs py-1 bg-primary/20 border-primary/40 hover:bg-primary/20"
-                    >
-                      Upload
-                    </Button>
-                  )}
-                  {/* <Button
-                    onClick={() => handleRegenerateScene(index)}
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 text-xs py-1 bg-primary/10 border-primary/40 hover:bg-primary/20"
-                  >
-                    Regenerate
-                  </Button> */}
                 </div>
               </div>
             ))}

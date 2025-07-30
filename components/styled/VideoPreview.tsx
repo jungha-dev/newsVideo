@@ -473,7 +473,7 @@ export default function VideoPreview({
                 {/* 자막 설정 */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs font-black text-gray-500 mb-2">
                       Color:
                     </label>
                     <input
@@ -485,7 +485,7 @@ export default function VideoPreview({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs font-black text-gray-500 mb-2">
                       Text Style:
                     </label>
                     <div className="flex gap-4 h-10 mx-auto">
@@ -507,7 +507,7 @@ export default function VideoPreview({
                           >
                             {subtitleStyle === "box" && (
                               <svg
-                                className="w-3 h-3 text-white"
+                                className="w-4 h-4 text-white"
                                 fill="currentColor"
                                 viewBox="0 0 24 24"
                               >
@@ -538,7 +538,7 @@ export default function VideoPreview({
                           >
                             {subtitleStyle === "outline" && (
                               <svg
-                                className="w-3 h-3 text-white"
+                                className="w-4 h-4 text-white"
                                 fill="currentColor"
                                 viewBox="0 0 24 24"
                               >
@@ -637,7 +637,7 @@ export default function VideoPreview({
       </div>
 
       {/* 오른쪽: 비디오 프리뷰 */}
-      <div className="bg-black rounded-lg overflow-hidden flex flex-col">
+      <div className="bg-black rounded-rt-lg rounded-rb-lg overflow-hidden flex flex-col">
         {videos.length > 0 && currentVideo && currentVideo.output ? (
           <>
             <div className="flex-1 relative">
