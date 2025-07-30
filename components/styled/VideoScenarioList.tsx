@@ -614,7 +614,7 @@ export default function VideoScenarioList({
 
       {/* 이미지 URL 입력 모달 */}
       {showImageUrlModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">
@@ -684,7 +684,7 @@ export default function VideoScenarioList({
         return (
           <div
             key={sceneIndex}
-            className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-black/20 flex items-center justify-center z-50"
           >
             <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
               <div className="flex items-center justify-between mb-4">

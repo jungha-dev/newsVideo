@@ -130,7 +130,7 @@ export default function NewsVideoListPage() {
 
                     {/* 처리 중일 때 로딩 애니메이션 */}
                     {video.status === "processing" && (
-                      <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                       </div>
                     )}
