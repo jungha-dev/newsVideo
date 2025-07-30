@@ -286,8 +286,8 @@ export default function VideoScenarioList({
 
         {/* 생성된 영상들을 자동으로 추가 */}
         {generatedVideos.length > 0 && (
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm font-medium text-blue-800 mb-2">
+          <div className="mb-4 p-3 bg-primary/10 border border-primary/40 rounded-lg">
+            <p className="text-sm font-medium text-primary-dark mb-2">
               생성된 영상들:
             </p>
             <div className="flex flex-wrap gap-2">
@@ -307,8 +307,8 @@ export default function VideoScenarioList({
 
         {/* 병합된 영상 프리뷰 */}
         {mergedVideoUrl && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-            <h5 className="text-sm font-medium text-green-800 mb-2">
+          <div className="mb-4 p-3 bg-primary/20 border border-primary/40 rounded-lg">
+            <h5 className="text-sm font-medium text-primary-dark mb-2">
               병합된 영상
             </h5>
             <video
@@ -702,8 +702,8 @@ export default function VideoScenarioList({
 
               <div className="space-y-4">
                 {modal.type === "image" && (
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-xs text-blue-800">
+                  <div className="p-3 bg-primary/10 border border-primary/40 rounded-lg">
+                    <p className="text-xs text-primary-dark">
                       💡 이미지 추가 시 해당 Scene의 프롬프트가 자동으로 "Keep
                       the image content unchanged and minimize actions."로
                       변경됩니다.

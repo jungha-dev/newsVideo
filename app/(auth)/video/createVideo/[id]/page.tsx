@@ -877,7 +877,7 @@ export default function NewsVideoDetailPage() {
                     video.scenes.length > 0
                   }
                   onChange={toggleAllScenes}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
                 />
                 <span className="text-sm text-gray-600">Select All</span>
               </div>
@@ -923,7 +923,7 @@ export default function NewsVideoDetailPage() {
                       type="checkbox"
                       checked={selectedScenes.has(index)}
                       onChange={() => toggleSceneSelection(index)}
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
                     />
                     <h4 className="font-medium text-sm">
                       Scene {scene.scene_number}
@@ -986,7 +986,7 @@ export default function NewsVideoDetailPage() {
                       onChange={(e) =>
                         handleNarrationChange(index, e.target.value)
                       }
-                      className="w-full text-gray-700 bg-gray-50 p-1 rounded text-xs border border-gray-200 focus:border-blue-300 focus:ring-1 focus:ring-blue-300 resize-none"
+                      className="w-full text-gray-700 bg-gray-50 p-1 rounded text-xs border border-gray-200 focus:border-primary/40 focus:ring-1 focus:ring-primary/40 resize-none"
                       rows={2}
                       placeholder="Please enter narration"
                     />
@@ -1015,7 +1015,7 @@ export default function NewsVideoDetailPage() {
                       onClick={() => handleUploadSceneToFirebase(index)}
                       variant="outline"
                       size="sm"
-                      className="flex-1 text-xs py-1 bg-green-50 border-green-200 hover:bg-green-100"
+                      className="flex-1 text-xs py-1 bg-primary/20 border-primary/40 hover:bg-primary/20"
                     >
                       Upload
                     </Button>
@@ -1024,7 +1024,7 @@ export default function NewsVideoDetailPage() {
                     onClick={() => handleRegenerateScene(index)}
                     variant="outline"
                     size="sm"
-                    className="flex-1 text-xs py-1 bg-blue-50 border-blue-200 hover:bg-blue-100"
+                    className="flex-1 text-xs py-1 bg-primary/10 border-primary/40 hover:bg-primary/20"
                   >
                     Regenerate
                   </Button> */}
@@ -1036,10 +1036,10 @@ export default function NewsVideoDetailPage() {
             {showRegenerateForm && (
               <div className="border rounded-lg p-3 transition-colors ">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-sm text-blue-900">
+                  <h4 className="font-medium text-sm text-primary-dark">
                     Scene {regenerateSceneIndex! + 1} Regenerate Scene
                   </h4>
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary-dark">
                     Edit Mode
                   </span>
                 </div>
@@ -1058,7 +1058,7 @@ export default function NewsVideoDetailPage() {
                           image_prompt: e.target.value,
                         }))
                       }
-                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                       rows={2}
                       placeholder="Please enter image prompt"
                     />
@@ -1077,7 +1077,7 @@ export default function NewsVideoDetailPage() {
                           narration: e.target.value,
                         }))
                       }
-                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                       rows={2}
                       placeholder="Please enter narration"
                     />
@@ -1097,7 +1097,7 @@ export default function NewsVideoDetailPage() {
                           imageUrl: e.target.value,
                         }))
                       }
-                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                       placeholder="https://example.com/image.jpg"
                     />
                   </div>

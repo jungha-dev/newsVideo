@@ -333,7 +333,7 @@ export default function VideoPreview({
               </span>
             </div>
           )}
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-sm">
             Created:{" "}
             {info
               ? new Date(info.createdAt).toLocaleDateString()
@@ -401,7 +401,7 @@ export default function VideoPreview({
                                 }
                               }}
                               disabled={index === 0}
-                              className="bg-blue-500 text-white text-xs p-1 rounded hover:bg-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                              className="bg-primary text-white text-xs p-1 rounded hover:bg-primary disabled:opacity-30 disabled:cursor-not-allowed"
                               title="Move Up"
                             >
                               ↑
@@ -414,7 +414,7 @@ export default function VideoPreview({
                                 }
                               }}
                               disabled={index === videos.length - 1}
-                              className="bg-blue-500 text-white text-xs p-1 rounded hover:bg-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                              className="bg-primary text-white text-xs p-1 rounded hover:bg-primary disabled:opacity-30 disabled:cursor-not-allowed"
                               title="Move Down"
                             >
                               ↓
@@ -541,7 +541,7 @@ export default function VideoPreview({
                   {mergedVideoUrl && (
                     <button
                       onClick={onDownload}
-                      className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                      className="flex-1 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors"
                     >
                       다운로드
                     </button>
@@ -550,10 +550,10 @@ export default function VideoPreview({
 
                 {/* 병합 진행 상태 */}
                 {isMerging && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="mt-4 p-3 bg-primary/10 border border-primary/40 rounded-md">
                     <div className="flex items-center mb-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                      <span className="text-sm text-blue-700">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                      <span className="text-sm text-primary-dark">
                         {mergeProgress || "Merging Videos..."}
                       </span>
                     </div>

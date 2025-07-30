@@ -1420,8 +1420,8 @@ Please compose the video based on the following blog content:
 
                   {/* Scene별 이미지 상태 표시 */}
                   {videoScenario && (
-                    <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded">
-                      <p className="text-xs font-medium text-blue-800 mb-2">
+                    <div className="mt-3 p-2 bg-primary/10 border border-primary/40 rounded">
+                      <p className="text-xs font-medium text-primary-dark mb-2">
                         Image status by scene:
                       </p>
                       <div className="space-y-1">
@@ -1467,7 +1467,7 @@ Please compose the video based on the following blog content:
                                 className={
                                   scene.imageUrl
                                     ? isSafe
-                                      ? "text-green-600"
+                                      ? "text-primary"
                                       : "text-orange-600"
                                     : "text-gray-500"
                                 }
@@ -1550,16 +1550,14 @@ Please compose the video based on the following blog content:
 
             {/* 생성 상태 표시 */}
             {generatingVideos && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="mt-4 p-4 bg-primary/10 border border-primary/40 rounded-lg">
                 <div className="flex items-center space-x-3">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                   <div>
-                    <p className="text-blue-800 font-medium">
+                    <p className="text-primary-dark font-medium">
                       뉴스 비디오 생성 중...
                     </p>
-                    <p className="text-blue-600 text-sm">
-                      잠시만 기다려주세요.
-                    </p>
+                    <p className="text-primary text-sm">잠시만 기다려주세요.</p>
                   </div>
                 </div>
               </div>
@@ -1567,13 +1565,13 @@ Please compose the video based on the following blog content:
 
             {/* 생성 완료 시 상세 페이지 링크 */}
             {currentVideoId && !generatingVideos && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="mt-4 p-4 bg-primary/20 border border-primary/40 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-green-800 font-medium">
+                    <p className="text-primary-dark font-medium">
                       ✅ News video generation complete!
                     </p>
-                    <p className="text-green-600 text-sm">
+                    <p className="text-primary text-sm">
                       Check the results on the details page.
                     </p>
                   </div>

@@ -126,7 +126,7 @@ export default function FirebaseUploadTestPage() {
                   key={index}
                   className={`p-4 rounded-lg border ${
                     result.success
-                      ? "bg-green-50 border-green-200"
+                      ? "bg-primary/20 border-primary/40"
                       : "bg-red-50 border-red-200"
                   }`}
                 >

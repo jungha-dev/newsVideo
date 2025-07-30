@@ -532,8 +532,8 @@ export default function ConnectedVideosPage() {
 
         {/* 성공 메시지 */}
         {successMessage && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-green-800">{successMessage}</p>
+          <div className="mb-6 p-4 bg-primary/20 border border-primary/40 rounded-lg">
+            <p className="text-primary-dark">{successMessage}</p>
           </div>
         )}
 
@@ -555,7 +555,7 @@ export default function ConnectedVideosPage() {
                   }))
                 }
                 placeholder="프로젝트 이름을 입력하세요"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
             <div>
@@ -580,7 +580,7 @@ export default function ConnectedVideosPage() {
                     }));
                   }
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 <option value="">프로젝트 선택</option>
                 {projects.map((project) => (
@@ -606,7 +606,7 @@ export default function ConnectedVideosPage() {
                 onClick={() => setUploadMethod("file")}
                 className={`px-4 py-2 rounded-lg border ${
                   uploadMethod === "file"
-                    ? "bg-blue-600 text-white border-blue-600"
+                    ? "bg-primary text-white border-primary"
                     : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }`}
               >
@@ -616,7 +616,7 @@ export default function ConnectedVideosPage() {
                 onClick={() => setUploadMethod("url")}
                 className={`px-4 py-2 rounded-lg border ${
                   uploadMethod === "url"
-                    ? "bg-blue-600 text-white border-blue-600"
+                    ? "bg-primary text-white border-primary"
                     : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }`}
               >
@@ -639,7 +639,7 @@ export default function ConnectedVideosPage() {
               />
               <label
                 htmlFor="image-upload"
-                className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
               >
                 {isUploading ? "업로드 중..." : "이미지 선택"}
               </label>
@@ -658,7 +658,7 @@ export default function ConnectedVideosPage() {
                   value={newImageUrl}
                   onChange={(e) => setNewImageUrl(e.target.value)}
                   placeholder="이미지 URL을 입력하세요"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
                 <Button
                   onClick={addImageUrl}
@@ -708,7 +708,7 @@ export default function ConnectedVideosPage() {
                     {index > 0 && (
                       <button
                         onClick={() => moveImage(index, index - 1)}
-                        className="bg-blue-500 text-white p-1 rounded text-xs hover:bg-blue-600"
+                        className="bg-primary text-white p-1 rounded text-xs hover:bg-primary"
                       >
                         ↑
                       </button>
@@ -716,7 +716,7 @@ export default function ConnectedVideosPage() {
                     {index < formData.images.length - 1 && (
                       <button
                         onClick={() => moveImage(index, index + 1)}
-                        className="bg-blue-500 text-white p-1 rounded text-xs hover:bg-blue-600"
+                        className="bg-primary text-white p-1 rounded text-xs hover:bg-primary"
                       >
                         ↓
                       </button>
@@ -746,7 +746,7 @@ export default function ConnectedVideosPage() {
                     duration: parseInt(e.target.value) as 5 | 10,
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 <option value={5}>5초</option>
                 <option value={10}>10초</option>
@@ -764,7 +764,7 @@ export default function ConnectedVideosPage() {
                     aspect_ratio: e.target.value as "16:9" | "9:16" | "1:1",
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 <option value="16:9">16:9 (가로)</option>
                 <option value="9:16">9:16 (세로)</option>
@@ -809,7 +809,7 @@ export default function ConnectedVideosPage() {
                 }))
               }
               placeholder="영상에서 원하는 스타일, 분위기, 요소들을 자세히 설명하세요..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               rows={3}
             />
           </div>
@@ -827,7 +827,7 @@ export default function ConnectedVideosPage() {
                 }))
               }
               placeholder="영상에서 제외하고 싶은 요소들을 입력하세요..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               rows={3}
             />
           </div>
@@ -837,9 +837,11 @@ export default function ConnectedVideosPage() {
         <div className="mb-8">
           {/* 예상 영상 수 표시 */}
           {formData.images.length === 2 && (
-            <div className="text-center mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-blue-800 font-medium">예상 생성 영상: 1개</p>
-              <p className="text-blue-600 text-sm mt-1">
+            <div className="text-center mb-4 p-4 bg-primary/10 border border-primary/40 rounded-lg">
+              <p className="text-primary-dark font-medium">
+                예상 생성 영상: 1개
+              </p>
+              <p className="text-primary text-sm mt-1">
                 2개 이미지 → 1개 연결 영상
               </p>
             </div>
@@ -881,7 +883,7 @@ export default function ConnectedVideosPage() {
                 <div className="flex items-center gap-2">
                   <div className="w-32 bg-gray-200 rounded-full h-2">
                     <div
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      className="bg-primary h-2 rounded-full transition-all duration-300"
                       style={{
                         width: `${getProgressPercentage(generatedVideos)}%`,
                       }}
@@ -898,7 +900,7 @@ export default function ConnectedVideosPage() {
                   <span className="px-2 py-1 bg-secondary text-black text-xs rounded">
                     완료: {getStatusCount(generatedVideos, "succeeded")}
                   </span>
-                  <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                  <span className="px-2 py-1 bg-primary/20 text-primary-dark text-xs rounded">
                     처리중: {getStatusCount(generatedVideos, "processing")}
                   </span>
                   <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded">

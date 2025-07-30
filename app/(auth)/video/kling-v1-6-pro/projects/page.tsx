@@ -143,7 +143,7 @@ export default function ConnectedVideoProjectsPage() {
       case "failed":
         return "bg-red-100 text-red-800";
       case "processing":
-        return "bg-blue-100 text-blue-800";
+        return "bg-primary/20 text-primary-dark";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -354,7 +354,7 @@ export default function ConnectedVideoProjectsPage() {
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
                   placeholder="프로젝트 이름을 입력하세요"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   onKeyPress={(e) => {
                     if (e.key === "Enter") {
                       handleCreateProject();
@@ -384,7 +384,7 @@ export default function ConnectedVideoProjectsPage() {
                 <button
                   onClick={handleCreateProject}
                   disabled={!newProjectName.trim() || isCreating}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isCreating ? "생성 중..." : "생성"}
                 </button>

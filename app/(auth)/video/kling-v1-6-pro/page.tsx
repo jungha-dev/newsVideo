@@ -164,7 +164,7 @@ export default function KlingV16ProPage() {
               value={formData.prompt}
               onChange={(e) => handleInputChange("prompt", e.target.value)}
               placeholder="Describe the video you want to generate..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               rows={3}
               required
             />
@@ -181,7 +181,7 @@ export default function KlingV16ProPage() {
                 handleInputChange("negative_prompt", e.target.value)
               }
               placeholder="Things you do not want to see in the video..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               rows={2}
             />
           </div>
@@ -197,7 +197,7 @@ export default function KlingV16ProPage() {
                 onChange={(e) =>
                   handleInputChange("duration", parseInt(e.target.value))
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 <option value={5}>5 seconds</option>
                 <option value={10}>10 seconds</option>
@@ -213,7 +213,7 @@ export default function KlingV16ProPage() {
                 onChange={(e) =>
                   handleInputChange("aspect_ratio", e.target.value)
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 <option value="16:9">16:9 (Landscape)</option>
                 <option value="9:16">9:16 (Portrait)</option>
@@ -254,7 +254,7 @@ export default function KlingV16ProPage() {
               value={formData.start_image || ""}
               onChange={(e) => handleInputChange("start_image", e.target.value)}
               placeholder="https://example.com/start-image.jpg"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
             <p className="text-xs text-gray-500 mt-1">
               First frame of the video. Either start or end image is required.
@@ -271,7 +271,7 @@ export default function KlingV16ProPage() {
               value={formData.end_image || ""}
               onChange={(e) => handleInputChange("end_image", e.target.value)}
               placeholder="https://example.com/end-image.jpg"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
             <p className="text-xs text-gray-500 mt-1">
               Last frame of the video. Either start or end image is required.
@@ -307,7 +307,7 @@ export default function KlingV16ProPage() {
                       handleInputChange("reference_images", newImages);
                     }}
                     placeholder="https://example.com/reference-image.jpg"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   <Button
                     type="button"
@@ -352,11 +352,11 @@ export default function KlingV16ProPage() {
 
         {/* Status Display */}
         {currentPrediction && (
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="text-lg font-medium text-blue-800 mb-2">
+          <div className="mt-6 p-4 bg-primary/10 border border-primary/40 rounded-lg">
+            <h3 className="text-lg font-medium text-primary-dark mb-2">
               Generation Status
             </h3>
-            <p className="text-blue-700">
+            <p className="text-primary-dark">
               Status: {currentPrediction.status}
               {currentPrediction.status === "processing" &&
                 " (This may take several minutes)"}
