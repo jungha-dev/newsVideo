@@ -552,7 +552,12 @@ export default function VideoScenarioList({
                   </div>
                 </div>
               )}
-
+              <div className="flex gap-2 mb-3">
+                <div>
+                  <span className="text-xs text-gray-500">아나운서 포함</span>
+                  <input type="checkbox" checked={false} className="mr-1" />
+                </div>
+              </div>
               {/* 미디어 추가 버튼들 */}
               <div className="flex gap-2 mb-3">
                 <Button
