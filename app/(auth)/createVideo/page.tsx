@@ -359,7 +359,7 @@ Please compose the video based on the following blog content:
           : "Hailuo-02 (Minimax)"
       }\n\nWould you like to start video generation?`,
       apiInfo: {
-        url: "/api/video/news/generate",
+        url: "/api/video/createVideo/generate",
         method: "POST",
         data: requestData,
       },
@@ -371,7 +371,7 @@ Please compose the video based on the following blog content:
         setVideoItems([]);
 
         try {
-          const response = await fetch("/api/video/news/generate", {
+          const response = await fetch("/api/video/createVideo/generate", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
