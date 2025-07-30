@@ -564,7 +564,7 @@ export default function VideoPreview({
 
                 {/* 병합된 영상 프리뷰 */}
                 {mergedVideoUrl && (
-                  <div className="my-4">
+                  <div className="my-6 border-t border-secondary pt-8">
                     <h4 className="text-md font-medium text-gray-900 mb-2">
                       Merged Video Preview
                     </h4>

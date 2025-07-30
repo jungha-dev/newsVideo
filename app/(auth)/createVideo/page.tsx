@@ -736,9 +736,28 @@ Please compose the video based on the following blog content:
           <div className="flex items-center justify-between pb-4">
             <h2 className="text-xl font-semibold"></h2>
             <div className="flex items-center gap-2">
+              <div>
+                {(prompt.trim() ||
+                  systemPrompt.trim() ||
+                  blogContent.trim() ||
+                  videoPrompt.trim() ||
+                  generatedText ||
+                  videoScenario ||
+                  generatedVideoUrl ||
+                  manualScenes.length > 0) && (
+                  <Button
+                    onClick={handleClear}
+                    variant="secondary"
+                    size="sm"
+                    className="w-full"
+                  >
+                    Clear All
+                  </Button>
+                )}
+              </div>
               <Button
                 onClick={() => setShowPromptSettings(!showPromptSettings)}
-                variant="secondary"
+                variant="normal"
                 size="sm"
                 title={
                   showPromptSettings
@@ -747,7 +766,7 @@ Please compose the video based on the following blog content:
                 }
               >
                 <svg
-                  className={`w-4 h-4 transition-transform ${
+                  className={`w-5 h-5 transition-transform ${
                     showPromptSettings ? "rotate-90" : ""
                   }`}
                   fill="none"
@@ -930,26 +949,6 @@ Please compose the video based on the following blog content:
                             }))}
                             className="w-full"
                           />
-                        </div>
-
-                        <div className="pt-4">
-                          {(prompt.trim() ||
-                            systemPrompt.trim() ||
-                            blogContent.trim() ||
-                            videoPrompt.trim() ||
-                            generatedText ||
-                            videoScenario ||
-                            generatedVideoUrl ||
-                            manualScenes.length > 0) && (
-                            <Button
-                              onClick={handleClear}
-                              variant="secondary"
-                              size="sm"
-                              className="w-full"
-                            >
-                              Clear All
-                            </Button>
-                          )}
                         </div>
 
                         <Button

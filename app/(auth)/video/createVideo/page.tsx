@@ -37,7 +37,7 @@ export default function NewsVideoListPage() {
   };
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("ko-KR", {
+    return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -103,22 +103,29 @@ export default function NewsVideoListPage() {
                     )}
 
                     {/* 상태 배지 */}
-                    <div className="absolute top-2 right-2">
+                    <div className="absolute top-2 right-2 flex gap-2">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
                           video.status === "completed"
-                            ? "bg-secondary text-black"
+                            ? ""
                             : video.status === "processing"
                             ? "bg-yellow-100 text-yellow-800"
                             : "bg-red-100 text-red-800"
                         }`}
                       >
                         {video.status === "completed"
-                          ? "Completed"
+                          ? ""
                           : video.status === "processing"
                           ? "Processing"
                           : "Failed"}
                       </span>
+                      {video.model && (
+                        <div>
+                          <span className="inline-block bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded">
+                            {video.model}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* 처리 중일 때 로딩 애니메이션 */}
@@ -136,23 +143,15 @@ export default function NewsVideoListPage() {
                     </h3>
 
                     {video.description && (
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-1">
                         {video.description}
                       </p>
                     )}
 
                     <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>{video.scenes.length}개 Scene</span>
+                      <span>{video.scenes.length} Scene</span>
                       <span>{formatDate(video.createdAt)}</span>
                     </div>
-
-                    {video.model && (
-                      <div className="mt-2">
-                        <span className="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
-                          {video.model}
-                        </span>
-                      </div>
-                    )}
                   </div>
                 </div>
               </Link>
