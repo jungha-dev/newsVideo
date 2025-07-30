@@ -1018,14 +1018,14 @@ export default function NewsVideoDetailPage() {
                       Upload
                     </Button>
                   )}
-                  <Button
+                  {/* <Button
                     onClick={() => handleRegenerateScene(index)}
                     variant="outline"
                     size="sm"
                     className="flex-1 text-xs py-1 bg-blue-50 border-blue-200 hover:bg-blue-100"
                   >
                     Regenerate
-                  </Button>
+                  </Button> */}
                 </div>
               </div>
             ))}
