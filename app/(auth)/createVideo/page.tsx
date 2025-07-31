@@ -22,6 +22,7 @@ import {
 import { NewsVideoCreateData } from "@/lib/types/newsVideo";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import BackgroundCircles from "@/components/common/BackgroundCircles";
 
 interface TextGenerationResponse {
   text: string;
@@ -143,6 +144,11 @@ Please compose the video based on the following blog content:
   const [isVideoModelDetailsCollapsed, setIsVideoModelDetailsCollapsed] =
     useState(true);
 
+  // 아나운서 포함 상태
+  const [newsAnchorIncluded, setNewsAnchorIncluded] = useState<{
+    [key: number]: boolean;
+  }>({});
+
   // Blog Content 프롬프트 설정 관련 상태
   const [blogPromptTemplate, setBlogPromptTemplate] = useState(
     DEFAULT_BLOG_PROMPT_TEMPLATE
@@ -213,7 +219,7 @@ Please compose the video based on the following blog content:
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "텍스트 생성에 실패했습니다.");
+        throw new Error(data.error || "Text generation failed.");
       }
 
       setGeneratedText(data.text);
@@ -578,6 +584,22 @@ Please compose the video based on the following blog content:
     }
   };
 
+  const handleDeleteScene = (sceneIndex: number) => {
+    if (!videoScenario || videoScenario.scenes.length <= 1) return;
+
+    const updatedScenes = videoScenario.scenes
+      .filter((_, index) => index !== sceneIndex)
+      .map((scene, index) => ({
+        ...scene,
+        scene_number: index + 1,
+      }));
+
+    setVideoScenario({
+      ...videoScenario,
+      scenes: updatedScenes,
+    });
+  };
+
   const handleMerge = async () => {
     setIsLoadingMerge(true);
     setMergeError(null);
@@ -723,24 +745,50 @@ Please compose the video based on the following blog content:
   };
 
   return (
-    <div className="container max-w-6xl mx-auto px-4 py-8">
-      <PageTitle title="AI Content Generation" />
-
+    <div className="container max-w-5xl mx-auto px-4 py-8">
+      <BackgroundCircles />
+      <div className="mt-[20vh] flex flex-col justify-center items-center text-center">
+        <span className="text-5xl font-bold">AI Content Generation</span>
+        <span className="py-4">Turn Your Content into Stunning Videos</span>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
         {/* 입력 섹션 */}
         <Section className={isScenarioCollapsed ? "!mb-0 !pb-0" : ""}>
           <div className="flex items-center justify-between pb-4">
-            <h2 className="text-xl font-semibold">Input Settings</h2>
-            {videoScenario && (
+            <h2 className="text-xl font-semibold"></h2>
+            <div className="flex items-center gap-2">
+              <div>
+                {(prompt.trim() ||
+                  systemPrompt.trim() ||
+                  blogContent.trim() ||
+                  videoPrompt.trim() ||
+                  generatedText ||
+                  videoScenario ||
+                  generatedVideoUrl ||
+                  manualScenes.length > 0) && (
+                  <Button
+                    onClick={handleClear}
+                    variant="secondary"
+                    size="sm"
+                    className="w-full"
+                  >
+                    Clear All
+                  </Button>
+                )}
+              </div>
               <Button
-                onClick={() => setIsScenarioCollapsed(!isScenarioCollapsed)}
+                onClick={() => setShowPromptSettings(!showPromptSettings)}
                 variant="normal"
                 size="sm"
+                title={
+                  showPromptSettings
+                    ? "Close prompt settings"
+                    : "Open prompt settings"
+                }
               >
-                {isScenarioCollapsed ? "View Details" : "Collapse"}
                 <svg
-                  className={`w-4 h-4 ml-2 transition-transform ${
-                    isScenarioCollapsed ? "" : "rotate-180"
+                  className={`w-5 h-5 transition-transform ${
+                    showPromptSettings ? "rotate-90" : ""
                   }`}
                   fill="none"
                   stroke="currentColor"
@@ -750,11 +798,41 @@ Please compose the video based on the following blog content:
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
               </Button>
-            )}
+              {videoScenario && (
+                <Button
+                  onClick={() => setIsScenarioCollapsed(!isScenarioCollapsed)}
+                  variant="normal"
+                  size="sm"
+                >
+                  {isScenarioCollapsed ? "View Details" : "Collapse"}
+                  <svg
+                    className={`w-4 h-4 ml-2 transition-transform ${
+                      isScenarioCollapsed ? "" : "rotate-180"
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </Button>
+              )}
+            </div>
           </div>
 
           {!isScenarioCollapsed && (
@@ -803,70 +881,17 @@ Please compose the video based on the following blog content:
                 {activeTab === "scenario" && (
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Blog Content
-                      </label>
                       <Textarea
                         value={blogContent}
                         onChange={(e) => setBlogContent(e.target.value)}
-                        placeholder="Enter blog content. A 1-minute video scenario will be generated based on this content..."
+                        placeholder="Enter blog content. A video scenario will be generated based on this content..."
                         rows={4}
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Number of Scenes
-                      </label>
-                      <Select
-                        value={sceneCount.toString()}
-                        onChange={(value) => setSceneCount(parseInt(value))}
-                        options={Array.from(
-                          { length: 30 },
-                          (_, i) => i + 1
-                        ).map((num) => ({
-                          value: num.toString(),
-                          label: `${num} scenes (${num * 5}s total)`,
-                        }))}
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div className="pt-4 flex gap-2">
-                      <Button
-                        onClick={() =>
-                          setShowPromptSettings(!showPromptSettings)
-                        }
-                        variant="secondary"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        {showPromptSettings
-                          ? "prompt settings close"
-                          : "prompt settings open"}
-                      </Button>
-                      {(prompt.trim() ||
-                        systemPrompt.trim() ||
-                        blogContent.trim() ||
-                        videoPrompt.trim() ||
-                        generatedText ||
-                        videoScenario ||
-                        generatedVideoUrl ||
-                        manualScenes.length > 0) && (
-                        <Button
-                          onClick={handleClear}
-                          variant="secondary"
-                          size="sm"
-                          className="flex-1"
-                        >
-                          Clear All
-                        </Button>
-                      )}
-                    </div>
-
                     {/* 프롬프트 설정 섹션 */}
                     {showPromptSettings && (
-                      <div className="border rounded-lg p-4 space-y-4 bg-gray-50">
+                      <div className="border border-secondary rounded-lg p-4 space-y-4 bg-gray-50">
                         <h4 className="text-sm font-medium text-gray-900">
                           Prompt Settings
                         </h4>
@@ -927,33 +952,42 @@ Please compose the video based on the following blog content:
                       </div>
                     )}
 
-                    <Button
-                      variant="primary"
-                      onClick={handleGenerateScenario}
-                      disabled={loading || !blogContent.trim()}
-                      className="w-full"
-                    >
-                      {loading ? "Generating..." : "Generate Scenario"}
-                    </Button>
+                    {blogContent.trim() && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Number of Scenes
+                          </label>
+                          <Select
+                            value={sceneCount.toString()}
+                            onChange={(value) => setSceneCount(parseInt(value))}
+                            options={Array.from(
+                              { length: 30 },
+                              (_, i) => i + 1
+                            ).map((num) => ({
+                              value: num.toString(),
+                              label: `${num} scenes (${num * 5}s total)`,
+                            }))}
+                            className="w-full"
+                          />
+                        </div>
+
+                        <Button
+                          variant="primary"
+                          onClick={handleGenerateScenario}
+                          disabled={loading || !blogContent.trim()}
+                          className="w-full"
+                        >
+                          {loading ? "Generating..." : "Generate Scenario"}
+                        </Button>
+                      </>
+                    )}
                   </div>
                 )}
 
                 {/* 직접 Add Scenes 섹션 - 시나리오가 생성된 후에만 보임 */}
                 {videoScenario && (
-                  <div className="border-t pt-4 mt-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-sm font-medium">Add Scenes</h4>
-                      <Button
-                        onClick={() =>
-                          setShowManualSceneInput(!showManualSceneInput)
-                        }
-                        variant="normal"
-                        size="sm"
-                      >
-                        {showManualSceneInput ? "Collapse" : "Add Scene"}
-                      </Button>
-                    </div>
-
+                  <div className="border-t border-secondary-light pt-4 mt-20">
                     {showManualSceneInput && (
                       <div className="space-y-4">
                         {/* 새 Scene 입력 폼 */}
@@ -1205,8 +1239,12 @@ Please compose the video based on the following blog content:
                   onAddSceneVideo={handleAddSceneVideo}
                   onUpdateScene={handleUpdateScene}
                   onAddScene={handleAddScene}
+                  onDeleteScene={handleDeleteScene}
                   onSaveNewsVideo={handleSaveNewsVideo}
                   isSaving={loading}
+                  selectedVideoModel={selectedVideoModel}
+                  newsAnchorIncluded={newsAnchorIncluded}
+                  onNewsAnchorIncludedChange={setNewsAnchorIncluded}
                 />
               </div>
             )}
@@ -1236,7 +1274,9 @@ Please compose the video based on the following blog content:
                   size="md"
                   className="w-54 mb-6"
                 >
-                  {isVideoModelDetailsCollapsed ? "세부설정 보기" : "접기"}
+                  {isVideoModelDetailsCollapsed
+                    ? "View settings"
+                    : "Close settings"}
                   <svg
                     className={`w-4 h-4 ml-2 transition-transform ${
                       isVideoModelDetailsCollapsed ? "" : "rotate-180"
@@ -1393,8 +1433,8 @@ Please compose the video based on the following blog content:
 
                   {/* Scene별 이미지 상태 표시 */}
                   {videoScenario && (
-                    <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded">
-                      <p className="text-xs font-medium text-blue-800 mb-2">
+                    <div className="mt-3 p-2 bg-primary/10 border border-primary/40 rounded">
+                      <p className="text-xs font-medium text-primary-dark mb-2">
                         Image status by scene:
                       </p>
                       <div className="space-y-1">
@@ -1440,7 +1480,7 @@ Please compose the video based on the following blog content:
                                 className={
                                   scene.imageUrl
                                     ? isSafe
-                                      ? "text-green-600"
+                                      ? "text-primary"
                                       : "text-orange-600"
                                     : "text-gray-500"
                                 }
@@ -1503,11 +1543,35 @@ Please compose the video based on the following blog content:
             {videoScenario && (
               <Button
                 onClick={() => {
+                  // 각 scene의 image_prompt를 실제로 업데이트
+                  videoScenario.scenes.forEach((scene, index) => {
+                    if (
+                      selectedVideoModel === "veo-3" &&
+                      newsAnchorIncluded[index]
+                    ) {
+                      const updatedScene = {
+                        ...scene,
+                        image_prompt: `The news anchor is wearing a clean and elegant white blouse with no logos or prints, sleeves neatly rolled up, confidently standing in a modern news studio.  and a short-haired, neat-looking Asian female news anchor excitedly says: ${scene.narration}`,
+                      };
+                      handleUpdateScene(index, updatedScene);
+                    }
+                  });
+
+                  // 업데이트된 scene들의 image_prompt를 사용
                   const prompts = videoScenario.scenes.map(
                     (scene) => scene.image_prompt
                   );
+                  // 아나운서 포함이 체크된 scene의 경우 나레이션을 빈 문자열로 설정
                   const narrations = videoScenario.scenes.map(
-                    (scene) => scene.narration
+                    (scene, index) => {
+                      if (
+                        selectedVideoModel === "veo-3" &&
+                        newsAnchorIncluded[index]
+                      ) {
+                        return ""; // 나레이션을 빈 문자열로 설정
+                      }
+                      return scene.narration;
+                    }
                   );
                   handleGenerateAllVideos(prompts, narrations);
                 }}
@@ -1523,16 +1587,14 @@ Please compose the video based on the following blog content:
 
             {/* 생성 상태 표시 */}
             {generatingVideos && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="mt-4 p-4 bg-primary/10 border border-primary/40 rounded-lg">
                 <div className="flex items-center space-x-3">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                   <div>
-                    <p className="text-blue-800 font-medium">
+                    <p className="text-primary-dark font-medium">
                       뉴스 비디오 생성 중...
                     </p>
-                    <p className="text-blue-600 text-sm">
-                      잠시만 기다려주세요.
-                    </p>
+                    <p className="text-primary text-sm">잠시만 기다려주세요.</p>
                   </div>
                 </div>
               </div>
@@ -1540,18 +1602,18 @@ Please compose the video based on the following blog content:
 
             {/* 생성 완료 시 상세 페이지 링크 */}
             {currentVideoId && !generatingVideos && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="mt-4 p-4 border border-primary/10 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-green-800 font-medium">
-                      ✅ News video generation complete!
+                    <p className="text-primary-dark font-bold">
+                      News video generation complete!
                     </p>
-                    <p className="text-green-600 text-sm">
+                    <p className="text-primary text-sm">
                       Check the results on the details page.
                     </p>
                   </div>
                   <Link href={`/video/createVideo/${currentVideoId}`}>
-                    <Button variant="primary" size="sm">
+                    <Button variant="secondary" size="sm">
                       View Details Page
                     </Button>
                   </Link>

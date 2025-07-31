@@ -8,19 +8,19 @@ export default function GoogleLoginButton() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
-    // 이미 로딩 중이면 중복 요청 방지
+    // Prevent duplicate requests if already loading
     if (isLoading) return;
 
-    console.log("=== Google 로그인 시작 ===");
+    console.log("=== Google Login started ===");
     setIsLoading(true);
 
     try {
-      console.log("Google 팝업 열기 중...");
+      console.log("Opening Google popup...");
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      console.log("=== Google 로그인 성공 ===");
-      console.log("사용자 정보:", {
+      console.log("=== Google Login success ===");
+      console.log("User info:", {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
@@ -37,10 +37,10 @@ export default function GoogleLoginButton() {
       );
       console.log("Google Provider Info:", googleProvider);
     } catch (error: any) {
-      console.error("=== Google 로그인 실패 ===");
-      console.error("에러 코드:", error.code);
-      console.error("에러 메시지:", error.message);
-      console.error("전체 에러 객체:", error);
+      console.error("=== Google Login failed ===");
+      console.error("Error code:", error.code);
+      console.error("Error message:", error.message);
+      console.error("Full error object:", error);
 
       // 팝업 취소나 중복 요청은 일반적인 사용자 행동이므로 에러로 처리하지 않음
       if (
@@ -48,15 +48,15 @@ export default function GoogleLoginButton() {
         error.code === "auth/popup-closed-by-user" ||
         error.code === "auth/popup-blocked"
       ) {
-        console.log("사용자가 로그인을 취소했습니다.");
+        console.log("User cancelled login.");
         return;
       }
 
       // 기타 오류는 콘솔에 출력
-      console.error("❌ 로그인 실패:", error);
+      console.error("❌ Login failed:", error);
     } finally {
       setIsLoading(false);
-      console.log("=== Google 로그인 프로세스 완료 ===");
+      console.log("=== Google Login process completed ===");
     }
   };
 
@@ -64,9 +64,9 @@ export default function GoogleLoginButton() {
     <button
       onClick={handleLogin}
       disabled={isLoading}
-      className="bg-primary/90 text-white px-4 py-1 rounded-xl hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
+      className=" px-4 py-1 rounded-xl font-bold hover:bg-secondary-light disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      {isLoading ? "로그인 중..." : "Google 로그인"}
+      {isLoading ? "Loading..." : "Google Login"}
     </button>
   );
 }

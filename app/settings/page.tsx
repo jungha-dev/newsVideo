@@ -38,7 +38,7 @@ export default function SettingsPage() {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  // 사용자 정보 로드
+  // Load user information
   useEffect(() => {
     if (!user) {
       router.push("/login");
@@ -48,7 +48,7 @@ export default function SettingsPage() {
     const loadUserProfile = async () => {
       setLoading(true);
       try {
-        // Firestore에서 사용자 프로필 정보 가져오기
+        // Get user profile information from Firestore
         const userDoc = await getDoc(doc(db, "users", user.uid));
 
         if (userDoc.exists()) {
@@ -60,7 +60,7 @@ export default function SettingsPage() {
             photoURL: userData.photoURL || user.photoURL || "",
           });
         } else {
-          // 기본 정보 설정
+          // Set default information
           setProfile({
             nickname: user.displayName || "",
             displayName: user.displayName || "",
@@ -69,8 +69,8 @@ export default function SettingsPage() {
           });
         }
       } catch (error) {
-        console.error("사용자 정보 로드 실패:", error);
-        setMessage("사용자 정보를 불러오는데 실패했습니다.");
+        console.error("User profile load failed:", error);
+        setMessage("Failed to load user profile.");
       } finally {
         setLoading(false);
       }
@@ -79,25 +79,25 @@ export default function SettingsPage() {
     loadUserProfile();
   }, [user, router]);
 
-  // 이미지 선택 처리
+  // Handle image selection
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // 파일 크기 검증 (5MB 제한)
+      // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
-        setMessage("이미지 크기는 5MB 이하여야 합니다.");
+        setMessage("Image size must be less than 5MB");
         return;
       }
 
-      // 파일 타입 검증
+      // Validate file type
       if (!file.type.startsWith("image/")) {
-        setMessage("이미지 파일만 업로드 가능합니다.");
+        setMessage("Image file only");
         return;
       }
 
       setSelectedImage(file);
 
-      // 미리보기 생성
+      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string);
@@ -106,7 +106,7 @@ export default function SettingsPage() {
     }
   };
 
-  // 이미지 업로드 처리
+  // Handle image upload
   const handleImageUpload = async () => {
     if (!selectedImage || !user) return;
 
@@ -114,22 +114,22 @@ export default function SettingsPage() {
     setMessage("");
 
     try {
-      // 기존 이미지 삭제 (있는 경우)
+      // Delete existing image (if any)
       if (profile.photoURL && profile.photoURL !== user.photoURL) {
         try {
           const oldImageRef = ref(storage, profile.photoURL);
           await deleteObject(oldImageRef);
         } catch (error) {
-          console.log("기존 이미지 삭제 실패 (무시됨):", error);
+          console.log("delete old image error:", error);
         }
       }
 
-      // 새 이미지 업로드
+      // Upload new image
       const imageRef = ref(storage, `users/${user.uid}/profile.jpg`);
       await uploadBytes(imageRef, selectedImage);
       const downloadURL = await getDownloadURL(imageRef);
 
-      // Firestore 업데이트
+      // Update Firestore
       await updateDoc(doc(db, "users", user.uid), {
         photoURL: downloadURL,
         updatedAt: new Date(),
@@ -138,16 +138,16 @@ export default function SettingsPage() {
       setProfile((prev) => ({ ...prev, photoURL: downloadURL }));
       setSelectedImage(null);
       setImagePreview("");
-      setMessage("프로필 이미지가 성공적으로 업로드되었습니다!");
+      setMessage("Profile image uploaded successfully!");
     } catch (error) {
-      console.error("이미지 업로드 실패:", error);
-      setMessage("이미지 업로드에 실패했습니다.");
+      console.error("Image upload error:", error);
+      setMessage("Image upload failed.");
     } finally {
       setUploadingImage(false);
     }
   };
 
-  // 이미지 제거
+  // Remove image
   const handleRemoveImage = async () => {
     if (!user) return;
 
@@ -155,17 +155,17 @@ export default function SettingsPage() {
     setMessage("");
 
     try {
-      // 기존 이미지 삭제
+      // Delete existing image
       if (profile.photoURL && profile.photoURL !== user.photoURL) {
         try {
           const imageRef = ref(storage, profile.photoURL);
           await deleteObject(imageRef);
         } catch (error) {
-          console.log("이미지 삭제 실패 (무시됨):", error);
+          console.log("delete image error:", error);
         }
       }
 
-      // Firestore에서 photoURL 제거
+      // Remove photoURL from Firestore
       await updateDoc(doc(db, "users", user.uid), {
         photoURL: null,
         updatedAt: new Date(),
@@ -174,10 +174,10 @@ export default function SettingsPage() {
       setProfile((prev) => ({ ...prev, photoURL: "" }));
       setSelectedImage(null);
       setImagePreview("");
-      setMessage("프로필 이미지가 제거되었습니다.");
+      setMessage("Profile image removed successfully!");
     } catch (error) {
-      console.error("이미지 제거 실패:", error);
-      setMessage("이미지 제거에 실패했습니다.");
+      console.error("Image remove error:", error);
+      setMessage("Image remove failed.");
     } finally {
       setUploadingImage(false);
     }
@@ -190,16 +190,16 @@ export default function SettingsPage() {
     setMessage("");
 
     try {
-      // Firestore에 사용자 프로필 업데이트
+      // Update user profile in Firestore
       await updateDoc(doc(db, "users", user.uid), {
         nickname: profile.nickname,
         updatedAt: new Date(),
       });
 
-      setMessage("프로필이 성공적으로 Save되었습니다!");
+      setMessage("Profile saved successfully!");
     } catch (error) {
-      console.error("프로필 Save 실패:", error);
-      setMessage("프로필 Save에 실패했습니다.");
+      console.error("Profile save error:", error);
+      setMessage("Profile save failed.");
     } finally {
       setSaving(false);
     }
@@ -210,7 +210,7 @@ export default function SettingsPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">로딩 중...</p>
+          <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -226,9 +226,9 @@ export default function SettingsPage() {
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
           >
             <ArrowLeft size={20} />
-            뒤로가기
+            Back
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">설정</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
         </div>
 
         {/* 프로필 카드 */}
@@ -261,10 +261,10 @@ export default function SettingsPage() {
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-900">
-                프로필 설정
+                Profile Settings
               </h2>
               <p className="text-gray-600">
-                계정 정보를 관리하고 업데이트하세요
+                Manage and update your account information
               </p>
             </div>
           </div>
@@ -277,7 +277,7 @@ export default function SettingsPage() {
                   {imagePreview ? (
                     <img
                       src={imagePreview}
-                      alt="미리보기"
+                      alt="Preview"
                       className="w-12 h-12 rounded-lg object-cover"
                     />
                   ) : (
@@ -301,7 +301,7 @@ export default function SettingsPage() {
                     size="sm"
                     className="flex items-center gap-1"
                   >
-                    {uploadingImage ? "업로드 중..." : "업로드"}
+                    {uploadingImage ? "Uploading..." : "Upload"}
                   </Button>
                   <button
                     onClick={() => {
@@ -321,43 +321,43 @@ export default function SettingsPage() {
             {/* 닉네임 */}
             <div>
               <Input
-                label="닉네임"
-                placeholder="닉네임을 입력하세요"
+                label="Nickname"
+                placeholder="Enter your nickname"
                 value={profile.nickname || ""}
                 onChange={(e) =>
                   setProfile({ ...profile, nickname: e.target.value })
                 }
               />
               <p className="text-xs text-gray-500 mt-1">
-                다른 사용자에게 표시될 이름입니다
+                This is the name that will be displayed to other users
               </p>
             </div>
 
             {/* 이메일 (읽기 전용) */}
             <div>
-              <Input label="이메일" value={profile.email || ""} disabled />
+              <Input label="Email" value={profile.email || ""} disabled />
               <p className="text-xs text-gray-500 mt-1">
-                이메일은 변경할 수 없습니다
+                This email cannot be changed
               </p>
             </div>
 
             {/* 표시 이름 (읽기 전용) */}
             <div>
               <Input
-                label="표시 이름"
+                label="Display Name"
                 value={profile.displayName || ""}
                 disabled
               />
               <p className="text-xs text-gray-500 mt-1">
-                Google 계정에서 가져온 이름입니다
+                This is the name that is imported from your Google account
               </p>
             </div>
 
-            {/* 메시지 */}
+            {/* Message */}
             {message && (
               <div
                 className={`p-3 rounded-lg text-sm ${
-                  message.includes("성공")
+                  message.includes("success")
                     ? "bg-gray-100 text-gray-700"
                     : "bg-red-100 text-red-700"
                 }`}
@@ -366,7 +366,7 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* 버튼 그룹 */}
+            {/* Button group */}
             <div className="flex justify-between pt-4">
               <div className="flex gap-2">
                 {profile.photoURL && !selectedImage && (
@@ -377,7 +377,7 @@ export default function SettingsPage() {
                     size="sm"
                     className="text-red-600 hover:text-red-700"
                   >
-                    이미지 제거
+                    Remove Image
                   </Button>
                 )}
               </div>
@@ -387,40 +387,40 @@ export default function SettingsPage() {
                 className="flex items-center gap-2"
               >
                 <Save size={16} />
-                {saving ? "Save 중..." : "Save"}
+                {saving ? "Saving..." : "Save"}
               </Button>
             </div>
           </div>
         </div>
 
-        {/* 계정 정보 카드 */}
+        {/* Account information card */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 mt-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            계정 정보
+            Account Information
           </h3>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600">계정 ID:</span>
+              <span className="text-gray-600">Account ID:</span>
               <span className="font-mono text-gray-900">{user?.uid}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">가입일:</span>
+              <span className="text-gray-600">Join Date:</span>
               <span className="text-gray-900">
                 {user?.metadata?.creationTime
                   ? new Date(user.metadata.creationTime).toLocaleDateString(
                       "ko-KR"
                     )
-                  : "알 수 없음"}
+                  : "Unknown"}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">마지막 로그인:</span>
+              <span className="text-gray-600">Last Login:</span>
               <span className="text-gray-900">
                 {user?.metadata?.lastSignInTime
                   ? new Date(user.metadata.lastSignInTime).toLocaleDateString(
                       "ko-KR"
                     )
-                  : "알 수 없음"}
+                  : "Unknown"}
               </span>
             </div>
           </div>

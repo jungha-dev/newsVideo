@@ -278,9 +278,11 @@ export default function Header() {
                   <div className="py-1">
                     <div className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                       <span className="text-sm font-medium text-gray-900">
-                        {isSuperAdmin && "슈퍼관리자: "}
+                        {isSuperAdmin && "Super Admin : "}
                         {userNickname}
                       </span>
+                    </div>
+                    <div className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                       {user.email && (
                         <span className="text-xs text-gray-500">
                           {user.email}
