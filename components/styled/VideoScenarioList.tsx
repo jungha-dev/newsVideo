@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/styled";
 
 const NEWS_ANCHOR_PROMPT =
-  "The news anchor is wearing a clean and elegant white blouse with no logos or prints, sleeves neatly rolled up, confidently standing in a modern news studio. A breaking news opening screen appears, and a short-haired, neat-looking Asian female news anchor excitedly says:";
+  "A neat-looking Asian female news anchor, wearing a classic white blouse with a standard pointed collar and five small white buttons down the center, long sleeves rolled up neatly to the elbows, no logos or prints. She has a polished, chin-length bob haircut with softly layered ends and natural side-swept bangs framing her face. Standing confidently in a modern news studio, soft natural lighting, realistic style, medium shot, high quality, ultra-detailed. The news anchor excitedly says:";
 
 interface Scene {
   scene_number: number;
