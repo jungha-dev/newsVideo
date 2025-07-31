@@ -63,7 +63,7 @@ const Modal: React.FC<ModalProps> = ({
         <button
           onClick={onClose}
           className={`absolute top-4 right-4 p-1 rounded-full hover:bg-opacity-20 ${
-            type === "success" ? "hover:bg-black" : "hover:bg-white"
+            type === "success" ? "hover:bg-black/20" : "hover:bg-white"
           } transition-colors`}
         >
           <X size={20} />

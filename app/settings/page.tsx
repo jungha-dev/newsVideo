@@ -79,7 +79,7 @@ export default function SettingsPage() {
     loadUserProfile();
   }, [user, router]);
 
-  // 이미지 선택 처리
+  // Handle image selection
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -147,7 +147,7 @@ export default function SettingsPage() {
     }
   };
 
-  // 이미지 제거
+  // Remove image
   const handleRemoveImage = async () => {
     if (!user) return;
 
@@ -155,7 +155,7 @@ export default function SettingsPage() {
     setMessage("");
 
     try {
-      // 기존 이미지 삭제
+      // Delete existing image
       if (profile.photoURL && profile.photoURL !== user.photoURL) {
         try {
           const imageRef = ref(storage, profile.photoURL);
@@ -165,7 +165,7 @@ export default function SettingsPage() {
         }
       }
 
-      // Firestore에서 photoURL 제거
+      // Remove photoURL from Firestore
       await updateDoc(doc(db, "users", user.uid), {
         photoURL: null,
         updatedAt: new Date(),
@@ -190,7 +190,7 @@ export default function SettingsPage() {
     setMessage("");
 
     try {
-      // Firestore에 사용자 프로필 업데이트
+      // Update user profile in Firestore
       await updateDoc(doc(db, "users", user.uid), {
         nickname: profile.nickname,
         updatedAt: new Date(),
@@ -321,8 +321,8 @@ export default function SettingsPage() {
             {/* 닉네임 */}
             <div>
               <Input
-                label="닉네임"
-                placeholder="닉네임을 입력하세요"
+                label="Nickname"
+                placeholder="Enter your nickname"
                 value={profile.nickname || ""}
                 onChange={(e) =>
                   setProfile({ ...profile, nickname: e.target.value })
@@ -335,7 +335,7 @@ export default function SettingsPage() {
 
             {/* 이메일 (읽기 전용) */}
             <div>
-              <Input label="이메일" value={profile.email || ""} disabled />
+              <Input label="Email" value={profile.email || ""} disabled />
               <p className="text-xs text-gray-500 mt-1">
                 This email cannot be changed
               </p>
@@ -344,7 +344,7 @@ export default function SettingsPage() {
             {/* 표시 이름 (읽기 전용) */}
             <div>
               <Input
-                label="표시 이름"
+                label="Display Name"
                 value={profile.displayName || ""}
                 disabled
               />
@@ -353,7 +353,7 @@ export default function SettingsPage() {
               </p>
             </div>
 
-            {/* 메시지 */}
+            {/* Message */}
             {message && (
               <div
                 className={`p-3 rounded-lg text-sm ${
@@ -366,7 +366,7 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* 버튼 그룹 */}
+            {/* Button group */}
             <div className="flex justify-between pt-4">
               <div className="flex gap-2">
                 {profile.photoURL && !selectedImage && (
@@ -393,7 +393,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* 계정 정보 카드 */}
+        {/* Account information card */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 mt-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Account Information

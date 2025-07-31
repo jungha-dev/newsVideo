@@ -3,6 +3,9 @@
 import React, { useState } from "react";
 import { Button } from "@/components/styled";
 
+const NEWS_ANCHOR_PROMPT =
+  "A neat-looking Asian female news anchor, wearing a classic white blouse with a standard pointed collar and five small white buttons down the center, long sleeves rolled up neatly to the elbows, no logos or prints. She has a polished, chin-length bob haircut with softly layered ends and natural side-swept bangs framing her face. Standing confidently in a modern news studio, soft natural lighting, realistic style, medium shot, high quality, ultra-detailed. The news anchor excitedly says:";
+
 interface Scene {
   scene_number: number;
   image_prompt: string;
@@ -49,9 +52,16 @@ interface VideoScenarioListProps {
   onUpdateScene?: (sceneIndex: number, updatedScene: Scene) => void;
   // Add Scenes 관련 props
   onAddScene?: () => void;
+  // Delete Scene 관련 props
+  onDeleteScene?: (sceneIndex: number) => void;
   // Generated Video Save 관련 props
   onSaveNewsVideo?: () => void;
   isSaving?: boolean;
+  // Video Model 관련 props
+  selectedVideoModel?: "kling-v2" | "veo-3" | "hailuo-02";
+  // 아나운서 포함 관련 props
+  newsAnchorIncluded?: { [key: number]: boolean };
+  onNewsAnchorIncludedChange?: (value: { [key: number]: boolean }) => void;
 }
 
 export default function VideoScenarioList({
@@ -73,20 +83,47 @@ export default function VideoScenarioList({
   onAddSceneVideo,
   onUpdateScene,
   onAddScene,
+  onDeleteScene,
   onSaveNewsVideo,
   isSaving = false,
+  selectedVideoModel,
+  newsAnchorIncluded = {},
+  onNewsAnchorIncludedChange,
 }: VideoScenarioListProps) {
   const [showImageUrlModal, setShowImageUrlModal] = useState(false);
   const [imageUrlInput, setImageUrlInput] = useState("");
   const [sceneMediaModals, setSceneMediaModals] = useState<{
     [key: number]: { show: boolean; type: "image" | "video"; url: string };
   }>({});
+  const [originalPrompts, setOriginalPrompts] = useState<{
+    [key: number]: string;
+  }>({});
 
   if (!scenario) return null;
 
   const handleGenerateAll = () => {
+    // 각 scene의 image_prompt를 실제로 업데이트
+    scenario.scenes.forEach((scene, index) => {
+      if (selectedVideoModel === "veo-3" && newsAnchorIncluded[index]) {
+        const updatedScene = {
+          ...scene,
+          image_prompt: `${NEWS_ANCHOR_PROMPT} ${scene.narration}`,
+        };
+        if (onUpdateScene) {
+          onUpdateScene(index, updatedScene);
+        }
+      }
+    });
+
+    // 업데이트된 scene들의 image_prompt를 사용
     const prompts = scenario.scenes.map((scene) => scene.image_prompt);
-    const narrations = scenario.scenes.map((scene) => scene.narration);
+    // 아나운서 포함이 체크된 scene의 경우 나레이션을 빈 문자열로 설정
+    const narrations = scenario.scenes.map((scene, index) => {
+      if (selectedVideoModel === "veo-3" && newsAnchorIncluded[index]) {
+        return ""; // 나레이션을 빈 문자열로 설정
+      }
+      return scene.narration;
+    });
     onGenerateAll(prompts, narrations);
   };
 
@@ -178,7 +215,7 @@ export default function VideoScenarioList({
 
   return (
     <div className="space-y-4">
-      <div className="bg-secondary-light border border-secondary-dark rounded-lg p-4">
+      <div className="bg-white border border-secondary-dark rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-2">{scenario.title}</h3>
         <p className=" text-sm">{scenario.scenario}</p>
       </div>
@@ -257,38 +294,14 @@ export default function VideoScenarioList({
                 Add Scenes
               </Button>
             )}
-            {onMerge && (
-              <Button
-                onClick={() => {
-                  const selectedVideos = videoItems.filter(
-                    (v) => v.isSelected === true
-                  );
-                  console.log("Selected videos for merge:", selectedVideos);
-                  console.log("All video items:", videoItems);
-                  onMerge();
-                }}
-                disabled={
-                  isMerging ||
-                  videoItems.filter((v) => v.isSelected === true).length === 0
-                }
-                variant="primary"
-                size="sm"
-              >
-                {isMerging
-                  ? "병합 중..."
-                  : `영상 병합 (${
-                      videoItems.filter((v) => v.isSelected === true).length
-                    }개)`}
-              </Button>
-            )}
           </div>
         </div>
 
         {/* 생성된 영상들을 자동으로 추가 */}
         {generatedVideos.length > 0 && (
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm font-medium text-blue-800 mb-2">
-              생성된 영상들:
+          <div className="mb-4 p-3 bg-primary/10 border border-primary/40 rounded-lg">
+            <p className="text-sm font-medium text-primary-dark mb-2">
+              Generated videos:
             </p>
             <div className="flex flex-wrap gap-2">
               {generatedVideos.map((url, index) => (
@@ -298,7 +311,7 @@ export default function VideoScenarioList({
                   variant="outline"
                   size="sm"
                 >
-                  영상 {index + 1} 추가
+                  Add video {index + 1}
                 </Button>
               ))}
             </div>
@@ -307,9 +320,9 @@ export default function VideoScenarioList({
 
         {/* 병합된 영상 프리뷰 */}
         {mergedVideoUrl && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-            <h5 className="text-sm font-medium text-green-800 mb-2">
-              병합된 영상
+          <div className="mb-4 p-3 bg-primary/20 border border-primary/40 rounded-lg">
+            <h5 className="text-sm font-medium text-primary-dark mb-2">
+              Merged video
             </h5>
             <video
               src={mergedVideoUrl}
@@ -346,7 +359,7 @@ export default function VideoScenarioList({
                 size="sm"
                 className="flex-1"
               >
-                다운로드
+                Download
               </Button>
               {onSaveNewsVideo && (
                 <Button
@@ -368,7 +381,7 @@ export default function VideoScenarioList({
           <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
             <h5 className="text-sm font-medium mb-2">전체 설정</h5>
             <div className="flex gap-4 items-center mb-2">
-              <label className="text-xs">자막 색상:</label>
+              <label className="text-xs">Subtitle color:</label>
               <input
                 type="color"
                 value={globalColor}
@@ -377,7 +390,7 @@ export default function VideoScenarioList({
               />
             </div>
             <div className="flex gap-4 items-center">
-              <label className="text-xs">자막 스타일:</label>
+              <label className="text-xs">Subtitle style:</label>
               <label className="flex items-center">
                 <input
                   type="radio"
@@ -412,7 +425,38 @@ export default function VideoScenarioList({
                 <span className="text-sm font-medium text-gray-600">
                   Scene {scene.scene_number}
                 </span>
-                <span className="text-xs text-gray-500">30s</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500">
+                    {selectedVideoModel === "veo-3" ? "8s" : "5s"}
+                  </span>
+                  {onDeleteScene && scenario.scenes.length > 1 && (
+                    <button
+                      onClick={() => {
+                        if (
+                          confirm(
+                            `Are you sure you want to delete Scene ${scene.scene_number}?`
+                          )
+                        ) {
+                          onDeleteScene(index);
+                        }
+                      }}
+                      className="text-black hover:text-black/70 text-xs bg-transparent border-none cursor-pointer"
+                      title="Delete Scene"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* 생성된 영상 표시 */}
@@ -472,7 +516,7 @@ export default function VideoScenarioList({
                       }
                     }}
                     className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                    title="영상 삭제"
+                    title="Delete video"
                   >
                     ×
                   </button>
@@ -484,7 +528,7 @@ export default function VideoScenarioList({
                         자막
                       </label>
                       <textarea
-                        placeholder="자막을 입력하세요"
+                        placeholder="Enter the subtitle"
                         rows={2}
                         className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-light"
                       />
@@ -546,7 +590,66 @@ export default function VideoScenarioList({
                   </div>
                 </div>
               )}
+              {selectedVideoModel === "veo-3" && (
+                <div className="flex gap-2 mb-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-gray-500">
+                      Including the news anchor
+                    </span>
+                    <button
+                      onClick={() => {
+                        const newValue = !(newsAnchorIncluded[index] || false);
 
+                        if (onNewsAnchorIncludedChange) {
+                          onNewsAnchorIncludedChange({
+                            ...newsAnchorIncluded,
+                            [index]: newValue,
+                          });
+                        }
+
+                        // Image Prompt 실시간 업데이트
+                        if (onUpdateScene) {
+                          const scene = scenario.scenes[index];
+
+                          if (newValue) {
+                            // 체크할 때: 원래 프롬프트를 저장하고 아나운서 프롬프트로 변경
+                            setOriginalPrompts((prev) => ({
+                              ...prev,
+                              [index]: scene.image_prompt,
+                            }));
+
+                            const updatedScene = {
+                              ...scene,
+                              image_prompt: `${NEWS_ANCHOR_PROMPT} ${scene.narration}`,
+                            };
+                            onUpdateScene(index, updatedScene);
+                          } else {
+                            // 체크 해제할 때: 원래 프롬프트로 복원
+                            const originalPrompt =
+                              originalPrompts[index] || scene.image_prompt;
+                            const updatedScene = {
+                              ...scene,
+                              image_prompt: originalPrompt,
+                            };
+                            onUpdateScene(index, updatedScene);
+                          }
+                        }
+                      }}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-offset-2 ${
+                        newsAnchorIncluded[index] ? "bg-primary" : "bg-gray-300"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                          newsAnchorIncluded[index]
+                            ? "translate-x-5"
+                            : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              )}
               {/* 미디어 추가 버튼들 */}
               <div className="flex gap-2 mb-3">
                 <Button
@@ -554,8 +657,9 @@ export default function VideoScenarioList({
                   variant="normal"
                   size="sm"
                   className="flex-1 text-xs"
+                  disabled={selectedVideoModel === "veo-3"}
                 >
-                  📷 이미지 추가
+                  {selectedVideoModel === "veo-3" ? "" : "📷 Add Image"}
                 </Button>
               </div>
 
@@ -565,7 +669,7 @@ export default function VideoScenarioList({
                     Image Prompt
                     {scene.imageUrl && (
                       <span className="text-secondary-dark ml-1">
-                        (이미지 추가됨)
+                        (Image added)
                       </span>
                     )}
                   </label>
@@ -580,7 +684,7 @@ export default function VideoScenarioList({
                         onUpdateScene(index, updatedScene);
                       }
                     }}
-                    placeholder="이미지 프롬프트를 입력하세요..."
+                    placeholder="Enter the prompt for the image you want to generate..."
                     className="w-full text-xs text-gray-800 bg-white p-2 rounded border border-secondary-light resize-none"
                     rows={2}
                   />
@@ -597,6 +701,15 @@ export default function VideoScenarioList({
                         ...scene,
                         narration: e.target.value,
                       };
+
+                      // 아나운서 포함이 체크된 경우 Image Prompt도 함께 업데이트
+                      if (
+                        selectedVideoModel === "veo-3" &&
+                        newsAnchorIncluded[index]
+                      ) {
+                        updatedScene.image_prompt = `${NEWS_ANCHOR_PROMPT} ${e.target.value}`;
+                      }
+
                       if (onUpdateScene) {
                         onUpdateScene(index, updatedScene);
                       }
@@ -614,11 +727,11 @@ export default function VideoScenarioList({
 
       {/* 이미지 URL 입력 모달 */}
       {showImageUrlModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">
-                이미지 URL 추가
+                Add Image URL
               </h3>
               <button
                 onClick={() => {
@@ -634,7 +747,7 @@ export default function VideoScenarioList({
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  이미지 URL
+                  Image URL
                 </label>
                 <input
                   type="url"
@@ -659,7 +772,7 @@ export default function VideoScenarioList({
                   }}
                   className="flex-1"
                 >
-                  취소
+                  Cancel
                 </Button>
                 <Button
                   variant="primary"
@@ -667,7 +780,7 @@ export default function VideoScenarioList({
                   disabled={!imageUrlInput.trim()}
                   className="flex-1"
                 >
-                  추가
+                  Add
                 </Button>
               </div>
             </div>
@@ -684,13 +797,13 @@ export default function VideoScenarioList({
         return (
           <div
             key={sceneIndex}
-            className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-black/20 flex items-center justify-center z-50"
           >
             <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
                   Scene {scene.scene_number} -{" "}
-                  {modal.type === "image" ? "이미지" : "영상"} 추가
+                  {modal.type === "image" ? "Image" : "Video"} Add
                 </h3>
                 <button
                   onClick={() => closeSceneMediaModal(index)}
@@ -701,19 +814,9 @@ export default function VideoScenarioList({
               </div>
 
               <div className="space-y-4">
-                {modal.type === "image" && (
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-xs text-blue-800">
-                      💡 이미지 추가 시 해당 Scene의 프롬프트가 자동으로 "Keep
-                      the image content unchanged and minimize actions."로
-                      변경됩니다.
-                    </p>
-                  </div>
-                )}
-
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    {modal.type === "image" ? "이미지" : "영상"} URL
+                    {modal.type === "image" ? "Image" : "Video"} URL
                   </label>
                   <input
                     type="url"
@@ -747,7 +850,7 @@ export default function VideoScenarioList({
                     onClick={() => closeSceneMediaModal(index)}
                     className="flex-1"
                   >
-                    취소
+                    Cancel
                   </Button>
                   <Button
                     variant="primary"
@@ -755,7 +858,7 @@ export default function VideoScenarioList({
                     disabled={!modal.url.trim()}
                     className="flex-1"
                   >
-                    추가
+                    Add
                   </Button>
                 </div>
               </div>

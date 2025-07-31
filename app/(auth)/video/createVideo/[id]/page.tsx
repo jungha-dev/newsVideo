@@ -114,6 +114,24 @@ export default function NewsVideoDetailPage() {
 
   const videoId = params.id as string;
 
+  // 더보기 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest(".relative")) {
+        const menus = document.querySelectorAll('[id^="menu-"]');
+        menus.forEach((menu) => {
+          menu.classList.add("hidden");
+        });
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   useEffect(() => {
     if (videoId) {
       loadVideo();
@@ -277,7 +295,7 @@ export default function NewsVideoDetailPage() {
     switch (status) {
       case "completed":
       case "succeeded":
-        return "bg-green-100 text-green-800";
+        return "bg-secondary text-black";
       case "processing":
       case "starting":
         return "bg-yellow-100 text-yellow-800";
@@ -467,6 +485,89 @@ export default function NewsVideoDetailPage() {
       imageUrl: "",
     });
     setError("");
+  };
+
+  const handleCopyPrompt = async (sceneIndex: number) => {
+    if (!video) return;
+
+    const scene = video.scenes[sceneIndex];
+    try {
+      await navigator.clipboard.writeText(scene.image_prompt);
+      console.log("✅ Prompt copied to clipboard");
+    } catch (error) {
+      console.error("Failed to copy prompt:", error);
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = scene.image_prompt;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      console.log("✅ Prompt copied to clipboard (fallback)");
+    }
+  };
+
+  const handleDeleteScene = async (sceneIndex: number) => {
+    if (!video || video.scenes.length <= 1) return;
+
+    const sceneToDelete = video.scenes[sceneIndex];
+    if (
+      confirm(
+        `Are you sure you want to delete Scene ${sceneToDelete.scene_number}?`
+      )
+    ) {
+      try {
+        const updatedScenes = video.scenes
+          .filter((_, index) => index !== sceneIndex)
+          .map((scene, index) => ({
+            ...scene,
+            scene_number: index + 1,
+          }));
+
+        // Firebase에서 비디오 업데이트 및 Storage에서 비디오 파일 삭제
+        const response = await fetch(`/api/video/news/update-scenes`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            videoId: videoId,
+            scenes: updatedScenes,
+            deletedSceneIndex: sceneIndex, // 삭제된 Scene의 인덱스 전달
+          }),
+        });
+
+        if (response.ok) {
+          // 로컬 상태 업데이트
+          setVideo({
+            ...video,
+            scenes: updatedScenes,
+          });
+
+          // 선택된 씬들도 업데이트
+          const newSelectedScenes = new Set<number>();
+          selectedScenes.forEach((selectedIndex) => {
+            if (selectedIndex < sceneIndex) {
+              newSelectedScenes.add(selectedIndex);
+            } else if (selectedIndex > sceneIndex) {
+              newSelectedScenes.add(selectedIndex - 1);
+            }
+          });
+          setSelectedScenes(newSelectedScenes);
+
+          console.log(
+            `✅ Scene ${sceneToDelete.scene_number} deleted successfully`
+          );
+        } else {
+          const errorData = await response.json();
+          console.error("Failed to delete scene:", errorData);
+          alert("Failed to delete scene. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error deleting scene:", error);
+        alert("Failed to delete scene. Please try again.");
+      }
+    }
   };
 
   const handleSceneOrderChange = (fromIndex: number, toIndex: number) => {
@@ -744,7 +845,7 @@ export default function NewsVideoDetailPage() {
 
   if (!user) {
     return (
-      <div className="container max-w-6xl mx-auto px-4 py-8">
+      <div className="container max-w-7xl mx-auto px-4 py-8 mt-8">
         <PageTitle title="Generated Video" />
         <div className="text-center py-8">
           <p className="text-gray-600">Login is required.</p>
@@ -755,7 +856,7 @@ export default function NewsVideoDetailPage() {
 
   if (loading) {
     return (
-      <div className="container max-w-6xl mx-auto px-4 py-8">
+      <div className="container max-w-7xl mx-auto px-4 py-8 mt-8">
         <PageTitle title="Generated Video" />
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
@@ -767,7 +868,7 @@ export default function NewsVideoDetailPage() {
 
   if (error || !video) {
     return (
-      <div className="container max-w-6xl mx-auto px-4 py-8">
+      <div className="container max-w-7xl mx-auto px-4 py-8 mt-8">
         <PageTitle title="Generated Video" />
         <div className="text-center py-8">
           <div className="text-4xl mb-4">❌</div>
@@ -781,11 +882,9 @@ export default function NewsVideoDetailPage() {
   }
 
   return (
-    <div className="container max-w-6xl mx-auto px-4 py-8">
+    <div className="container max-w-7xl mx-auto px-4 py-8 mt-8">
       <div className="space-y-6">
-        {/* 비디오 정보 */}
-        {/* 비디오 플레이어 */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="bg-white border border-gray-200 rounded-lg">
           {video.status === "failed" ? (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-800">Video generation failed.</p>
@@ -864,24 +963,10 @@ export default function NewsVideoDetailPage() {
         </div>
 
         {/* Scene Info */}
-        <div className="bg-white rounded-lg p-4">
+        <div className="bg-white rounded-lg mt-20">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Scene Info</h3>
             <div className="flex items-center gap-2">
-              {/* Select All/해제 체크박스 */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={
-                    selectedScenes.size === video.scenes.length &&
-                    video.scenes.length > 0
-                  }
-                  onChange={toggleAllScenes}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                />
-                <span className="text-sm text-gray-600">Select All</span>
-              </div>
-
               {hasUnsavedChanges && (
                 <>
                   <span className="text-sm text-orange-600 bg-orange-50 px-2 py-1 rounded">
@@ -908,35 +993,122 @@ export default function NewsVideoDetailPage() {
               </Button>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {video.scenes.map((scene, index) => (
               <div
                 key={index}
                 className={`border rounded-lg p-3 transition-colors border-gray-200 hover:border-gray-300 ${
-                  selectedScenes.has(index) ? "border-blue-300 bg-blue-50" : ""
+                  selectedScenes.has(index) ? "" : ""
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     {/* 개별 씬 체크박스 */}
-                    <input
-                      type="checkbox"
-                      checked={selectedScenes.has(index)}
-                      onChange={() => toggleSceneSelection(index)}
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                    />
-                    <h4 className="font-medium text-sm">
-                      Scene {scene.scene_number}
-                    </h4>
+                    <label className="flex items-center cursor-pointer">
+                      <div className="relative mr-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedScenes.has(index)}
+                          onChange={() => toggleSceneSelection(index)}
+                          className="sr-only"
+                        />
+                        <div
+                          className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                            selectedScenes.has(index)
+                              ? "border-primary bg-primary"
+                              : "border-gray-300 bg-white"
+                          }`}
+                        >
+                          {selectedScenes.has(index) && (
+                            <svg
+                              className="w-4 h-4 text-white"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+                      <h4 className="font-medium text-sm">
+                        Scene {scene.scene_number}
+                      </h4>
+                    </label>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                        getSceneStatus(scene, index)
-                      )}`}
-                    >
-                      {getStatusText(getSceneStatus(scene, index))}
-                    </span>
+                    {getSceneStatus(scene, index) !== "completed" && (
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          getSceneStatus(scene, index)
+                        )}`}
+                      >
+                        {getStatusText(getSceneStatus(scene, index))}
+                      </span>
+                    )}
+                    {video.scenes.length > 1 && (
+                      <div className="relative">
+                        <button
+                          onClick={() => {
+                            const menuId = `menu-${index}`;
+                            const menu = document.getElementById(menuId);
+                            if (menu) {
+                              menu.classList.toggle("hidden");
+                            }
+                          }}
+                          className="text-gray-500 hover:text-gray-700 text-xs bg-transparent border-none cursor-pointer p-1"
+                          title="More options"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                          </svg>
+                        </button>
+                        <div
+                          id={`menu-${index}`}
+                          className="absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-10 hidden"
+                        >
+                          <button
+                            onClick={() => handleCopyPrompt(index)}
+                            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                              />
+                            </svg>
+                            Copy Prompt
+                          </button>
+                          <button
+                            onClick={() => handleDeleteScene(index)}
+                            className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -972,13 +1144,11 @@ export default function NewsVideoDetailPage() {
 
                 <div className="text-xs text-gray-600 space-y-2">
                   <div>
-                    <strong className="block mb-1 text-xs">Prompt :</strong>
-                    <p className="text-gray-700 bg-gray-50 p-1 rounded text-xs line-clamp-2">
-                      {scene.image_prompt}
-                    </p>
-                  </div>
-                  <div>
-                    <strong className="block mb-1 text-xs">Narration :</strong>
+                    <div className="flex items-center justify-between mb-1">
+                      <strong className="block mb-1 text-xs">
+                        Description :
+                      </strong>
+                    </div>
                     <textarea
                       value={
                         modifiedScenes[index]?.narration || scene.narration
@@ -986,60 +1156,23 @@ export default function NewsVideoDetailPage() {
                       onChange={(e) =>
                         handleNarrationChange(index, e.target.value)
                       }
-                      className="w-full text-gray-700 bg-gray-50 p-1 rounded text-xs border border-gray-200 focus:border-blue-300 focus:ring-1 focus:ring-blue-300 resize-none"
+                      className="w-full text-gray-700 bg-gray-50 p-1 rounded text-xs border border-gray-200 focus:border-primary/40 focus:ring-1 focus:ring-primary/40 resize-none"
                       rows={2}
                       placeholder="Please enter narration"
                     />
                   </div>
-                </div>
-
-                <div className="mt-3 flex gap-2">
-                  {(scene as any).firebaseUrl || scene.videoUrl ? (
-                    <Button
-                      onClick={() => {
-                        const link = document.createElement("a");
-                        link.href =
-                          (scene as any).firebaseUrl || scene.videoUrl!;
-                        link.download = `scene-${scene.scene_number}.mp4`;
-                        link.click();
-                      }}
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 text-xs py-1"
-                    >
-                      Download
-                    </Button>
-                  ) : null}
-                  {scene.videoUrl && !(scene as any).firebaseUrl && (
-                    <Button
-                      onClick={() => handleUploadSceneToFirebase(index)}
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 text-xs py-1 bg-green-50 border-green-200 hover:bg-green-100"
-                    >
-                      Upload
-                    </Button>
-                  )}
-                  {/* <Button
-                    onClick={() => handleRegenerateScene(index)}
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 text-xs py-1 bg-blue-50 border-blue-200 hover:bg-blue-100"
-                  >
-                    Regenerate
-                  </Button> */}
                 </div>
               </div>
             ))}
 
             {/* Regenerate 입력 폼 */}
             {showRegenerateForm && (
-              <div className="border rounded-lg p-3 transition-colors border-blue-300 bg-blue-50">
+              <div className="border rounded-lg p-3 transition-colors ">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-sm text-blue-900">
+                  <h4 className="font-medium text-sm text-primary-dark">
                     Scene {regenerateSceneIndex! + 1} Regenerate Scene
                   </h4>
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary-dark">
                     Edit Mode
                   </span>
                 </div>
@@ -1058,7 +1191,7 @@ export default function NewsVideoDetailPage() {
                           image_prompt: e.target.value,
                         }))
                       }
-                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                       rows={2}
                       placeholder="Please enter image prompt"
                     />
@@ -1067,7 +1200,7 @@ export default function NewsVideoDetailPage() {
                   {/* 나레이션 입력 */}
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Narration :
+                      Description :
                     </label>
                     <textarea
                       value={regenerateForm.narration}
@@ -1077,7 +1210,7 @@ export default function NewsVideoDetailPage() {
                           narration: e.target.value,
                         }))
                       }
-                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                       rows={2}
                       placeholder="Please enter narration"
                     />
@@ -1097,7 +1230,7 @@ export default function NewsVideoDetailPage() {
                           imageUrl: e.target.value,
                         }))
                       }
-                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                       placeholder="https://example.com/image.jpg"
                     />
                   </div>
@@ -1127,12 +1260,10 @@ export default function NewsVideoDetailPage() {
 
             {/* Add Scenes 폼 */}
             {showAddSceneForm && (
-              <div className="border rounded-lg p-3 transition-colors border-green-300 bg-green-50">
+              <div className="border rounded-lg p-3 transition-colors ">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-sm text-green-900">
-                    Add Scene
-                  </h4>
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  <h4 className="font-medium text-sm">Add Scene</h4>
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-secondary text-black">
                     Add Scene Mode
                   </span>
                 </div>
@@ -1151,7 +1282,7 @@ export default function NewsVideoDetailPage() {
                           image_prompt: e.target.value,
                         }))
                       }
-                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
                       rows={2}
                       placeholder="Please enter image prompt"
                     />
@@ -1170,7 +1301,7 @@ export default function NewsVideoDetailPage() {
                           narration: e.target.value,
                         }))
                       }
-                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
                       rows={2}
                       placeholder="please enter narration"
                     />
@@ -1190,7 +1321,7 @@ export default function NewsVideoDetailPage() {
                           imageUrl: e.target.value,
                         }))
                       }
-                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full p-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
                       placeholder="https://example.com/image.jpg"
                     />
                   </div>
@@ -1201,7 +1332,6 @@ export default function NewsVideoDetailPage() {
                       onClick={handleAddSceneSubmit}
                       variant="primary"
                       size="sm"
-                      className="flex-1 text-xs py-1 bg-green-600 hover:bg-green-700"
                       disabled={
                         !addSceneForm.image_prompt.trim() ||
                         !addSceneForm.narration.trim() ||

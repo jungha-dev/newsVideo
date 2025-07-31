@@ -126,7 +126,7 @@ export default function FirebaseUploadTestPage() {
                   key={index}
                   className={`p-4 rounded-lg border ${
                     result.success
-                      ? "bg-green-50 border-green-200"
+                      ? "bg-primary/20 border-primary/40"
                       : "bg-red-50 border-red-200"
                   }`}
                 >
@@ -135,7 +135,7 @@ export default function FirebaseUploadTestPage() {
                     <span
                       className={`px-2 py-1 rounded text-xs ${
                         result.success
-                          ? "bg-green-100 text-green-800"
+                          ? "bg-secondary text-black"
                           : "bg-red-100 text-red-800"
                       }`}
                     >

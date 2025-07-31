@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import Button from "./Button";
 
 interface VideoPreviewProps {
   videos: Array<{
@@ -289,7 +290,7 @@ export default function VideoPreview({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* 왼쪽: 프로젝트 정보 */}
-      <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+      <div className="rounded-lg p-6 space-y-4">
         <div>
           <div className="flex justify-between items-start mb-2">
             <h2 className="text-2xl font-bold text-gray-900">
@@ -305,55 +306,71 @@ export default function VideoPreview({
               </button>
             )}
           </div>
-          {info && (
-            <div className="flex items-center gap-4 mb-2 text-sm text-gray-600">
-              {info.model && (
-                <span>
-                  Model: <span className="font-medium">{info.model}</span>
-                </span>
-              )}
-              <span
-                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  info.status === "completed"
-                    ? "bg-green-100 text-green-800"
+          <div className="flex justify-between items-center">
+            {info && (
+              <div className="flex items-center gap-4 mb-2 text-sm text-gray-600">
+                {info.model && (
+                  <span>
+                    Model: <span className="font-medium">{info.model}</span>
+                  </span>
+                )}
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    info.status === "completed"
+                      ? "bg-secondary text-black"
+                      : info.status === "processing"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : info.status === "failed"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  {info.status === "completed"
+                    ? "Completed"
                     : info.status === "processing"
-                    ? "bg-yellow-100 text-yellow-800"
+                    ? "Processing"
                     : info.status === "failed"
-                    ? "bg-red-100 text-red-800"
-                    : "bg-gray-100 text-gray-800"
-                }`}
-              >
-                {info.status === "completed"
-                  ? "Completed"
-                  : info.status === "processing"
-                  ? "Processing"
-                  : info.status === "failed"
-                  ? "Failed"
-                  : "Pending"}
-              </span>
-            </div>
-          )}
-          <p className="text-gray-600">
-            Created:{" "}
-            {info
-              ? new Date(info.createdAt).toLocaleDateString()
-              : new Date(projectInfo.created_at).toLocaleDateString()}
-          </p>
+                    ? "Failed"
+                    : "Pending"}
+                </span>
+              </div>
+            )}
+            <p className="text-gray-600 text-xs">
+              Created:{" "}
+              {info
+                ? new Date(info.createdAt).toLocaleDateString()
+                : new Date(projectInfo.created_at).toLocaleDateString()}
+            </p>
+          </div>
         </div>
 
         {/* 현재 영상 정보 */}
         {videos.length > 0 ? (
           <div className="border-t border-secondary pt-4">
-            <h3 className="font-medium text-gray-900 mb-2">
-              Video {currentVideoIndex + 1} / {videos.length}
-            </h3>
-
+            <div className="flex justify-between items-center">
+              <h3 className="font-medium text-gray-900 mb-2">
+                Video {currentVideoIndex + 1} / {videos.length}
+              </h3>
+              <div className="flex gap-2">
+                <button
+                  onClick={prevVideo}
+                  disabled={currentVideoIndex === 0}
+                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
+                >
+                  Pre
+                </button>
+                <button
+                  onClick={nextVideo}
+                  disabled={currentVideoIndex === videos.length - 1}
+                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
             {/* 시작 이미지 리스트 */}
             <div className="mb-3">
-              <p className="text-xs text-gray-500 mb-2">
-                Select Start Image (Reorderable):
-              </p>
-              <div className="grid grid-cols-5 gap-2 max-h-40 overflow-y-auto">
+              <div className="grid grid-cols-5 gap-2">
                 {videos.map((video, index) => {
                   return (
                     <div key={video.id} className="relative group">
@@ -401,7 +418,7 @@ export default function VideoPreview({
                                 }
                               }}
                               disabled={index === 0}
-                              className="bg-blue-500 text-white text-xs p-1 rounded hover:bg-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                              className="bg-primary text-white text-xs p-1 rounded hover:bg-primary disabled:opacity-30 disabled:cursor-not-allowed"
                               title="Move Up"
                             >
                               ↑
@@ -414,7 +431,7 @@ export default function VideoPreview({
                                 }
                               }}
                               disabled={index === videos.length - 1}
-                              className="bg-blue-500 text-white text-xs p-1 rounded hover:bg-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                              className="bg-primary text-white text-xs p-1 rounded hover:bg-primary disabled:opacity-30 disabled:cursor-not-allowed"
                               title="Move Down"
                             >
                               ↓
@@ -428,92 +445,126 @@ export default function VideoPreview({
               </div>
             </div>
 
-            <div className="flex gap-2">
-              <button
-                onClick={prevVideo}
-                disabled={currentVideoIndex === 0}
-                className="px-3 py-1 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
-              >
-                Pre
-              </button>
-              <button
-                onClick={nextVideo}
-                disabled={currentVideoIndex === videos.length - 1}
-                className="px-3 py-1 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
             {/* 자막 설정 및 다운로드 섹션 */}
             {videos.length > 0 && (
               <div className="rounded-lg mt-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Subtitle Settings and Download
-                </h3>
-
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Subscript settings
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onShowSubtitlesChange?.(!showSubtitles)}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                        showSubtitles ? "bg-primary" : "bg-gray-300"
+                      }`}
+                      title={
+                        showSubtitles ? "Hide subtitles" : "Show subtitles"
+                      }
+                    >
+                      <span
+                        className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                          showSubtitles ? "translate-x-5" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                    <span className="text-sm">Show Subtitles</span>
+                  </div>
+                </div>
                 {/* 자막 설정 */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Description Color:
+                    <label className="block text-xs font-black text-gray-500 mb-2">
+                      Color:
                     </label>
                     <input
                       type="color"
                       value={subtitleColor}
                       onChange={(e) => onSubtitleColorChange?.(e.target.value)}
-                      className="w-full h-10 border border-gray-300 rounded-md"
+                      className="w-20 h-10 rounded-md"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Subtitle Style:
+                    <label className="block text-xs font-black text-gray-500 mb-2">
+                      Text Style:
                     </label>
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 h-10 mx-auto">
                       <label className="flex items-center">
-                        <input
-                          type="radio"
-                          value="box"
-                          checked={subtitleStyle === "box"}
-                          onChange={() => onSubtitleStyleChange?.("box")}
-                          className="mr-2"
-                        />
-                        <span className="text-sm">Background</span>
+                        <div className="relative mr-2">
+                          <input
+                            type="radio"
+                            value="box"
+                            checked={subtitleStyle === "box"}
+                            onChange={() => onSubtitleStyleChange?.("box")}
+                            className="sr-only"
+                          />
+                          <div
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                              subtitleStyle === "box"
+                                ? "border-primary bg-primary"
+                                : "border-gray-300 bg-white"
+                            }`}
+                          >
+                            {subtitleStyle === "box" && (
+                              <svg
+                                className="w-4 h-4 text-white"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-md text-white font-black bg-black/80 p-1.5">
+                          Background
+                        </span>
                       </label>
                       <label className="flex items-center">
-                        <input
-                          type="radio"
-                          value="outline"
-                          checked={subtitleStyle === "outline"}
-                          onChange={() => onSubtitleStyleChange?.("outline")}
-                          className="mr-2"
-                        />
-                        <span className="text-sm">Outline</span>
+                        <div className="relative mr-2">
+                          <input
+                            type="radio"
+                            value="outline"
+                            checked={subtitleStyle === "outline"}
+                            onChange={() => onSubtitleStyleChange?.("outline")}
+                            className="sr-only"
+                          />
+                          <div
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                              subtitleStyle === "outline"
+                                ? "border-primary bg-primary"
+                                : "border-gray-300 bg-white"
+                            }`}
+                          >
+                            {subtitleStyle === "outline" && (
+                              <svg
+                                className="w-4 h-4 text-white"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+                        <span
+                          className="text-md text-white font-black"
+                          style={{
+                            textShadow:
+                              "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000",
+                          }}
+                        >
+                          Outline
+                        </span>
                       </label>
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Show Subtitles:
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={showSubtitles}
-                        onChange={(e) =>
-                          onShowSubtitlesChange?.(e.target.checked)
-                        }
-                        className="mr-2"
-                      />
-                      <span className="text-sm">Show Subtitles</span>
-                    </label>
                   </div>
                 </div>
 
                 {/* 병합된 영상 프리뷰 */}
                 {mergedVideoUrl && (
-                  <div className="my-4">
+                  <div className="my-6 border-t border-secondary pt-8">
                     <h4 className="text-md font-medium text-gray-900 mb-2">
                       Merged Video Preview
                     </h4>
@@ -531,29 +582,24 @@ export default function VideoPreview({
                 )}
                 {/* 다운로드 버튼 */}
                 <div className="flex gap-2">
-                  <button
+                  <Button
+                    variant="primary-full"
                     onClick={onMergeAndDownload}
                     disabled={isMerging}
-                    className="flex-1 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {isMerging ? "Merging..." : "Merge and Download Video"}
-                  </button>
+                  </Button>
                   {mergedVideoUrl && (
-                    <button
-                      onClick={onDownload}
-                      className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
-                    >
-                      다운로드
-                    </button>
+                    <Button onClick={onDownload}>Download</Button>
                   )}
                 </div>
 
                 {/* 병합 진행 상태 */}
                 {isMerging && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="mt-4 p-3 bg-primary/10 border border-primary/40 rounded-md">
                     <div className="flex items-center mb-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                      <span className="text-sm text-blue-700">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                      <span className="text-sm text-primary-dark">
                         {mergeProgress || "Merging Videos..."}
                       </span>
                     </div>
@@ -587,7 +633,7 @@ export default function VideoPreview({
       </div>
 
       {/* 오른쪽: 비디오 프리뷰 */}
-      <div className="bg-black rounded-lg overflow-hidden flex flex-col">
+      <div className="bg-black rounded-r-lg overflow-hidden flex flex-col">
         {videos.length > 0 && currentVideo && currentVideo.output ? (
           <>
             <div className="flex-1 relative">

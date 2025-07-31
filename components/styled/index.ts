@@ -10,7 +10,6 @@ export { default as Section } from "./Section";
 export { default as Card } from "./Card";
 export { default as Modal } from "./Modal";
 export { default as VideoScenarioList } from "./VideoScenarioList";
-export { default as VideoResults } from "./VideoResults";
 export { default as VideoPreview } from "./VideoPreview";
 export { default as ConfirmModal } from "./ConfirmModal";
 
