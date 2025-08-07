@@ -1590,12 +1590,10 @@ Please compose the video based on the following blog content:
               <div className="mt-4 p-4 bg-primary/10 border border-primary/40 rounded-lg">
                 <div className="flex items-center space-x-3">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                  <div>
-                    <p className="text-primary-dark font-medium">
-                      뉴스 비디오 생성 중...
-                    </p>
-                    <p className="text-primary text-sm">잠시만 기다려주세요.</p>
-                  </div>
+                  <p className="text-primary-dark font-medium">
+                    Generating news video...
+                  </p>
+                  <p className="text-primary text-sm">Please wait a moment.</p>
                 </div>
               </div>
             )}
