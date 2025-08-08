@@ -151,7 +151,7 @@ export default function NewsVideoDetailPage() {
     const shouldPoll =
       isRegeneratingRef.current ||
       currentStatus === "processing" ||
-      hasIncompleteScenes;
+      (hasIncompleteScenes && sceneVideos.length > 0);
 
     console.log("Polling check:", {
       isRegenerating: isRegeneratingRef.current,
@@ -223,8 +223,8 @@ export default function NewsVideoDetailPage() {
     // 즉시 실행
     checkStatus();
 
-    // 10초마다 상태 확인
-    pollingRef.current = setInterval(checkStatus, 10000);
+    // 30초마다 상태 확인 (서버 부하 감소)
+    pollingRef.current = setInterval(checkStatus, 60000);
 
     return () => {
       if (pollingRef.current) {
@@ -232,7 +232,7 @@ export default function NewsVideoDetailPage() {
         pollingRef.current = null;
       }
     };
-  }, [video?.status, videoId, sceneVideos]); // sceneVideos 의존성 다시 추가
+  }, [video?.status, videoId]); // sceneVideos 의존성 제거
 
   const loadVideo = async () => {
     try {
