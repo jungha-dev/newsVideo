@@ -428,7 +428,7 @@ export default function VideoPreview({
               </div>
             )}
             <p className="text-gray-600 text-xs">
-              Created:{" "}
+              Created :{" "}
               {info
                 ? new Date(info.createdAt).toLocaleDateString()
                 : new Date(projectInfo.created_at).toLocaleDateString()}
