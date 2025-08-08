@@ -39,6 +39,9 @@ interface VideoPreviewProps {
   onDownload?: () => void;
   mergeProgress?: string;
   mergeProgressMessages?: string[];
+  // 삭제 관련 props
+  onDeleteVideo?: () => void;
+  isDeleting?: boolean;
 }
 
 export default function VideoPreview({
@@ -59,6 +62,8 @@ export default function VideoPreview({
   onDownload,
   mergeProgress,
   mergeProgressMessages = [],
+  onDeleteVideo,
+  isDeleting = false,
 }: VideoPreviewProps) {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -70,7 +75,9 @@ export default function VideoPreview({
   }>({});
   const [videoError, setVideoError] = useState<string | null>(null);
   const [isVideoLoading, setIsVideoLoading] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const currentVideo = videos[currentVideoIndex];
 
@@ -82,6 +89,20 @@ export default function VideoPreview({
     setVideoError(null);
     setIsVideoLoading(false);
   }, [currentVideoIndex]);
+
+  // 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // 비디오 URL 유효성 검사
   const isValidVideoUrl = (url: string): boolean => {
@@ -315,15 +336,67 @@ export default function VideoPreview({
             <h2 className="text-2xl font-bold text-gray-900">
               {projectInfo.name}
             </h2>
-            {onEditProject && (
-              <button
-                onClick={onEditProject}
-                className="text-gray-400 hover:text-gray-600 text-xl p-1"
-                title="Project Settings"
-              >
-                ⋯
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {onEditProject && (
+                <button
+                  onClick={onEditProject}
+                  className="text-gray-400 hover:text-gray-600 text-xl p-1"
+                  title="Project Settings"
+                >
+                  ⋯
+                </button>
+              )}
+              {onDeleteVideo && (
+                <div className="relative" ref={menuRef}>
+                  <button
+                    onClick={() => setShowMenu(!showMenu)}
+                    className="text-gray-400 hover:text-red-600 text-xl p-1 transition-colors"
+                    title="More Options"
+                    disabled={isDeleting}
+                  >
+                    ⋯
+                  </button>
+                  {showMenu && (
+                    <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                      <div className="py-1">
+                        <button
+                          onClick={() => {
+                            setShowMenu(false);
+                            onDeleteVideo();
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                              Deleting...
+                            </>
+                          ) : (
+                            <>
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                              </svg>
+                              Delete Video
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex justify-between items-center">
             {info && (
