@@ -68,12 +68,31 @@ export default function VideoPreview({
   const [videoThumbnails, setVideoThumbnails] = useState<{
     [key: string]: string;
   }>({});
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [isVideoLoading, setIsVideoLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const currentVideo = videos[currentVideoIndex];
 
   // 각 영상의 길이를 5초로 가정 (실제로는 API에서 가져와야 함)
   const VIDEO_DURATION = 5;
+
+  // 비디오가 변경될 때 에러 상태 초기화
+  useEffect(() => {
+    setVideoError(null);
+    setIsVideoLoading(false);
+  }, [currentVideoIndex]);
+
+  // 비디오 URL 유효성 검사
+  const isValidVideoUrl = (url: string): boolean => {
+    if (!url) return false;
+    try {
+      const urlObj = new URL(url);
+      return urlObj.protocol === "http:" || urlObj.protocol === "https:";
+    } catch {
+      return false;
+    }
+  };
 
   // 비디오 썸네일 생성
   const generateVideoThumbnail = useCallback(
@@ -637,19 +656,140 @@ export default function VideoPreview({
         {videos.length > 0 && currentVideo && currentVideo.output ? (
           <>
             <div className="flex-1 relative">
-              <video
-                ref={videoRef}
-                src={currentVideo.output}
-                className="w-full h-full object-contain"
-                onEnded={handleVideoEnd}
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                onTimeUpdate={updateCurrentTime}
-                onError={(e) => {
-                  console.error("Video playback error:", e);
-                  setIsPlaying(false);
-                }}
-              />
+              {/* 비디오 로딩 상태 */}
+              {isVideoLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+                  <div className="text-center text-white">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+                    <p className="text-sm">Loading video...</p>
+                  </div>
+                </div>
+              )}
+
+              {/* 비디오 에러 상태 */}
+              {videoError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+                  <div className="text-center text-white max-w-md mx-4">
+                    <div className="text-red-400 text-4xl mb-4">⚠️</div>
+                    <h3 className="text-lg font-semibold mb-2">Video Error</h3>
+                    <p className="text-sm text-gray-300 mb-4">{videoError}</p>
+                    <button
+                      onClick={() => {
+                        setVideoError(null);
+                        if (videoRef.current) {
+                          videoRef.current.load();
+                        }
+                      }}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* 유효한 URL일 때만 비디오 요소 렌더링 */}
+              {isValidVideoUrl(currentVideo.output) ? (
+                <video
+                  ref={videoRef}
+                  src={currentVideo.output}
+                  className="w-full h-full object-contain"
+                  onEnded={handleVideoEnd}
+                  onPlay={() => {
+                    setIsPlaying(true);
+                    setVideoError(null);
+                  }}
+                  onPause={() => setIsPlaying(false)}
+                  onLoadStart={() => {
+                    console.log("Video load started:", currentVideo.output);
+                    setIsVideoLoading(true);
+                    setVideoError(null);
+                  }}
+                  onCanPlay={() => {
+                    console.log("Video can play:", currentVideo.output);
+                    setIsVideoLoading(false);
+                    setVideoError(null);
+                  }}
+                  onLoadedData={() => {
+                    console.log("Video data loaded:", currentVideo.output);
+                  }}
+                  onStalled={() => {
+                    console.log("Video stalled:", currentVideo.output);
+                  }}
+                  onSuspend={() => {
+                    console.log("Video suspended:", currentVideo.output);
+                  }}
+                  onAbort={() => {
+                    console.log("Video load aborted:", currentVideo.output);
+                  }}
+                  onTimeUpdate={updateCurrentTime}
+                  onError={(e) => {
+                    const videoElement = e.target as HTMLVideoElement;
+                    const error = videoElement.error;
+
+                    console.log("=== Video Error Debug ===");
+                    console.log("Error event triggered");
+                    console.log("Video element:", videoElement);
+                    console.log("Video src:", videoElement.src);
+                    console.log("Video readyState:", videoElement.readyState);
+                    console.log(
+                      "Video networkState:",
+                      videoElement.networkState
+                    );
+                    console.log("Error object:", error);
+
+                    let errorMessage = "Unknown video error";
+                    if (error) {
+                      switch (error.code) {
+                        case MediaError.MEDIA_ERR_ABORTED:
+                          errorMessage = "Video loading was aborted";
+                          break;
+                        case MediaError.MEDIA_ERR_NETWORK:
+                          errorMessage = "Network error while loading video";
+                          break;
+                        case MediaError.MEDIA_ERR_DECODE:
+                          errorMessage = "Video decoding error";
+                          break;
+                        case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                          errorMessage = "Video format not supported";
+                          break;
+                        default:
+                          errorMessage =
+                            error.message || "Video playback error";
+                      }
+                    }
+
+                    console.error("Video playback error:", {
+                      error: error,
+                      errorCode: error?.code,
+                      errorMessage: errorMessage,
+                      videoSrc: videoElement.src,
+                      videoElement: videoElement,
+                      readyState: videoElement.readyState,
+                      networkState: videoElement.networkState,
+                      currentTime: videoElement.currentTime,
+                      duration: videoElement.duration,
+                    });
+
+                    setIsPlaying(false);
+                    setIsVideoLoading(false);
+                    setVideoError(errorMessage);
+                  }}
+                />
+              ) : (
+                /* 유효하지 않은 URL일 때 에러 메시지 표시 */
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+                  <div className="text-center text-white max-w-md mx-4">
+                    <div className="text-red-400 text-4xl mb-4">⚠️</div>
+                    <h3 className="text-lg font-semibold mb-2">
+                      Invalid Video URL
+                    </h3>
+                    <p className="text-sm text-gray-300 mb-4">
+                      The video URL is not valid or accessible
+                    </p>
+                  </div>
+                </div>
+              )}
               {/* 자막 표시 */}
               {showSubtitles && currentVideo.narration && (
                 <div
@@ -737,7 +877,8 @@ export default function VideoPreview({
           <div className="flex-1 flex items-center justify-center text-gray-400">
             <div className="text-center">
               <div className="text-6xl mb-4">🎬</div>
-              <p>Please generate a video</p>
+              <p className="text-lg font-semibold mb-2">No Video Available</p>
+              <p className="text-sm">Please generate a video</p>
             </div>
           </div>
         )}
