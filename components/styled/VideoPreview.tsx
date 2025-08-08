@@ -39,6 +39,9 @@ interface VideoPreviewProps {
   onDownload?: () => void;
   mergeProgress?: string;
   mergeProgressMessages?: string[];
+  // 삭제 관련 props
+  onDeleteVideo?: () => void;
+  isDeleting?: boolean;
 }
 
 export default function VideoPreview({
@@ -59,6 +62,8 @@ export default function VideoPreview({
   onDownload,
   mergeProgress,
   mergeProgressMessages = [],
+  onDeleteVideo,
+  isDeleting = false,
 }: VideoPreviewProps) {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -68,12 +73,47 @@ export default function VideoPreview({
   const [videoThumbnails, setVideoThumbnails] = useState<{
     [key: string]: string;
   }>({});
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [isVideoLoading, setIsVideoLoading] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const currentVideo = videos[currentVideoIndex];
 
   // 각 영상의 길이를 5초로 가정 (실제로는 API에서 가져와야 함)
   const VIDEO_DURATION = 5;
+
+  // 비디오가 변경될 때 에러 상태 초기화
+  useEffect(() => {
+    setVideoError(null);
+    setIsVideoLoading(false);
+  }, [currentVideoIndex]);
+
+  // 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // 비디오 URL 유효성 검사
+  const isValidVideoUrl = (url: string): boolean => {
+    if (!url) return false;
+    try {
+      const urlObj = new URL(url);
+      return urlObj.protocol === "http:" || urlObj.protocol === "https:";
+    } catch {
+      return false;
+    }
+  };
 
   // 비디오 썸네일 생성
   const generateVideoThumbnail = useCallback(
@@ -296,15 +336,67 @@ export default function VideoPreview({
             <h2 className="text-2xl font-bold text-gray-900">
               {projectInfo.name}
             </h2>
-            {onEditProject && (
-              <button
-                onClick={onEditProject}
-                className="text-gray-400 hover:text-gray-600 text-xl p-1"
-                title="Project Settings"
-              >
-                ⋯
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {onEditProject && (
+                <button
+                  onClick={onEditProject}
+                  className="text-gray-400 hover:text-gray-600 text-xl p-1"
+                  title="Project Settings"
+                >
+                  ⋯
+                </button>
+              )}
+              {onDeleteVideo && (
+                <div className="relative" ref={menuRef}>
+                  <button
+                    onClick={() => setShowMenu(!showMenu)}
+                    className="text-gray-400 hover:text-red-600 text-xl p-1 transition-colors"
+                    title="More Options"
+                    disabled={isDeleting}
+                  >
+                    ⋯
+                  </button>
+                  {showMenu && (
+                    <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                      <div className="py-1">
+                        <button
+                          onClick={() => {
+                            setShowMenu(false);
+                            onDeleteVideo();
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                              Deleting...
+                            </>
+                          ) : (
+                            <>
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                              </svg>
+                              Delete Video
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex justify-between items-center">
             {info && (
@@ -637,19 +729,140 @@ export default function VideoPreview({
         {videos.length > 0 && currentVideo && currentVideo.output ? (
           <>
             <div className="flex-1 relative">
-              <video
-                ref={videoRef}
-                src={currentVideo.output}
-                className="w-full h-full object-contain"
-                onEnded={handleVideoEnd}
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                onTimeUpdate={updateCurrentTime}
-                onError={(e) => {
-                  console.error("Video playback error:", e);
-                  setIsPlaying(false);
-                }}
-              />
+              {/* 비디오 로딩 상태 */}
+              {isVideoLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+                  <div className="text-center text-white">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+                    <p className="text-sm">Loading video...</p>
+                  </div>
+                </div>
+              )}
+
+              {/* 비디오 에러 상태 */}
+              {videoError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+                  <div className="text-center text-white max-w-md mx-4">
+                    <div className="text-red-400 text-4xl mb-4">⚠️</div>
+                    <h3 className="text-lg font-semibold mb-2">Video Error</h3>
+                    <p className="text-sm text-gray-300 mb-4">{videoError}</p>
+                    <button
+                      onClick={() => {
+                        setVideoError(null);
+                        if (videoRef.current) {
+                          videoRef.current.load();
+                        }
+                      }}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* 유효한 URL일 때만 비디오 요소 렌더링 */}
+              {isValidVideoUrl(currentVideo.output) ? (
+                <video
+                  ref={videoRef}
+                  src={currentVideo.output}
+                  className="w-full h-full object-contain"
+                  onEnded={handleVideoEnd}
+                  onPlay={() => {
+                    setIsPlaying(true);
+                    setVideoError(null);
+                  }}
+                  onPause={() => setIsPlaying(false)}
+                  onLoadStart={() => {
+                    console.log("Video load started:", currentVideo.output);
+                    setIsVideoLoading(true);
+                    setVideoError(null);
+                  }}
+                  onCanPlay={() => {
+                    console.log("Video can play:", currentVideo.output);
+                    setIsVideoLoading(false);
+                    setVideoError(null);
+                  }}
+                  onLoadedData={() => {
+                    console.log("Video data loaded:", currentVideo.output);
+                  }}
+                  onStalled={() => {
+                    console.log("Video stalled:", currentVideo.output);
+                  }}
+                  onSuspend={() => {
+                    console.log("Video suspended:", currentVideo.output);
+                  }}
+                  onAbort={() => {
+                    console.log("Video load aborted:", currentVideo.output);
+                  }}
+                  onTimeUpdate={updateCurrentTime}
+                  onError={(e) => {
+                    const videoElement = e.target as HTMLVideoElement;
+                    const error = videoElement.error;
+
+                    console.log("=== Video Error Debug ===");
+                    console.log("Error event triggered");
+                    console.log("Video element:", videoElement);
+                    console.log("Video src:", videoElement.src);
+                    console.log("Video readyState:", videoElement.readyState);
+                    console.log(
+                      "Video networkState:",
+                      videoElement.networkState
+                    );
+                    console.log("Error object:", error);
+
+                    let errorMessage = "Unknown video error";
+                    if (error) {
+                      switch (error.code) {
+                        case MediaError.MEDIA_ERR_ABORTED:
+                          errorMessage = "Video loading was aborted";
+                          break;
+                        case MediaError.MEDIA_ERR_NETWORK:
+                          errorMessage = "Network error while loading video";
+                          break;
+                        case MediaError.MEDIA_ERR_DECODE:
+                          errorMessage = "Video decoding error";
+                          break;
+                        case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                          errorMessage = "Video format not supported";
+                          break;
+                        default:
+                          errorMessage =
+                            error.message || "Video playback error";
+                      }
+                    }
+
+                    console.error("Video playback error:", {
+                      error: error,
+                      errorCode: error?.code,
+                      errorMessage: errorMessage,
+                      videoSrc: videoElement.src,
+                      videoElement: videoElement,
+                      readyState: videoElement.readyState,
+                      networkState: videoElement.networkState,
+                      currentTime: videoElement.currentTime,
+                      duration: videoElement.duration,
+                    });
+
+                    setIsPlaying(false);
+                    setIsVideoLoading(false);
+                    setVideoError(errorMessage);
+                  }}
+                />
+              ) : (
+                /* 유효하지 않은 URL일 때 에러 메시지 표시 */
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+                  <div className="text-center text-white max-w-md mx-4">
+                    <div className="text-red-400 text-4xl mb-4">⚠️</div>
+                    <h3 className="text-lg font-semibold mb-2">
+                      Invalid Video URL
+                    </h3>
+                    <p className="text-sm text-gray-300 mb-4">
+                      The video URL is not valid or accessible
+                    </p>
+                  </div>
+                </div>
+              )}
               {/* 자막 표시 */}
               {showSubtitles && currentVideo.narration && (
                 <div
@@ -737,7 +950,8 @@ export default function VideoPreview({
           <div className="flex-1 flex items-center justify-center text-gray-400">
             <div className="text-center">
               <div className="text-6xl mb-4">🎬</div>
-              <p>Please generate a video</p>
+              <p className="text-lg font-semibold mb-2">No Video Available</p>
+              <p className="text-sm">Please generate a video</p>
             </div>
           </div>
         )}

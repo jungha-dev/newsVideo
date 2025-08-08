@@ -49,6 +49,10 @@ export default function NewsVideoDetailPage() {
     []
   );
 
+  // 삭제 관련 상태
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   // 각 씬의 개별 상태를 관리하는 상태 추가
   const [sceneVideos, setSceneVideos] = useState<any[]>([]);
 
@@ -151,7 +155,7 @@ export default function NewsVideoDetailPage() {
     const shouldPoll =
       isRegeneratingRef.current ||
       currentStatus === "processing" ||
-      hasIncompleteScenes;
+      (hasIncompleteScenes && sceneVideos.length > 0);
 
     console.log("Polling check:", {
       isRegenerating: isRegeneratingRef.current,
@@ -223,8 +227,8 @@ export default function NewsVideoDetailPage() {
     // 즉시 실행
     checkStatus();
 
-    // 10초마다 상태 확인
-    pollingRef.current = setInterval(checkStatus, 10000);
+    // 30초마다 상태 확인 (서버 부하 감소)
+    pollingRef.current = setInterval(checkStatus, 60000);
 
     return () => {
       if (pollingRef.current) {
@@ -232,7 +236,7 @@ export default function NewsVideoDetailPage() {
         pollingRef.current = null;
       }
     };
-  }, [video?.status, videoId, sceneVideos]); // sceneVideos 의존성 다시 추가
+  }, [video?.status, videoId]); // sceneVideos 의존성 제거
 
   const loadVideo = async () => {
     try {
@@ -843,6 +847,41 @@ export default function NewsVideoDetailPage() {
     }
   };
 
+  // 삭제 관련 함수들
+  const handleDeleteVideo = async () => {
+    if (!video || !user) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/video/news/delete/${video.id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        // 삭제 성공 시 목록 페이지로 이동
+        window.location.href = "/video/createVideo";
+      } else {
+        const error = await response.json();
+        console.error("Delete failed:", error);
+        alert("Failed to delete video. Please try again.");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("Failed to delete video. Please try again.");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  const confirmDelete = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+  };
+
   if (!user) {
     return (
       <div className="container max-w-7xl mx-auto px-4 py-8 mt-8">
@@ -947,6 +986,8 @@ export default function NewsVideoDetailPage() {
               onDownload={handleDownload}
               mergeProgress={mergeProgress}
               mergeProgressMessages={mergeProgressMessages}
+              onDeleteVideo={confirmDelete}
+              isDeleting={isDeleting}
             />
           ) : video.status === "processing" ? (
             <div className="bg-gray-100 rounded aspect-video flex items-center justify-center">
@@ -1355,6 +1396,61 @@ export default function NewsVideoDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* 삭제 확인 모달 */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Delete Video
+                </h3>
+              </div>
+            </div>
+            <div className="mb-4">
+              <p className="text-sm text-gray-600">
+                Are you sure you want to delete this video? This action cannot
+                be undone. All video files and data will be permanently removed.
+              </p>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button
+                onClick={cancelDelete}
+                variant="outline"
+                size="sm"
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeleteVideo}
+                variant="primary"
+                size="sm"
+                className="bg-red-600 hover:bg-red-700"
+                disabled={isDeleting}
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
