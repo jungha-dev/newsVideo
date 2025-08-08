@@ -101,7 +101,8 @@ Please compose the video based on the following blog content:
   const [videoSeed, setVideoSeed] = useState<number | undefined>(undefined);
   const [enhancePrompt, setEnhancePrompt] = useState(true);
   const [negativePrompt, setNegativePrompt] = useState("");
-  const [generatedVideoUrl, setGeneratedVideoUrl] = useState("");
+  const [generatedVideoId, setGeneratedVideoId] = useState("");
+  const [videoStatus, setVideoStatus] = useState("");
   const [generatedVideos, setGeneratedVideos] = useState<string[]>([]);
   const [videoScenario, setVideoScenario] = useState<VideoScenario | null>(
     null
@@ -297,19 +298,31 @@ Please compose the video based on the following blog content:
 
     setLoading(true);
     setError("");
-    setGeneratedVideoUrl("");
+    setGeneratedVideoId("");
 
     try {
-      const response = await fetch("/api/replicateVideo/veo-3", {
+      // News Video 시스템을 통해 단일 비디오 생성
+      const response = await fetch("/api/video/news/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          prompt: videoPrompt.trim(),
-          seed: videoSeed,
-          enhance_prompt: enhancePrompt,
-          negative_prompt: negativePrompt.trim() || undefined,
+          title: "Single Video Generation",
+          description: "Generated from createVideo page",
+          prompts: [videoPrompt.trim()],
+          narrations: [""],
+          scenes: [
+            {
+              scene_number: 1,
+              image_prompt: videoPrompt.trim(),
+              narration: "",
+            },
+          ],
+          model: "veo-3",
+          aspectRatio: "16:9",
+          duration: 5,
+          veo3Resolution: "720p",
         }),
       });
 
@@ -319,7 +332,8 @@ Please compose the video based on the following blog content:
         throw new Error(data.error || "video generation failed.");
       }
 
-      setGeneratedVideoUrl(data.videoUrl);
+      // 생성된 비디오 ID를 저장하여 상태 확인 가능하게 함
+      setGeneratedVideoId(data.videoId);
     } catch (err) {
       console.error("Video generation error:", err);
       setError(
@@ -435,7 +449,7 @@ Please compose the video based on the following blog content:
     setEnhancePrompt(true);
     setNegativePrompt("");
     setGeneratedText("");
-    setGeneratedVideoUrl("");
+    setGeneratedVideoId("");
     setGeneratedVideos([]);
     setVideoScenario(null);
     setError("");
@@ -760,7 +774,7 @@ Please compose the video based on the following blog content:
                   videoPrompt.trim() ||
                   generatedText ||
                   videoScenario ||
-                  generatedVideoUrl ||
+                  generatedVideoId ||
                   manualScenes.length > 0) && (
                   <Button
                     onClick={handleClear}
@@ -1256,7 +1270,7 @@ Please compose the video based on the following blog content:
                   options={[
                     { value: "kling-v2", label: "Kling V2.0 (Kwaivgi)" },
                     { value: "veo-3", label: "Veo-3 (Google)" },
-                    { value: "hailuo-02", label: "Hailuo-02 (Minimax)" },
+                    // { value: "hailuo-02", label: "Hailuo-02 (Minimax)" },
                   ]}
                   className="flex-1 !mb-0"
                 />
@@ -1616,37 +1630,32 @@ Please compose the video based on the following blog content:
             )}
 
             {/* 단일 비디오 결과 */}
-            {generatedVideoUrl && (
+            {generatedVideoId && (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Generated Video</h3>
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <video
-                    controls
-                    className="w-full h-auto rounded"
-                    src={generatedVideoUrl}
-                  >
-                    Your browser does not support the video tag.
-                  </video>
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-4">🎬</div>
+                    <p className="text-lg font-semibold mb-2">
+                      Video Generation Started
+                    </p>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Your video is being generated. Check the status on the
+                      details page.
+                    </p>
+                    <Link href={`/video/createVideo/${generatedVideoId}`}>
+                      <Button variant="secondary" size="sm">
+                        View Details Page
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-
-                <Button
-                  onClick={() => {
-                    const link = document.createElement("a");
-                    link.href = generatedVideoUrl;
-                    link.download = "generated-video.mp4";
-                    link.click();
-                  }}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Download Video
-                </Button>
               </div>
             )}
 
             {!generatedText &&
               !videoScenario &&
-              !generatedVideoUrl &&
+              !generatedVideoId &&
               generatedVideos.length === 0 &&
               !loading &&
               !error && (
