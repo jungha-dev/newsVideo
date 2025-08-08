@@ -138,78 +138,74 @@ export default function NewsVideoListPage() {
           <PageTitle title="Generated Video" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {currentVideos.map((video) => (
-              <div key={video.id} className="relative group">
-                <Link href={`/video/createVideo/${video.id}`}>
-                  <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-                    {/* 썸네일 */}
-                    <div className="aspect-video bg-gray-100 relative">
-                      {thumbnails[video.id] ? (
-                        <img
-                          src={thumbnails[video.id]}
-                          alt={video.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : video.thumbnail ? (
-                        <img
-                          src={video.thumbnail}
-                          alt={video.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <div className="text-secondary-dark">
-                            Landering...
-                          </div>
-                        </div>
-                      )}
+              <Link key={video.id} href={`/video/createVideo/${video.id}`}>
+                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                  {/* 썸네일 */}
+                  <div className="aspect-video bg-gray-100 relative">
+                    {thumbnails[video.id] ? (
+                      <img
+                        src={thumbnails[video.id]}
+                        alt={video.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : video.thumbnail ? (
+                      <img
+                        src={video.thumbnail}
+                        alt={video.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="text-secondary-dark">Landering...</div>
+                      </div>
+                    )}
 
-                      {/* 상태 배지 */}
-                      <div className="absolute top-2 right-2 flex gap-2">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            video.status === "completed"
-                              ? ""
-                              : video.status === "processing"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {video.status === "completed"
+                    {/* 상태 배지 */}
+                    <div className="absolute top-2 right-2 flex gap-2">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          video.status === "completed"
                             ? ""
                             : video.status === "processing"
-                            ? "Processing"
-                            : "Failed"}
-                        </span>
-                        {video.model && (
-                          <div>
-                            <span className="inline-block bg-black/30 text-white text-xs px-2 py-1 rounded">
-                              {video.model}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* 처리 중일 때 로딩 애니메이션 */}
-                      {video.status === "processing" && (
-                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {video.status === "completed"
+                          ? ""
+                          : video.status === "processing"
+                          ? "Processing"
+                          : "Failed"}
+                      </span>
+                      {video.model && (
+                        <div>
+                          <span className="inline-block bg-black/30 text-white text-xs px-2 py-1 rounded">
+                            {video.model}
+                          </span>
                         </div>
                       )}
                     </div>
 
-                    {/* 정보 */}
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 mb-2 line-clamp-1">
-                        {video.title}
-                      </h3>
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span>{formatDate(video.createdAt)}</span>
-                        <span>{video.scenes.length} Scene</span>
+                    {/* 처리 중일 때 로딩 애니메이션 */}
+                    {video.status === "processing" && (
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                       </div>
+                    )}
+                  </div>
+
+                  {/* 정보 */}
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-1">
+                      {video.title}
+                    </h3>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>{formatDate(video.createdAt)}</span>
+                      <span>{video.scenes.length} Scene</span>
                     </div>
                   </div>
-                </Link>
-              </div>
+                </div>
+              </Link>
             ))}
           </div>
           {/* 페이징 컨트롤 */}
