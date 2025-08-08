@@ -14,11 +14,7 @@ import {
   VideoScenarioList,
   ConfirmModal,
 } from "@/components/styled";
-import {
-  saveNewsVideo,
-  createNewsVideoDraft,
-  updateNewsVideo,
-} from "@/lib/firebase/newsVideo";
+import { saveNewsVideo } from "@/lib/firebase/newsVideo";
 import { NewsVideoCreateData } from "@/lib/types/newsVideo";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
