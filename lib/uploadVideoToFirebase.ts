@@ -25,16 +25,20 @@ export async function uploadVideoToFirebase({
       fileName,
     });
 
+    // videoId와 sceneIndex가 undefined일 때 기본값 설정
+    const safeVideoId = videoId || `temp_${Date.now()}`;
+    const safeSceneIndex = sceneIndex !== undefined ? sceneIndex : 0;
+
     // 파일 경로 생성
     let storagePath: string;
-    if (videoId && sceneIndex !== undefined) {
+    if (safeVideoId && safeSceneIndex !== undefined) {
       // Generated Video Scene의 경우
-      storagePath = `users/${userId}/newsVideos/${videoId}/scene-${
-        sceneIndex + 1
+      storagePath = `users/${userId}/newsVideos/${safeVideoId}/scene-${
+        safeSceneIndex + 1
       }.mp4`;
-    } else if (videoId) {
+    } else if (safeVideoId) {
       // 단일 비디오의 경우
-      storagePath = `users/${userId}/videos/${videoId}/${
+      storagePath = `users/${userId}/videos/${safeVideoId}/${
         fileName || "video.mp4"
       }`;
     } else {

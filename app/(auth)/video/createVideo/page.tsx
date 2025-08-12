@@ -20,22 +20,8 @@ export default function NewsVideoListPage() {
   useEffect(() => {
     if (user) {
       loadVideos();
-
-      // 주기적으로 데이터 새로고침 (15초마다)
-      const interval = setInterval(() => {
-        // processing 상태인 비디오가 있을 때만 새로고침
-        const hasProcessingVideos = videos.some(
-          (video) => video.status === "processing"
-        );
-        if (hasProcessingVideos) {
-          console.log("🔄 자동 새로고침 실행 (processing 비디오 감지)");
-          loadVideos();
-        }
-      }, 15000);
-
-      return () => clearInterval(interval);
     }
-  }, [user, videos.length]);
+  }, [user]);
 
   // videos가 로드되면 첫 번째 씬의 영상에서 썸네일 생성
   useEffect(() => {

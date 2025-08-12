@@ -743,7 +743,7 @@ export default function VideoPreview({
                     onClick={onMergeAndDownload}
                     disabled={isMerging}
                   >
-                    {isMerging ? "Merging..." : "Merge and Download Video"}
+                    {isMerging ? "Merging..." : "Merge Video"}
                   </Button>
                   {mergedVideoUrl && (
                     <Button onClick={onDownload}>Download</Button>

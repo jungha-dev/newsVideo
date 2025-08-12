@@ -506,9 +506,6 @@ export default function NewsVideoDetailPage() {
     // 즉시 실행
     checkStatus();
 
-    // 15초마다 상태 확인 (서버 부하 감소)
-    pollingRef.current = setInterval(checkStatus, 15000);
-
     return () => {
       if (pollingRef.current) {
         clearInterval(pollingRef.current);
@@ -537,20 +534,6 @@ export default function NewsVideoDetailPage() {
       }
     }
   }, [video?.scenes, user]); // 씬 데이터가 변경될 때마다 체크
-
-  // 🚀 주기적 자동 업로드 체크 (30초마다 - 속도 조절)
-  useEffect(() => {
-    if (!video || !user) return;
-
-    const autoUploadInterval = setInterval(() => {
-      console.log("⏰ 주기적 자동 업로드 체크 시작...");
-      triggerAutoUploadForCompletedScenes();
-    }, 15000); // 15초마다 체크 (30초 → 15초로 변경)
-
-    return () => {
-      clearInterval(autoUploadInterval);
-    };
-  }, [video, user]);
 
   const loadVideo = async () => {
     try {
@@ -1449,16 +1432,16 @@ export default function NewsVideoDetailPage() {
                   </div>
 
                   {/* 자동 업로드 상태 표시 */}
-                  <div className="mt-2">
+                  {/* <div className="mt-2">
                     <AutoUploadStatus
                       scene={scene}
                       sceneIndex={index}
                       isUploading={uploadingScenes.has(index)}
                     />
-                  </div>
+                  </div> */}
 
                   {/* Firebase 업로드 상태 디버깅 */}
-                  <FirebaseStatusDebug scene={scene} sceneIndex={index} />
+                  {/* <FirebaseStatusDebug scene={scene} sceneIndex={index} /> */}
                 </div>
               </div>
             ))}

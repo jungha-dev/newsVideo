@@ -2,6 +2,82 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase-admin";
 import { getUserFromToken } from "@/lib/auth";
 import { v4 as uuidv4 } from "uuid";
+import { uploadVideoToFirebase } from "@/lib/uploadVideoToFirebase";
+
+// Replicate API에서 비디오 상태를 폴링하고 완료되면 Firebase에 업로드하는 함수
+async function pollAndUploadVideo(
+  predictionId: string,
+  userId: string,
+  filename: string,
+  videoId: string,
+  sceneIndex: number
+): Promise<string> {
+  console.log("🔍 pollAndUploadVideo 함수 호출됨:", {
+    predictionId,
+    userId,
+    filename,
+    videoId,
+    sceneIndex,
+  });
+
+  let attempts = 0;
+  const maxAttempts = 300; // 10분 타임아웃 (300초)
+
+  while (attempts < maxAttempts) {
+    try {
+      const response = await fetch(
+        `https://api.replicate.com/v1/predictions/${predictionId}`,
+        {
+          headers: {
+            Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Replicate API error: ${response.statusText}`);
+      }
+
+      const prediction = await response.json();
+      console.log(
+        `Prediction status (attempt ${attempts}):`,
+        prediction.status
+      );
+
+      if (prediction.status === "succeeded") {
+        // 비디오 생성 완료, Firebase Storage에 업로드
+        const videoUrl = prediction.output as string;
+        const firebaseUrl = await uploadVideoToFirebase({
+          replicateUrl: videoUrl,
+          userId: userId,
+          videoId: videoId,
+          sceneIndex: sceneIndex,
+          fileName: filename,
+        });
+        return firebaseUrl;
+      } else if (prediction.status === "failed") {
+        throw new Error(
+          `Video generation failed: ${prediction.error || "Unknown error"}`
+        );
+      }
+
+      // 2초 대기 후 재시도
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      attempts++;
+    } catch (error) {
+      console.error(`Error polling prediction (attempt ${attempts}):`, error);
+      attempts++;
+
+      if (attempts >= maxAttempts) {
+        throw new Error("Video generation timed out");
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+  }
+
+  throw new Error("Video generation timed out");
+}
 
 interface NewsVideoRequest {
   title: string;
@@ -227,6 +303,75 @@ export async function POST(request: NextRequest) {
         .doc(sceneVideoId)
         .set(sceneVideoData);
 
+      // 비동기로 비디오 생성 완료를 기다리고 Firebase에 업로드
+      setTimeout(async () => {
+        try {
+          const firebaseUrl = await pollAndUploadVideo(
+            replicateData.id,
+            uid,
+            `scene_${newSceneNumber}_${existingVideoId}`,
+            existingVideoId,
+            currentScenes.length
+          );
+
+          // Firestore에 Firebase URL 업데이트
+          await db
+            .collection("users")
+            .doc(uid)
+            .collection("newsVideo")
+            .doc(existingVideoId)
+            .collection("sceneVideos")
+            .doc(sceneVideoId)
+            .update({
+              status: "completed",
+              videoUrl: firebaseUrl,
+              updated_at: new Date(),
+            });
+
+          // 메인 비디오 문서의 씬 비디오 URL도 업데이트
+          const videoRef = db
+            .collection("users")
+            .doc(uid)
+            .collection("newsVideo")
+            .doc(existingVideoId);
+          const videoDoc = await videoRef.get();
+          if (videoDoc.exists) {
+            const videoData = videoDoc.data();
+            if (videoData) {
+              const updatedScenes = (videoData.scenes || []).map(
+                (s: any, idx: number) =>
+                  idx === currentScenes.length
+                    ? { ...s, videoUrl: firebaseUrl }
+                    : s
+              );
+
+              await videoRef.update({
+                scenes: updatedScenes,
+                updatedAt: new Date(),
+              });
+            }
+          }
+
+          console.log(`Scene video uploaded and updated: ${firebaseUrl}`);
+        } catch (error) {
+          console.error("Error processing scene video:", error);
+
+          // 에러 상태 업데이트
+          await db
+            .collection("users")
+            .doc(uid)
+            .collection("newsVideo")
+            .doc(existingVideoId)
+            .collection("sceneVideos")
+            .doc(sceneVideoId)
+            .update({
+              status: "failed",
+              error: error instanceof Error ? error.message : "Unknown error",
+              updated_at: new Date(),
+            });
+        }
+      }, 1000);
+
       return NextResponse.json({
         videoId: existingVideoId,
         sceneVideos: [sceneVideoData],
@@ -352,6 +497,73 @@ export async function POST(request: NextRequest) {
           .collection("sceneVideos")
           .doc(sceneVideoId)
           .set(sceneVideoData);
+
+        // 비동기로 비디오 생성 완료를 기다리고 Firebase에 업로드
+        setTimeout(async () => {
+          try {
+            const firebaseUrl = await pollAndUploadVideo(
+              replicateData.id,
+              uid,
+              `scene_${index + 1}_${videoId}`,
+              videoId,
+              index
+            );
+
+            // Firestore에 Firebase URL 업데이트
+            await db
+              .collection("users")
+              .doc(uid)
+              .collection("newsVideo")
+              .doc(videoId)
+              .collection("sceneVideos")
+              .doc(sceneVideoId)
+              .update({
+                status: "completed",
+                videoUrl: firebaseUrl,
+                updated_at: new Date(),
+              });
+
+            // 메인 비디오 문서의 씬 비디오 URL도 업데이트
+            const videoRef = db
+              .collection("users")
+              .doc(uid)
+              .collection("newsVideo")
+              .doc(videoId);
+            const videoDoc = await videoRef.get();
+            if (videoDoc.exists) {
+              const videoData = videoDoc.data();
+              if (videoData) {
+                const updatedScenes = (videoData.scenes || []).map(
+                  (s: any, idx: number) =>
+                    idx === index ? { ...s, videoUrl: firebaseUrl } : s
+                );
+
+                await videoRef.update({
+                  scenes: updatedScenes,
+                  updatedAt: new Date(),
+                });
+              }
+            }
+
+            console.log(`Scene video uploaded and updated: ${firebaseUrl}`);
+          } catch (error) {
+            console.error("Error processing scene video:", error);
+
+            // 에러 상태 업데이트
+            await db
+              .collection("users")
+              .doc(uid)
+              .collection("newsVideo")
+              .doc(videoId)
+              .collection("sceneVideos")
+              .doc(sceneVideoId)
+              .update({
+                status: "failed",
+                error: error instanceof Error ? error.message : "Unknown error",
+                updated_at: new Date(),
+              });
+          }
+        }, 1000);
 
         return sceneVideoData;
       });
