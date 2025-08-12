@@ -1,41 +1,47 @@
-# Next.js Blog with Firebase Storage
+# News Video Generator with Firebase Storage
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a [Next.js](https://nextjs.org) project for generating news videos using AI models (Kling v2, Veo-3) with Firebase Storage integration.
 
 ## Firebase Storage Structure
 
 The application uses a user-based storage structure for better organization and security:
 
 ```
-/users/{userId}/uploads/
-   images/
-      categories/
-         {category}/
-            {filename}
-      characters/
-         {characterId}/
-            {filename}
-      video-assets/
-         thumbnails/
-            {filename}
-      generate/
-         {category}/
-            {filename}
-      multi-generate/
-            {filename}
-      connected-videos/
-            {filename}
-   videos/
-      generate/
-         {category}/
-            {filename}
-      multi-generate/
-         {category}/
-            {filename}
-      connected-videos/
-            {filename}
-avatars/
-   {filename}
+/users/{userId}/
+   uploads/
+      images/
+         categories/
+            {category}/
+               {filename}
+         characters/
+            {characterId}/
+               {filename}
+         video-assets/
+            thumbnails/
+               {filename}
+         generate/
+            {category}/
+               {filename}
+         multi-generate/
+               {filename}
+         connected-videos/
+               {filename}
+      videos/
+         generate/
+            {category}/
+               {filename}
+         multi-generate/
+            {category}/
+               {filename}
+         connected-videos/
+               {filename}
+   newsVideo/
+      {videoId}/
+         video_1.mp4
+         video_2.mp4
+         ...
+   avatars/
+      {filename}
 ```
 
 ## Firestore Database Structure
@@ -83,6 +89,28 @@ The application includes utility functions in `utils/storagePaths.ts` for genera
 - `getMultiVideoGeneratePath()` - For multi-generated videos
 - `getConnectedVideoPath()` - For connected videos
 - `getAvatarPath()` - For user avatars
+
+### Video Processing Features
+
+The application includes advanced video processing features:
+
+- **Replicate Integration**: Supports Kling v2 and Veo-3 AI models for video generation
+- **Firebase Storage Upload**: Automatically uploads generated videos to Firebase Storage
+- **Public Access**: Videos are made publicly accessible via `makePublic()`
+- **File Naming**: Videos are named as `video_1.mp4`, `video_2.mp4`, etc.
+- **Error Handling**: Falls back to original Replicate URLs if Firebase upload fails
+- **Scene Management**: Supports adding, regenerating, and deleting video scenes
+
+### Automatic Firebase Upload
+
+The application now includes fully automatic Firebase Storage upload functionality:
+
+- **🚀 Fully Automatic**: No manual button clicks required - videos are automatically uploaded when ready
+- **Replicate to Firebase**: Automatically uploads videos from Replicate URLs to Firebase Storage
+- **Real-time Progress**: Visual feedback shows automatic upload status for each scene
+- **Smart Path Management**: Uses consistent storage paths with automatic filename generation
+- **Error Recovery**: Graceful handling of upload failures with automatic retry
+- **Background Processing**: Uploads happen automatically in the background during video generation
 
 ## Migration
 

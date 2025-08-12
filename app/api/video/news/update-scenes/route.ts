@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, storage } from "@/lib/firebase-admin";
+import { db } from "@/lib/firebase-admin";
 import { getUserFromToken } from "@/lib/auth";
+import { deleteFirebaseFile } from "@/lib/utils/firebaseStorage";
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,17 +40,10 @@ export async function POST(request: NextRequest) {
         deletedScene.videoUrl.includes("firebasestorage.googleapis.com")
       ) {
         try {
-          // URL에서 파일 경로 추출
-          const url = new URL(deletedScene.videoUrl);
-          const filePath = decodeURIComponent(
-            url.pathname.split("/o/")[1]?.split("?")[0] || ""
+          await deleteFirebaseFile(deletedScene.videoUrl);
+          console.log(
+            `✅ Deleted video file from Storage: ${deletedScene.videoUrl}`
           );
-
-          if (filePath) {
-            const fileRef = storage.bucket().file(filePath);
-            await fileRef.delete();
-            console.log(`✅ Deleted video file from Storage: ${filePath}`);
-          }
         } catch (error) {
           console.error("Error deleting video file from Storage:", error);
           // Storage 삭제 실패해도 Firestore 업데이트는 계속 진행

@@ -66,18 +66,23 @@ const serviceAccount = getServiceAccount();
 
 console.log("기존 Firebase Admin 앱 수:", getApps().length);
 
+// Storage Bucket 설정
+const storageBucket =
+  process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
+  "nesvideo-24f56.firebasestorage.app";
+console.log("설정된 Storage Bucket:", storageBucket);
+
 const app =
   getApps().length === 0
     ? initializeApp({
         credential: cert(serviceAccount),
-        storageBucket:
-          process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
-          "nesvideo-24f56.firebasestorage.com",
+        storageBucket: storageBucket,
       })
     : getApps()[0];
 
 console.log("✅ Firebase Admin 초기화 완료");
-console.log("Storage Bucket:", process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
+console.log("Storage Bucket:", storageBucket);
+console.log("Project ID:", serviceAccount.project_id);
 
 export const db = getFirestore("news-video");
 export const auth = getAuth(app);

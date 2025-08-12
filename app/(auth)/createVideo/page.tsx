@@ -31,6 +31,8 @@ interface Scene {
   narration: string;
   imageUrl?: string;
   videoUrl?: string;
+  firebaseUrl?: string;
+  output?: string; // 원본 Replicate URL
 }
 
 interface VideoScenario {

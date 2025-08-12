@@ -13,6 +13,8 @@ export interface NewsVideo {
     narration: string;
     imageUrl?: string;
     videoUrl?: string;
+    firebaseUrl?: string;
+    output?: string; // 원본 Replicate URL
   }[];
   createdAt: Date;
   updatedAt: Date;
@@ -35,6 +37,8 @@ export interface NewsVideoCreateData {
     narration: string;
     imageUrl?: string;
     videoUrl?: string;
+    firebaseUrl?: string;
+    output?: string; // 원본 Replicate URL
   }[];
   duration?: number;
   aspectRatio?: string;

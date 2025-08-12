@@ -5,7 +5,14 @@ import { useParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { getNewsVideoById, updateNewsVideo } from "@/lib/firebase/newsVideo";
 import { NewsVideo } from "@/lib/types/newsVideo";
-import { PageTitle, Section, Button, VideoPreview } from "@/components/styled";
+import {
+  PageTitle,
+  Section,
+  Button,
+  VideoPreview,
+  AutoUploadStatus,
+} from "@/components/styled";
+import FirebaseStatusDebug from "@/components/styled/FirebaseStatusDebug";
 import Link from "next/link";
 
 export default function NewsVideoDetailPage() {
@@ -56,6 +63,14 @@ export default function NewsVideoDetailPage() {
   // 각 씬의 개별 상태를 관리하는 상태 추가
   const [sceneVideos, setSceneVideos] = useState<any[]>([]);
 
+  // 자동 업로드 진행 상태 관리
+  const [uploadingScenes, setUploadingScenes] = useState<Set<number>>(
+    new Set()
+  );
+
+  // 자동 업로드 실행 중인지 추적
+  const [isAutoUploadRunning, setIsAutoUploadRunning] = useState(false);
+
   // Scene별 상태 계산 - 개별 씬 비디오 상태 확인
   const getSceneStatus = (scene: any, index: number) => {
     // 씬에 videoUrl이 있으면 완료
@@ -71,6 +86,170 @@ export default function NewsVideoDetailPage() {
     if (video?.status === "processing") return "processing";
     if (video?.status === "failed") return "failed";
     return "pending";
+  };
+
+  // 🚀 자동 Firebase 업로드 트리거 함수
+  const triggerAutoUploadForCompletedScenes = async () => {
+    if (!video || !user) {
+      console.log("❌ 자동 업로드 실패: video 또는 user가 없음");
+      return;
+    }
+
+    // 🛡️ 자동 업로드 중복 실행 방지 (더 강화)
+    if (uploadingScenes.size > 0) {
+      console.log("⚠️ 이미 업로드 중인 씬이 있습니다. 자동 업로드 스킵");
+      return;
+    }
+
+    // 🛡️ 이미 자동 업로드가 실행 중인지 확인
+    if (isAutoUploadRunning) {
+      console.log("⚠️ 자동 업로드가 이미 실행 중입니다. 중복 실행 방지");
+      return;
+    }
+
+    // 🛡️ 이미 Firebase에 업로드된 씬이 있는지 확인 (이건 막으면 안됨)
+    const hasExistingFirebaseUploads = video.scenes.some(
+      (scene) => (scene as any).firebaseUrl
+    );
+    if (hasExistingFirebaseUploads) {
+      console.log(
+        "✅ 이미 Firebase에 업로드된 씬이 있습니다. 기존 업로드 건너뛰기"
+      );
+    }
+
+    console.log("🚀 자동 Firebase 업로드 트리거 시작...");
+    console.log("현재 비디오 상태:", {
+      videoId: video.id,
+      scenesCount: video.scenes.length,
+      scenes: video.scenes.map((scene, index) => ({
+        index,
+        hasVideoUrl: !!scene.videoUrl,
+        hasFirebaseUrl: !!(scene as any).firebaseUrl,
+        needsUpload: scene.videoUrl && !(scene as any).firebaseUrl,
+      })),
+    });
+
+    // Firebase에 업로드할 씬들 필터링 (아직 Firebase에 업로드되지 않은 씬들만)
+    const scenesToAutoUpload = video.scenes.filter(
+      (scene, index) =>
+        scene.videoUrl && // Replicate에서 비디오가 생성됨
+        !(scene as any).firebaseUrl // 아직 Firebase에 업로드되지 않음
+    );
+
+    console.log(
+      "자동 업로드 대상 씬들:",
+      scenesToAutoUpload.map((scene, index) => ({
+        index,
+        videoUrl: scene.videoUrl,
+        firebaseUrl: (scene as any).firebaseUrl,
+      }))
+    );
+
+    if (scenesToAutoUpload.length === 0) {
+      console.log("✅ 자동 업로드할 씬이 없습니다.");
+      return;
+    }
+
+    console.log(
+      `🚀 ${scenesToAutoUpload.length}개 씬을 자동으로 Firebase에 업로드합니다...`
+    );
+
+    // 🛡️ 자동 업로드 실행 상태 설정
+    setIsAutoUploadRunning(true);
+
+    try {
+      // 🛡️ 추가 안전 대기 시간 (3초)
+      console.log("⏰ 안전 대기 시간 3초...");
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      console.log("✅ 안전 대기 시간 완료 - 업로드 시작");
+
+      // 각 씬을 자동으로 업로드 (아직 Firebase에 업로드되지 않은 씬만)
+      for (let i = 0; i < video.scenes.length; i++) {
+        const scene = video.scenes[i];
+        if (
+          scene.videoUrl && // Replicate에서 비디오가 생성됨
+          !(scene as any).firebaseUrl // 아직 Firebase에 업로드되지 않음
+        ) {
+          console.log(`🚀 Scene ${i + 1} 자동 업로드 시작: ${scene.videoUrl}`);
+
+          try {
+            // 업로드 진행 상태 설정
+            setUploadingScenes((prev) => new Set(prev).add(i));
+
+            const response = await fetch(`/api/video/news/upload-to-firebase`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                videoId: videoId,
+                sceneIndex: i,
+                replicateUrl: scene.videoUrl,
+                autoUpload: true,
+              }),
+            });
+
+            console.log(
+              `📊 Scene ${i + 1} API 응답:`,
+              response.status,
+              response.statusText
+            );
+
+            if (response.ok) {
+              const data = await response.json();
+              console.log(`✅ Scene ${i + 1} 자동 업로드 완료:`, data);
+
+              // 비디오 데이터 업데이트
+              const updatedScenes = [...video.scenes];
+              updatedScenes[i] = {
+                ...updatedScenes[i],
+                firebaseUrl: data.firebaseUrl,
+                output: scene.videoUrl,
+              } as any;
+              setVideo({ ...video, scenes: updatedScenes });
+
+              // 자동 업로드 완료 로그
+              console.log(
+                `✅ Scene ${i + 1} 자동 업로드 완료 및 상태 업데이트`
+              );
+
+              console.log(
+                `🔗 Scene ${i + 1} Firebase URL: ${data.firebaseUrl}`
+              );
+            } else {
+              const errorData = await response.json();
+              console.error(`❌ Scene ${i + 1} 자동 업로드 실패:`, errorData);
+            }
+          } catch (error) {
+            console.error(`❌ Scene ${i + 1} 자동 업로드 에러:`, error);
+          } finally {
+            // 업로드 진행 상태 제거
+            setUploadingScenes((prev) => {
+              const newSet = new Set(prev);
+              newSet.delete(i);
+              return newSet;
+            });
+          }
+        }
+      }
+
+      console.log("🎉 자동 Firebase 업로드 완료!");
+
+      // 업데이트된 데이터 다시 로드
+      await loadVideo();
+
+      // 폴링 상태 재확인을 위해 강제로 상태 체크
+      setTimeout(() => {
+        console.log("🔄 업로드 완료 후 폴링 상태 재확인");
+        if (pollingRef.current) {
+          clearInterval(pollingRef.current);
+          pollingRef.current = null;
+        }
+      }, 2000);
+    } finally {
+      // 🛡️ 자동 업로드 실행 상태 리셋
+      setIsAutoUploadRunning(false);
+    }
   };
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const previousStatusRef = useRef<string | undefined>(undefined);
@@ -151,18 +330,30 @@ export default function NewsVideoDetailPage() {
       (sv) => sv.status === "starting" || sv.status === "processing"
     );
 
-    // Add Scenes 중이거나 Regenerate 중이거나 처리 중이면 폴링
+    // Firebase 업로드 중인 씬이 있는지 확인
+    const hasUploadingScenes = uploadingScenes.size > 0;
+
+    // Add Scenes 중이거나 Regenerate 중이거나 처리 중이거나 개별 씬이 미완료 상태거나 업로드 중이면 폴링
     const shouldPoll =
       isRegeneratingRef.current ||
       currentStatus === "processing" ||
-      (hasIncompleteScenes && sceneVideos.length > 0);
+      hasIncompleteScenes ||
+      hasUploadingScenes;
 
     console.log("Polling check:", {
       isRegenerating: isRegeneratingRef.current,
       currentStatus,
       hasIncompleteScenes,
+      hasUploadingScenes,
       sceneVideosCount: sceneVideos.length,
       shouldPoll,
+      incompleteScenes: sceneVideos
+        .filter((sv) => sv.status === "starting" || sv.status === "processing")
+        .map((sv) => ({
+          sceneIndex: sv.sceneIndex,
+          status: sv.status,
+        })),
+      uploadingScenes: Array.from(uploadingScenes),
     });
 
     if (!shouldPoll) {
@@ -170,6 +361,12 @@ export default function NewsVideoDetailPage() {
         console.log("Stopping polling - no active processes");
         clearInterval(pollingRef.current);
         pollingRef.current = null;
+
+        // 🚀 폴링이 중단되면 자동 업로드 체크 (모든 씬이 완료된 상태)
+        setTimeout(() => {
+          console.log("⏰ 폴링 중단 후 5초 대기 완료 - 자동 업로드 실행");
+          triggerAutoUploadForCompletedScenes();
+        }, 5000); // 10초 → 5초로 변경
       }
       return;
     }
@@ -184,15 +381,58 @@ export default function NewsVideoDetailPage() {
       isRegenerating: isRegeneratingRef.current,
       currentStatus,
       hasIncompleteScenes,
+      hasUploadingScenes,
       sceneVideosCount: sceneVideos.length,
+      reason: isRegeneratingRef.current
+        ? "Regenerating"
+        : currentStatus === "processing"
+        ? "Video processing"
+        : hasIncompleteScenes
+        ? "Incomplete scenes"
+        : hasUploadingScenes
+        ? "Uploading scenes"
+        : "Unknown",
     });
 
     // 즉시 한 번 상태 확인
     const checkStatus = async () => {
       try {
+        console.log("🔄 상태 확인 시작...");
         const response = await fetch(`/api/video/news/status/${videoId}`);
         if (response.ok) {
           const data = await response.json();
+          console.log("📊 상태 확인 응답:", {
+            videoStatus: data.video.status,
+            sceneCount: data.video.scenes?.length || 0,
+            sceneVideosCount: data.sceneVideos?.length || 0,
+          });
+
+          // 씬 데이터 상세 로깅
+          if (data.video.scenes) {
+            console.log("🔍 씬 데이터 상세:");
+            data.video.scenes.forEach((scene: any, index: number) => {
+              console.log(`   Scene ${index + 1}:`, {
+                videoUrl: scene.videoUrl || "없음",
+                firebaseUrl: scene.firebaseUrl || "없음",
+                output: scene.output || "없음",
+              });
+            });
+          }
+
+          // sceneVideos 데이터도 로깅
+          if (data.sceneVideos) {
+            console.log("🔍 Scene Videos 데이터:");
+            data.sceneVideos.forEach((sv: any) => {
+              console.log(`   Scene ${sv.sceneIndex + 1}:`, {
+                status: sv.status,
+                replicateStatus: sv.replicateStatus || "unknown",
+                videoUrl: sv.videoUrl || "없음",
+                firebaseUrl: sv.firebaseUrl || "없음",
+                output: sv.output || "없음",
+              });
+            });
+          }
+
           console.log("Polling update:", data.video.status);
           setVideo(data.video);
 
@@ -205,19 +445,58 @@ export default function NewsVideoDetailPage() {
             (sv) => sv.status === "completed" || sv.status === "failed"
           );
 
-          // 완료되면 폴링 중단
+          // Firebase 업로드가 완료되었는지 확인
+          const allScenesUploaded = data.video.scenes?.every(
+            (scene: any) => !scene.videoUrl || scene.firebaseUrl
+          );
+
+          console.log("📊 완료 상태 확인:", {
+            allScenesCompleted,
+            allScenesUploaded,
+            sceneVideosStatus: updatedSceneVideos.map((sv) => sv.status),
+            videoStatus: data.video.status,
+            incompleteScenes: updatedSceneVideos
+              .filter(
+                (sv) => sv.status === "starting" || sv.status === "processing"
+              )
+              .map((sv) => ({
+                sceneIndex: sv.sceneIndex,
+                status: sv.status,
+              })),
+            scenesWithVideoUrl: data.video.scenes?.map(
+              (scene: any, index: number) => ({
+                index,
+                hasVideoUrl: !!scene.videoUrl,
+                hasFirebaseUrl: !!scene.firebaseUrl,
+              })
+            ),
+          });
+
+          // 모든 씬이 완료되고 모든 업로드가 완료되면 폴링 중단
           if (
-            (data.video.status === "completed" ||
-              data.video.status === "failed") &&
-            allScenesCompleted
+            allScenesCompleted &&
+            allScenesUploaded &&
+            uploadingScenes.size === 0
           ) {
+            console.log("✅ 모든 씬 완료 및 업로드 완료 - 폴링 중단");
             if (pollingRef.current) {
               clearInterval(pollingRef.current);
               pollingRef.current = null;
             }
             // Regenerate 완료 시 플래그 리셋
             isRegeneratingRef.current = false;
+
+            // 🚀 자동 Firebase 업로드 트리거 (이미 완료되었으므로 스킵)
+            console.log(
+              "✅ 모든 업로드가 이미 완료되었습니다. 자동 업로드 스킵"
+            );
           }
+        } else {
+          console.error(
+            "❌ 상태 확인 실패:",
+            response.status,
+            response.statusText
+          );
         }
       } catch (error) {
         console.error("Polling error:", error);
@@ -228,7 +507,7 @@ export default function NewsVideoDetailPage() {
     checkStatus();
 
     // 30초마다 상태 확인 (서버 부하 감소)
-    pollingRef.current = setInterval(checkStatus, 60000);
+    pollingRef.current = setInterval(checkStatus, 30000);
 
     return () => {
       if (pollingRef.current) {
@@ -236,7 +515,42 @@ export default function NewsVideoDetailPage() {
         pollingRef.current = null;
       }
     };
-  }, [video?.status, videoId]); // sceneVideos 의존성 제거
+  }, [video?.status, videoId, sceneVideos.length, uploadingScenes.size]); // uploadingScenes.size 의존성 추가
+
+  // 🚀 비디오 데이터 변경 시 자동 업로드 체크 (디바운싱 적용)
+  useEffect(() => {
+    if (video && user) {
+      console.log("🔄 비디오 데이터 변경 감지 - 자동 업로드 체크 예약");
+
+      // 비디오에 videoUrl이 있는 씬이 있는지 확인
+      const hasCompletedScenes = video.scenes.some((scene) => scene.videoUrl);
+
+      if (hasCompletedScenes) {
+        console.log("✅ 완료된 씬 발견 - 5초 후 자동 업로드 체크 예약");
+        // 디바운싱: 5초 후에만 실행
+        const timeoutId = setTimeout(() => {
+          console.log("⏰ 디바운싱 완료 - 자동 업로드 실행");
+          triggerAutoUploadForCompletedScenes();
+        }, 5000); // 5초 대기
+
+        return () => clearTimeout(timeoutId);
+      }
+    }
+  }, [video?.scenes, user]); // 씬 데이터가 변경될 때마다 체크
+
+  // 🚀 주기적 자동 업로드 체크 (30초마다 - 속도 조절)
+  useEffect(() => {
+    if (!video || !user) return;
+
+    const autoUploadInterval = setInterval(() => {
+      console.log("⏰ 주기적 자동 업로드 체크 시작...");
+      triggerAutoUploadForCompletedScenes();
+    }, 30000); // 30초마다 체크 (10초 → 30초로 변경)
+
+    return () => {
+      clearInterval(autoUploadInterval);
+    };
+  }, [video, user]);
 
   const loadVideo = async () => {
     try {
@@ -246,6 +560,12 @@ export default function NewsVideoDetailPage() {
         setVideo(videoData);
         // 씬 비디오 데이터도 함께 로드
         await loadSceneVideos();
+
+        // 🚀 비디오 로드 후 자동 업로드 체크
+        setTimeout(() => {
+          console.log("⏰ 비디오 로드 후 8초 대기 완료 - 자동 업로드 체크");
+          triggerAutoUploadForCompletedScenes();
+        }, 8000); // 1초 → 8초로 변경
       } else {
         setError("Video not found.");
       }
@@ -466,6 +786,19 @@ export default function NewsVideoDetailPage() {
 
         // 비디오 정보 새로고침
         await loadVideo();
+
+        // sceneVideos도 다시 로드하여 폴링이 제대로 작동하도록 함
+        await loadSceneVideos();
+
+        console.log("✅ Add Scene 완료 - 폴링 시작");
+        console.log(
+          "📊 현재 sceneVideos 상태:",
+          sceneVideos.map((sv) => ({
+            sceneIndex: sv.sceneIndex,
+            status: sv.status,
+            replicatePredictionId: sv.replicatePredictionId,
+          }))
+        );
       } else {
         const errorData = await response.json();
         console.error("API Error Response:", errorData);
@@ -731,120 +1064,16 @@ export default function NewsVideoDetailPage() {
     }
   };
 
-  // Firebase Storage 업로드 기능
-  const handleUploadToFirebase = async () => {
-    if (!video || !user) return;
-
-    try {
-      console.log("📤 Firebase Storage upload started...");
-
-      // 각 Scene에 대해 Firebase Storage 업로드
-      for (let i = 0; i < video.scenes.length; i++) {
-        const scene = video.scenes[i];
-        if (scene.videoUrl) {
-          console.log(
-            `📤 Scene ${i + 1} Firebase Storage upload: ${scene.videoUrl}`
-          );
-
-          const response = await fetch(`/api/video/news/status/${videoId}`);
-          if (response.ok) {
-            const data = await response.json();
-            console.log(
-              `✅ Scene ${i + 1} Firebase Storage upload completed:`,
-              data
-            );
-
-            // 업데이트된 Scene Info 확인
-            const updatedScene = data.video?.scenes?.[i];
-            if (updatedScene?.firebaseUrl) {
-              console.log(
-                `🔗 Scene ${i + 1} Firebase URL: ${updatedScene.firebaseUrl}`
-              );
-
-              // 비디오 데이터 업데이트
-              const updatedScenes = [...video.scenes];
-              updatedScenes[i] = {
-                ...updatedScenes[i],
-                videoUrl: updatedScene.firebaseUrl,
-                firebaseUrl: updatedScene.firebaseUrl,
-              } as any;
-              setVideo({ ...video, scenes: updatedScenes });
-            }
-          } else {
-            console.error(
-              `❌ Scene ${i + 1} Firebase Storage upload failed:`,
-              response.statusText
-            );
-          }
-        }
-      }
-
-      console.log("🎉 Firebase Storage upload completed!");
-
-      // 업데이트된 데이터 다시 로드
-      await loadVideo();
-    } catch (error) {
-      console.error("❌ Firebase Storage upload failed:", error);
-    }
+  // 🚀 자동 업로드 함수 (내부적으로만 사용)
+  const handleBulkAutoUpload = async () => {
+    // 이 함수는 더 이상 사용되지 않습니다. 자동 업로드로 대체되었습니다.
+    console.log("🚀 일괄 자동 업로드 호출됨");
   };
 
-  // 개별 Scene Firebase Storage 업로드 기능
-  const handleUploadSceneToFirebase = async (sceneIndex: number) => {
-    if (!video || !user) return;
-
-    try {
-      const scene = video.scenes[sceneIndex];
-      if (!scene.videoUrl) {
-        console.log(`❌ Scene ${sceneIndex + 1}: No video URL.`);
-        return;
-      }
-
-      console.log(
-        `📤 Scene ${sceneIndex + 1} Firebase Storage upload started...`
-      );
-      console.log(`📤 Original URL: ${scene.videoUrl}`);
-
-      const response = await fetch(`/api/video/news/status/${videoId}`);
-      if (response.ok) {
-        const data = await response.json();
-        console.log(
-          `✅ Scene ${sceneIndex + 1} Firebase Storage upload completed:`,
-          data
-        );
-
-        // 업데이트된 Scene Info 확인
-        const updatedScene = data.video?.scenes?.[sceneIndex];
-        if (updatedScene?.firebaseUrl) {
-          console.log(
-            `🔗 Scene ${sceneIndex + 1} Firebase URL: ${
-              updatedScene.firebaseUrl
-            }`
-          );
-
-          // 비디오 데이터 업데이트
-          const updatedScenes = [...video.scenes];
-          updatedScenes[sceneIndex] = {
-            ...updatedScenes[sceneIndex],
-            videoUrl: updatedScene.firebaseUrl,
-            firebaseUrl: updatedScene.firebaseUrl,
-          } as any;
-          setVideo({ ...video, scenes: updatedScenes });
-        }
-
-        // 업데이트된 데이터 다시 로드
-        await loadVideo();
-      } else {
-        console.error(
-          `❌ Scene ${sceneIndex + 1} Firebase Storage upload failed:`,
-          response.statusText
-        );
-      }
-    } catch (error) {
-      console.error(
-        `❌ Scene ${sceneIndex + 1} Firebase Storage upload failed:`,
-        error
-      );
-    }
+  // 🚀 자동 업로드 함수 (내부적으로만 사용)
+  const handleAutoUpload = async (sceneIndex: number) => {
+    // 이 함수는 더 이상 사용되지 않습니다. 자동 업로드로 대체되었습니다.
+    console.log(`🚀 Scene ${sceneIndex + 1} 자동 업로드 호출됨`);
   };
 
   // 삭제 관련 함수들
@@ -1022,6 +1251,39 @@ export default function NewsVideoDetailPage() {
                     Save
                   </Button>
                 </>
+              )}
+
+              {/* 자동 업로드 상태 표시 */}
+              {uploadingScenes.size > 0 && (
+                <div className="text-sm text-blue-600 bg-blue-50 px-3 py-2 rounded border border-blue-200">
+                  🚀 자동으로 Firebase에 업로드 중... ({uploadingScenes.size}{" "}
+                  scenes)
+                </div>
+              )}
+
+              {/* 자동 업로드 대기 상태 표시 */}
+              {video?.scenes.some(
+                (scene) => scene.videoUrl && !(scene as any).firebaseUrl
+              ) &&
+                uploadingScenes.size === 0 && (
+                  <div className="text-sm text-green-600 bg-green-50 px-3 py-2 rounded border border-green-200">
+                    ⏰ 자동 업로드 대기 중... 잠시 후 자동으로 실행됩니다
+                  </div>
+                )}
+
+              {/* 디버그용 수동 자동 업로드 버튼 (개발 중에만 표시) */}
+              {process.env.NODE_ENV === "development" && (
+                <Button
+                  onClick={() => {
+                    console.log("🔧 디버그: 수동 자동 업로드 트리거");
+                    triggerAutoUploadForCompletedScenes();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100"
+                >
+                  🔧 Debug: Trigger Auto Upload
+                </Button>
               )}
 
               <Button
@@ -1202,6 +1464,18 @@ export default function NewsVideoDetailPage() {
                       placeholder="Please enter narration"
                     />
                   </div>
+
+                  {/* 자동 업로드 상태 표시 */}
+                  <div className="mt-2">
+                    <AutoUploadStatus
+                      scene={scene}
+                      sceneIndex={index}
+                      isUploading={uploadingScenes.has(index)}
+                    />
+                  </div>
+
+                  {/* Firebase 업로드 상태 디버깅 */}
+                  <FirebaseStatusDebug scene={scene} sceneIndex={index} />
                 </div>
               </div>
             ))}

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase-admin";
 import { getUserFromToken } from "@/lib/auth";
-import { getStorage } from "firebase-admin/storage";
+import { uploadReplicateVideoToFirebase } from "@/lib/utils/firebaseStorage";
 
 export async function GET(
   request: NextRequest,
@@ -64,6 +64,14 @@ export async function GET(
           sceneVideo.status === "processing"
         ) {
           try {
+            console.log(
+              `🔍 Scene ${sceneVideo.sceneIndex + 1} Replicate 상태 확인:`
+            );
+            console.log(
+              `   🆔 Prediction ID: ${sceneVideo.replicatePredictionId}`
+            );
+            console.log(`   📊 현재 상태: ${sceneVideo.status}`);
+
             // Replicate API에서 상태 확인
             const replicateResponse = await fetch(
               `https://api.replicate.com/v1/predictions/${sceneVideo.replicatePredictionId}`,
@@ -74,8 +82,21 @@ export async function GET(
               }
             );
 
+            console.log(
+              `📡 Replicate API 응답 상태: ${replicateResponse.status} ${replicateResponse.statusText}`
+            );
+
             if (replicateResponse.ok) {
               const replicateData = await replicateResponse.json();
+              console.log(`📊 Replicate 응답 데이터:`, {
+                id: replicateData.id,
+                status: replicateData.status,
+                output: replicateData.output,
+                error: replicateData.error,
+                created_at: replicateData.created_at,
+                started_at: replicateData.started_at,
+                completed_at: replicateData.completed_at,
+              });
 
               // 상태 업데이트
               const updateData: any = {
@@ -88,57 +109,29 @@ export async function GET(
                 replicateData.status === "succeeded" &&
                 replicateData.output
               ) {
+                console.log(
+                  `✅ Scene ${sceneVideo.sceneIndex + 1} Replicate 완료!`
+                );
+                console.log(`   🔗 Output URL: ${replicateData.output}`);
+
                 updateData.videoUrl = replicateData.output;
 
                 // Firebase Storage에 직접 업로드
                 try {
                   console.log(
-                    `📥 Replicate에서 비디오 다운로드 시작: ${replicateData.output}`
+                    `📤 Scene ${
+                      sceneVideo.sceneIndex + 1
+                    } Firebase Storage 업로드 시작...`
+                  );
+                  const downloadURL = await uploadReplicateVideoToFirebase(
+                    replicateData.output,
+                    user.uid,
+                    videoId,
+                    sceneVideo.sceneIndex
                   );
 
-                  // Replicate URL에서 비디오 다운로드
-                  const videoResponse = await fetch(replicateData.output);
-                  if (!videoResponse.ok) {
-                    throw new Error(
-                      `Failed to fetch video: ${videoResponse.statusText}`
-                    );
-                  }
-
-                  const videoBuffer = await videoResponse.arrayBuffer();
-                  console.log(
-                    `📦 비디오 버퍼 크기: ${videoBuffer.byteLength} bytes`
-                  );
-
-                  // Firebase Storage 경로 설정
-                  const storagePath = `users/${
-                    user.uid
-                  }/newsVideo/${videoId}/scene-${
-                    sceneVideo.sceneIndex + 1
-                  }.mp4`;
-
-                  // Firebase Admin Storage 사용
-                  const adminStorage = getStorage();
-                  const bucket = adminStorage.bucket();
-                  const file = bucket.file(storagePath);
-
-                  // Firebase Storage에 업로드
-                  console.log(
-                    `📤 Firebase Storage 업로드 시작: ${storagePath}`
-                  );
-                  await file.save(Buffer.from(videoBuffer), {
-                    metadata: {
-                      contentType: "video/mp4",
-                    },
-                  });
-
-                  // Signed URL 생성 (makePublic 대신)
-                  const [signedUrl] = await file.getSignedUrl({
-                    action: "read",
-                    expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7일
-                  });
-
-                  const downloadURL = signedUrl;
-
+                  // output 필드에 원본 Replicate URL 저장
+                  updateData.output = replicateData.output;
                   updateData.firebaseUrl = downloadURL;
                   updateData.videoUrl = downloadURL; // videoUrl도 Firebase URL로 업데이트
 
@@ -148,8 +141,6 @@ export async function GET(
                       sceneVideo.sceneIndex + 1
                     } Firebase Storage 업로드 완료:`
                   );
-                  console.log(`   📁 경로: ${storagePath}`);
-                  console.log(`   🔗 Firebase URL: ${downloadURL}`);
                   console.log(
                     `   📊 원본 Replicate URL: ${replicateData.output}`
                   );
@@ -165,13 +156,6 @@ export async function GET(
                     } Firebase Storage 업로드 실패:`
                   );
                   console.log(
-                    `   📁 시도한 경로: users/${
-                      user.uid
-                    }/newsVideos/${videoId}/scene-${
-                      sceneVideo.sceneIndex + 1
-                    }.mp4`
-                  );
-                  console.log(
                     `   🔗 원본 Replicate URL: ${replicateData.output}`
                   );
                   console.log(
@@ -182,13 +166,46 @@ export async function GET(
                     }`
                   );
                   console.log(`   ─────────────────────────────────────────`);
+
+                  // 실패 시 원본 Replicate URL을 그대로 유지
+                  updateData.output = replicateData.output;
+                  updateData.videoUrl = replicateData.output;
+                  console.log(
+                    `🔄 Scene ${
+                      sceneVideo.sceneIndex + 1
+                    } 원본 Replicate URL 유지: ${replicateData.output}`
+                  );
                 }
 
                 // Replicate "succeeded" → 앱 내부 "completed"로 변경
                 updateData.status = "completed";
+              } else if (replicateData.status === "failed") {
+                console.log(
+                  `❌ Scene ${sceneVideo.sceneIndex + 1} Replicate 실패:`,
+                  replicateData.error
+                );
+                updateData.error = replicateData.error;
+              } else {
+                console.log(
+                  `⏳ Scene ${sceneVideo.sceneIndex + 1} 아직 처리 중: ${
+                    replicateData.status
+                  }`
+                );
               }
 
               // Firestore 업데이트
+              console.log(
+                `📝 Scene ${sceneVideo.sceneIndex + 1} Firestore 업데이트:`,
+                {
+                  sceneIndex: sceneVideo.sceneIndex,
+                  oldStatus: sceneVideo.status,
+                  newStatus: updateData.status,
+                  hasVideoUrl: !!updateData.videoUrl,
+                  hasFirebaseUrl: !!updateData.firebaseUrl,
+                  hasOutput: !!updateData.output,
+                }
+              );
+
               await db
                 .collection("users")
                 .doc(user.uid)
@@ -198,13 +215,30 @@ export async function GET(
                 .doc(sceneVideo.id)
                 .update(updateData);
 
+              console.log(
+                `✅ Scene ${sceneVideo.sceneIndex + 1} Firestore 업데이트 완료`
+              );
+
               return {
                 ...sceneVideo,
                 ...updateData,
               };
+            } else {
+              console.error(
+                `❌ Scene ${
+                  sceneVideo.sceneIndex + 1
+                } Replicate API 요청 실패:`,
+                replicateResponse.status,
+                replicateResponse.statusText
+              );
+              const errorText = await replicateResponse.text();
+              console.error("에러 응답:", errorText);
             }
           } catch (error) {
-            console.error("Error checking scene video status:", error);
+            console.error(
+              `❌ Scene ${sceneVideo.sceneIndex + 1} 상태 확인 중 에러:`,
+              error
+            );
           }
         }
 
@@ -213,6 +247,16 @@ export async function GET(
     );
 
     // 전체 비디오 상태 확인
+    console.log("🔍 전체 비디오 상태 확인 시작...");
+    console.log(
+      "📊 개별 씬 상태:",
+      updatedSceneVideos.map((sv) => ({
+        sceneIndex: sv.sceneIndex,
+        status: sv.status,
+        replicateStatus: sv.replicateStatus || "unknown",
+      }))
+    );
+
     const allCompleted = updatedSceneVideos.every(
       (scene) => scene.status === "completed"
     );
@@ -227,8 +271,28 @@ export async function GET(
       overallStatus = "failed";
     }
 
+    console.log("📊 전체 비디오 상태 업데이트:", {
+      currentStatus: videoData.status,
+      newStatus: overallStatus,
+      allCompleted,
+      anyFailed,
+      sceneCount: updatedSceneVideos.length,
+      completedCount: updatedSceneVideos.filter((s) => s.status === "completed")
+        .length,
+      failedCount: updatedSceneVideos.filter((s) => s.status === "failed")
+        .length,
+      processingCount: updatedSceneVideos.filter(
+        (s) => s.status === "processing"
+      ).length,
+      startingCount: updatedSceneVideos.filter((s) => s.status === "starting")
+        .length,
+    });
+
     // 전체 비디오 상태 업데이트
     if (overallStatus !== videoData.status) {
+      console.log(
+        `🔄 전체 비디오 상태 업데이트: ${videoData.status} → ${overallStatus}`
+      );
       await db
         .collection("users")
         .doc(user.uid)
@@ -238,14 +302,29 @@ export async function GET(
           status: overallStatus,
           updatedAt: new Date(),
         });
+      console.log("✅ 전체 비디오 상태 업데이트 완료");
+    } else {
+      console.log("ℹ️ 전체 비디오 상태 변경 없음");
     }
 
     // Scene 비디오 URL들을 메인 비디오 문서에 업데이트
+    console.log("📝 메인 비디오 문서 업데이트 시작...");
+    console.log(
+      "🔍 현재 씬 데이터:",
+      videoData.scenes.map((scene, index) => ({
+        scene: index + 1,
+        videoUrl: scene.videoUrl || "없음",
+        firebaseUrl: scene.firebaseUrl || "없음",
+        output: scene.output || "없음",
+      }))
+    );
+
     const updatedScenes = videoData.scenes.map((scene: any, index: number) => {
       const sceneVideo = updatedSceneVideos.find(
         (sv) => sv.sceneIndex === index
       );
-      return {
+
+      const updatedScene = {
         ...scene,
         videoUrl:
           sceneVideo?.firebaseUrl ||
@@ -253,9 +332,24 @@ export async function GET(
           scene.videoUrl ||
           "",
         firebaseUrl: sceneVideo?.firebaseUrl || scene.firebaseUrl || "",
+        output: sceneVideo?.output || scene.output || "",
       };
+
+      console.log(`Scene ${index + 1} 업데이트:`, {
+        sceneIndex: index,
+        hasSceneVideo: !!sceneVideo,
+        sceneVideoStatus: sceneVideo?.status,
+        sceneVideoFirebaseUrl: sceneVideo?.firebaseUrl,
+        sceneVideoOutput: sceneVideo?.output,
+        finalVideoUrl: updatedScene.videoUrl,
+        finalFirebaseUrl: updatedScene.firebaseUrl,
+        finalOutput: updatedScene.output,
+      });
+
+      return updatedScene;
     });
 
+    console.log("📝 Firestore 업데이트 실행...");
     await db
       .collection("users")
       .doc(user.uid)
@@ -264,6 +358,15 @@ export async function GET(
       .update({
         scenes: updatedScenes,
       });
+
+    // 디버깅: 업데이트된 씬 데이터 로깅
+    console.log("🔍 업데이트된 씬 데이터:");
+    updatedScenes.forEach((scene, index) => {
+      console.log(`   Scene ${index + 1}:`);
+      console.log(`     - firebaseUrl: ${scene.firebaseUrl || "없음"}`);
+      console.log(`     - output: ${scene.output || "없음"}`);
+      console.log(`     - videoUrl: ${scene.videoUrl || "없음"}`);
+    });
 
     // 전체 완료 시 요약 로깅
     if (allCompleted) {
