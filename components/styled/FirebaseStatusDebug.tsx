@@ -51,7 +51,7 @@ export default function FirebaseStatusDebug({
       className={`mt-2 p-2 ${statusInfo.bgColor} rounded border ${statusInfo.borderColor}`}
     >
       <div className="text-xs font-medium text-gray-800 mb-1">
-        🔍 Scene {sceneIndex + 1} 디버깅 정보
+        Scene {sceneIndex + 1} debuging info
       </div>
       <div className="text-xs space-y-1">
         <div className="flex items-center gap-2">
@@ -61,7 +61,7 @@ export default function FirebaseStatusDebug({
               scene.firebaseUrl ? "text-green-600" : "text-gray-400"
             }`}
           >
-            {scene.firebaseUrl || "없음"}
+            {scene.firebaseUrl ? "링크있음" : "없음"}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -69,7 +69,7 @@ export default function FirebaseStatusDebug({
           <span
             className={`${scene.output ? "text-orange-600" : "text-gray-400"}`}
           >
-            {scene.output || "없음"}
+            {scene.output ? "링크있음" : "없음"}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -77,7 +77,7 @@ export default function FirebaseStatusDebug({
           <span
             className={`${scene.videoUrl ? "text-blue-600" : "text-gray-400"}`}
           >
-            {scene.videoUrl || "없음"}
+            {scene.videoUrl ? "링크있음" : "없음"}
           </span>
         </div>
       </div>

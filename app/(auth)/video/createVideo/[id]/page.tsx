@@ -1271,21 +1271,6 @@ export default function NewsVideoDetailPage() {
                   </div>
                 )}
 
-              {/* 디버그용 수동 자동 업로드 버튼 (개발 중에만 표시) */}
-              {process.env.NODE_ENV === "development" && (
-                <Button
-                  onClick={() => {
-                    console.log("🔧 디버그: 수동 자동 업로드 트리거");
-                    triggerAutoUploadForCompletedScenes();
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100"
-                >
-                  🔧 Debug: Trigger Auto Upload
-                </Button>
-              )}
-
               <Button
                 onClick={handleAddScene}
                 variant="primary"

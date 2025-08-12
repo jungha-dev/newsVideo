@@ -26,7 +26,6 @@ export default function AutoUploadStatus({
   if (hasFirebaseUrl) {
     return (
       <div className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded flex items-center gap-1">
-        <span>✅</span>
         <span>Firebase Ready</span>
       </div>
     );
@@ -35,7 +34,6 @@ export default function AutoUploadStatus({
   if (needsUpload) {
     return (
       <div className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded flex items-center gap-1">
-        <span>📤</span>
         <span>자동 업로드 대기 중...</span>
       </div>
     );
