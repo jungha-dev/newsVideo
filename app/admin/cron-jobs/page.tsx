@@ -14,6 +14,8 @@ export default function CronJobsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [debugLoading, setDebugLoading] = useState(false);
 
   // 관리자 권한 확인 (users 컬렉션에서 role 확인)
   useEffect(() => {
@@ -33,6 +35,8 @@ export default function CronJobsPage() {
           if (userData.role === "superadmin") {
             setIsSuperAdmin(true);
             console.log("✅ 슈퍼 관리자 권한 확인됨");
+            // 권한 확인 후 디버깅 정보 로드
+            fetchDebugInfo();
           } else {
             setIsSuperAdmin(false);
             console.log("❌ 슈퍼 관리자 권한 없음, role:", userData.role);
@@ -51,6 +55,22 @@ export default function CronJobsPage() {
 
     fetchRole();
   }, [user?.uid]);
+
+  // 디버깅 정보 가져오기
+  const fetchDebugInfo = async () => {
+    try {
+      setDebugLoading(true);
+      const response = await fetch("/api/video/news/auto-upload-cron");
+      if (response.ok) {
+        const data = await response.json();
+        setDebugInfo(data.debug);
+      }
+    } catch (err) {
+      console.error("Failed to fetch debug info:", err);
+    } finally {
+      setDebugLoading(false);
+    }
+  };
 
   // 로딩 중이거나 권한이 없는 경우
   if (isLoading) {
@@ -106,6 +126,11 @@ export default function CronJobsPage() {
 
         setLastRun(new Date().toLocaleString("ko-KR"));
         setLastRunStats(data.stats);
+
+        // 자동 업로드 완료 후 디버깅 정보 새로고침
+        setTimeout(() => {
+          fetchDebugInfo();
+        }, 2000); // 2초 후 새로고침
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || "Unknown error");
@@ -230,7 +255,60 @@ export default function CronJobsPage() {
                 >
                   🔍 엔드포인트 테스트
                 </Button>
+
+                <Button
+                  onClick={fetchDebugInfo}
+                  disabled={debugLoading}
+                  variant="outline"
+                  className="min-w-[150px]"
+                >
+                  {debugLoading ? "🔄 로딩 중..." : "📊 상태 새로고침"}
+                </Button>
               </div>
+
+              {/* 디버깅 정보 표시 */}
+              {debugInfo && (
+                <div className="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <h4 className="font-medium text-purple-900 mb-3">
+                    📊 현재 비디오 상태 분석
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {debugInfo.totalVideos}
+                      </div>
+                      <div className="text-purple-700">전체 비디오</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-yellow-600">
+                        {debugInfo.processingVideos}
+                      </div>
+                      <div className="text-yellow-700">처리 중</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">
+                        {debugInfo.completedVideos}
+                      </div>
+                      <div className="text-green-700">완료됨</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-red-600">
+                        {debugInfo.failedVideos}
+                      </div>
+                      <div className="text-red-700">실패</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {debugInfo.videosWithReplicateOnly}
+                      </div>
+                      <div className="text-blue-700">업로드 대상</div>
+                    </div>
+                  </div>
+                  <div className="mt-3 p-3 bg-purple-100 rounded text-sm text-purple-800">
+                    💡 {debugInfo.message}
+                  </div>
+                </div>
+              )}
 
               <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                 <h4 className="font-medium text-yellow-900 mb-2">

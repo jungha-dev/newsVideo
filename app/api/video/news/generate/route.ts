@@ -92,6 +92,15 @@ export async function POST(request: NextRequest) {
     const now = new Date();
     const videoId = existingVideoId || uuidv4();
 
+    // 환경 변수 확인
+    if (!process.env.REPLICATE_API_TOKEN) {
+      console.error("REPLICATE_API_TOKEN not configured");
+      return NextResponse.json(
+        { error: "Replicate API token not configured" },
+        { status: 500 }
+      );
+    }
+
     if (isAddScene && existingVideoId) {
       // 기존 비디오에 Add Scenes
       const existingVideoRef = db
@@ -245,12 +254,23 @@ export async function POST(request: NextRequest) {
       };
 
       // Firestore에 Save
-      await db
-        .collection("users")
-        .doc(uid)
-        .collection("newsVideo")
-        .doc(videoId)
-        .set(newsVideoData);
+      try {
+        console.log("💾 Firestore에 비디오 데이터 저장 시작...");
+        await db
+          .collection("users")
+          .doc(uid)
+          .collection("newsVideo")
+          .doc(videoId)
+          .set(newsVideoData);
+        console.log("✅ Firestore에 비디오 데이터 저장 완료");
+      } catch (firestoreError) {
+        console.error("❌ Firestore 저장 실패:", firestoreError);
+        const errorMessage =
+          firestoreError instanceof Error
+            ? firestoreError.message
+            : String(firestoreError);
+        throw new Error(`Firestore save failed: ${errorMessage}`);
+      }
 
       // 각 Scene에 대해 비디오 생성
       const videoPromises = scenes.map(async (scene, index) => {
@@ -345,9 +365,24 @@ export async function POST(request: NextRequest) {
       });
     }
   } catch (error) {
-    console.error("Error generating news video:", error);
+    console.error("❌ 비디오 생성 에러:", error);
+
+    // 에러 타입별 상세 로깅
+    if (error instanceof Error) {
+      console.error("에러 메시지:", error.message);
+      console.error("에러 스택:", error.stack);
+    }
+
+    // 사용자에게 반환할 에러 메시지
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     return NextResponse.json(
-      { error: "Failed to generate news video" },
+      {
+        error: "Failed to generate news video",
+        details: errorMessage,
+        timestamp: new Date().toISOString(),
+      },
       { status: 500 }
     );
   }

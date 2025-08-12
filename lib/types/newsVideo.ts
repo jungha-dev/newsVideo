@@ -1,3 +1,6 @@
+// Firestore Timestamp 타입을 위한 유니온 타입
+export type FirestoreDate = Date | { toDate(): Date } | string | number;
+
 export interface NewsVideo {
   id: string;
   uid: string;
@@ -16,8 +19,8 @@ export interface NewsVideo {
     firebaseUrl?: string;
     output?: string; // 원본 Replicate URL
   }[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: FirestoreDate;
+  updatedAt: FirestoreDate;
   status: "processing" | "completed" | "failed";
   duration?: number;
   aspectRatio?: string;

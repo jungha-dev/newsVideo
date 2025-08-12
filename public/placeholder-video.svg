@@ -1,0 +1,17 @@
+<svg width="160" height="90" viewBox="0 0 160 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="160" height="90" fill="#f3f4f6"/>
+  <rect x="2" y="2" width="156" height="86" rx="8" fill="#e5e7eb" stroke="#d1d5db" stroke-width="2"/>
+  
+  <!-- 비디오 플레이 아이콘 -->
+  <circle cx="80" cy="45" r="20" fill="#6b7280"/>
+  <polygon points="75,35 75,55 95,45" fill="white"/>
+  
+  <!-- 비디오 표시선 -->
+  <rect x="20" y="65" width="120" height="2" fill="#9ca3af"/>
+  <rect x="20" y="68" width="80" height="2" fill="#9ca3af"/>
+  <rect x="20" y="71" width="100" height="2" fill="#9ca3af"/>
+  
+  <!-- 비디오 아이콘 -->
+  <rect x="30" y="25" width="100" height="40" rx="4" fill="#d1d5db"/>
+  <polygon points="65,35 65,55 85,45" fill="#6b7280"/>
+</svg>

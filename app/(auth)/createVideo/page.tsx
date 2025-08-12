@@ -417,9 +417,21 @@ Please compose the video based on the following blog content:
           setError("");
         } catch (err) {
           console.error("News video generation error:", err);
-          setError(
-            err instanceof Error ? err.message : "Video generation failed."
-          );
+
+          // 서버에서 반환된 상세 에러 정보 확인
+          let errorMessage = "Video generation failed.";
+          if (err instanceof Error) {
+            errorMessage = err.message;
+          }
+
+          // 에러 로그에 상세 정보 추가
+          console.error("에러 상세 정보:", {
+            message: errorMessage,
+            error: err,
+            timestamp: new Date().toISOString(),
+          });
+
+          setError(errorMessage);
         } finally {
           setGeneratingVideos(false);
         }

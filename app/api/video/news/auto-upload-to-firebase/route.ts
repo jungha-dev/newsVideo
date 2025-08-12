@@ -5,13 +5,19 @@ import { getVideoGeneratePath, createSafeFilename } from "@/utils/storagePaths";
 
 export async function POST(request: NextRequest) {
   try {
-    const { videoId, sceneIndex, replicateUrl, userId } = await request.json();
+    const { videoId, sceneIndex, replicateUrl, userId, autoUpload } =
+      await request.json();
 
     if (!videoId || sceneIndex === undefined || !replicateUrl || !userId) {
       return NextResponse.json(
         { error: "필수 파라미터가 누락되었습니다." },
         { status: 400 }
       );
+    }
+
+    // autoUpload가 true인 경우 웹훅과 동일한 로직으로 처리
+    if (autoUpload) {
+      console.log(`🔄 Scene ${sceneIndex + 1} 자동 업로드 모드로 실행`);
     }
 
     console.log(`📤 Scene ${sceneIndex + 1} 자동 Firebase 업로드 시작:`, {

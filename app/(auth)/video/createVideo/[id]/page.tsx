@@ -158,9 +158,9 @@ export default function NewsVideoDetailPage() {
     setIsAutoUploadRunning(true);
 
     try {
-      // 🛡️ 추가 안전 대기 시간 (3초)
-      console.log("⏰ 안전 대기 시간 3초...");
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      // 🛡️ 추가 안전 대기 시간 (1초)
+      console.log("⏰ 안전 대기 시간 1초...");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       console.log("✅ 안전 대기 시간 완료 - 업로드 시작");
 
       // 각 씬을 자동으로 업로드 (아직 Firebase에 업로드되지 않은 씬만)
@@ -364,9 +364,9 @@ export default function NewsVideoDetailPage() {
 
         // 🚀 폴링이 중단되면 자동 업로드 체크 (모든 씬이 완료된 상태)
         setTimeout(() => {
-          console.log("⏰ 폴링 중단 후 5초 대기 완료 - 자동 업로드 실행");
+          console.log("⏰ 폴링 중단 후 2초 대기 완료 - 자동 업로드 실행");
           triggerAutoUploadForCompletedScenes();
-        }, 5000); // 10초 → 5초로 변경
+        }, 2000); // 5초 → 2초로 변경
       }
       return;
     }
@@ -506,8 +506,8 @@ export default function NewsVideoDetailPage() {
     // 즉시 실행
     checkStatus();
 
-    // 30초마다 상태 확인 (서버 부하 감소)
-    pollingRef.current = setInterval(checkStatus, 30000);
+    // 15초마다 상태 확인 (서버 부하 감소)
+    pollingRef.current = setInterval(checkStatus, 15000);
 
     return () => {
       if (pollingRef.current) {
@@ -527,11 +527,11 @@ export default function NewsVideoDetailPage() {
 
       if (hasCompletedScenes) {
         console.log("✅ 완료된 씬 발견 - 5초 후 자동 업로드 체크 예약");
-        // 디바운싱: 5초 후에만 실행
+        // 디바운싱: 2초 후에만 실행
         const timeoutId = setTimeout(() => {
           console.log("⏰ 디바운싱 완료 - 자동 업로드 실행");
           triggerAutoUploadForCompletedScenes();
-        }, 5000); // 5초 대기
+        }, 2000); // 2초 대기
 
         return () => clearTimeout(timeoutId);
       }
@@ -545,7 +545,7 @@ export default function NewsVideoDetailPage() {
     const autoUploadInterval = setInterval(() => {
       console.log("⏰ 주기적 자동 업로드 체크 시작...");
       triggerAutoUploadForCompletedScenes();
-    }, 30000); // 30초마다 체크 (10초 → 30초로 변경)
+    }, 15000); // 15초마다 체크 (30초 → 15초로 변경)
 
     return () => {
       clearInterval(autoUploadInterval);
@@ -561,11 +561,9 @@ export default function NewsVideoDetailPage() {
         // 씬 비디오 데이터도 함께 로드
         await loadSceneVideos();
 
-        // 🚀 비디오 로드 후 자동 업로드 체크
-        setTimeout(() => {
-          console.log("⏰ 비디오 로드 후 8초 대기 완료 - 자동 업로드 체크");
-          triggerAutoUploadForCompletedScenes();
-        }, 8000); // 1초 → 8초로 변경
+        // 🚀 즉시 자동 업로드 체크 (8초 대기 제거)
+        console.log("⏰ 비디오 로드 완료 - 즉시 자동 업로드 체크 시작");
+        triggerAutoUploadForCompletedScenes();
       } else {
         setError("Video not found.");
       }
