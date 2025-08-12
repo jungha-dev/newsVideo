@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/video/news/auto-upload-cron",
+      "schedule": "0 */6 * * *"
+    }
+  ]
+}
