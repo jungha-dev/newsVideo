@@ -34,9 +34,9 @@ export async function uploadReplicateVideoToFirebase(
     const videoBuffer = await videoResponse.arrayBuffer();
     console.log(`📦 비디오 버퍼 크기: ${videoBuffer.byteLength} bytes`);
 
-    // Firebase Storage 경로 설정 (video_1.mp4, video_2.mp4 형태)
-    const fileName = `video_${sceneIndex + 1}.mp4`;
-    const storagePath = `users/${userId}/newsVideo/${videoId}/${fileName}`;
+    // Firebase Storage 경로 설정 (scene-1.mp4, scene-2.mp4 형태)
+    const fileName = `scene-${sceneIndex + 1}.mp4`;
+    const storagePath = `users/${userId}/newsVideos/${videoId}/${fileName}`;
 
     console.log("🔧 Firebase Storage 설정 중...");
     // Firebase Admin Storage 사용
@@ -60,10 +60,10 @@ export async function uploadReplicateVideoToFirebase(
     console.log("✅ 파일 업로드 완료");
 
     // Uniform Bucket-Level Access가 활성화되어 있으므로 서명된 URL 생성
-    // 1년간 유효한 서명된 URL 생성
+    // 10년간 유효한 서명된 URL 생성
     const [signedUrl] = await file.getSignedUrl({
       action: "read",
-      expires: Date.now() + 365 * 24 * 60 * 60 * 1000, // 1년
+      expires: Date.now() + 10 * 365 * 24 * 60 * 60 * 1000, // 10년
     });
 
     console.log(`✅ Firebase Storage 업로드 완료:`);

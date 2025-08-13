@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { storage } from "@/lib/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getVideoGeneratePath, createSafeFilename } from "@/utils/storagePaths";
+import { getStorage } from "firebase-admin/storage";
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,42 +35,46 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Firebase Storage 경로 생성
-    const filename = createSafeFilename(
-      `scene_${sceneIndex + 1}_${videoId}`,
-      "replicate"
-    );
-    const storagePath = getVideoGeneratePath({
-      userId,
-      filename,
-      category: "replicate",
-    });
+    const storagePath = `users/${userId}/newsVideos/${videoId}/scene-${
+      sceneIndex + 1
+    }.mp4`;
 
     console.log(`📁 Firebase Storage 경로: ${storagePath}`);
 
-    // Firebase Storage에 업로드
-    const storageRef = ref(storage, storagePath);
-    const snapshot = await uploadBytes(storageRef, buffer);
-    const downloadURL = await getDownloadURL(snapshot.ref);
+    // Firebase Admin Storage에 업로드
+    const adminStorage = getStorage();
+    const bucket = adminStorage.bucket();
+    const storageFile = bucket.file(storagePath);
+
+    await storageFile.save(buffer, {
+      metadata: {
+        contentType: "video/mp4",
+      },
+    });
+
+    console.log("Upload completed");
+
+    // 서명된 URL 생성 (10년간 유효)
+    const [signedUrl] = await storageFile.getSignedUrl({
+      action: "read",
+      expires: Date.now() + 10 * 365 * 24 * 60 * 60 * 1000,
+    });
 
     console.log(`✅ Scene ${sceneIndex + 1} Firebase 업로드 완료:`, {
       originalUrl: replicateUrl,
-      firebaseUrl: downloadURL,
+      firebaseUrl: signedUrl,
       storagePath,
     });
 
     return NextResponse.json({
       success: true,
-      firebaseUrl: downloadURL,
-      storagePath,
-      originalUrl: replicateUrl,
+      firebaseUrl: signedUrl,
+      message: "Auto upload completed successfully",
     });
   } catch (error) {
-    console.error("자동 Firebase 업로드 에러:", error);
+    console.error("Auto upload error:", error);
     return NextResponse.json(
-      {
-        error: "자동 Firebase 업로드에 실패했습니다.",
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { error: "자동 업로드에 실패했습니다." },
       { status: 500 }
     );
   }
