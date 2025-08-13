@@ -298,7 +298,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                     {previewUrls[index] && (
                       <img
                         src={previewUrls[index]}
-                        alt={`미리보기 ${index + 1}`}
+                        alt={`preview ${index + 1}`}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           console.error(

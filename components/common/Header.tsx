@@ -17,36 +17,36 @@ type MenuGroup = {
 };
 
 const MENUS: MenuGroup[] = [
-  // {
-  //   id: "image",
-  //   label: "Image",
-  //   items: [
-  //     { href: "/image/charaters", label: "Create" },
-  //     { href: "/image/generated-img", label: "CharacterList" },
-  //   ],
-  // },
-  // {
-  //   id: "video",
-  //   label: "Video",
-  //   items: [
-  //     { href: "/video/multi-generate", label: "Generate" },
-  //     {
-  //       href: "/video/kling-v1-6-pro/connected-videos",
-  //       label: "Connected Videos",
-  //     },
-  //     { href: "/video/merge", label: "Merge" },
-  //     { href: "/video/my-create/video-group", label: "My Create" },
-  //     { href: "/video/news", label: "News Videos" },
-  //   ],
-  // },
-  // {
-  //   id: "tools",
-  //   label: "Tools",
-  //   items: [
-  //     { href: "/crawler", label: "Crawler" },
-  //     { href: "/news", label: "News" },
-  //   ],
-  // },
+  {
+    id: "image",
+    label: "Image",
+    items: [
+      { href: "/image/charaters", label: "Create" },
+      { href: "/image/generated-img", label: "CharacterList" },
+    ],
+  },
+  {
+    id: "video",
+    label: "Video",
+    items: [
+      { href: "/video/multi-generate", label: "Generate" },
+      {
+        href: "/video/kling-v1-6-pro/connected-videos",
+        label: "Connected Videos",
+      },
+      { href: "/video/merge", label: "Merge" },
+      { href: "/video/my-create/video-group", label: "My Create" },
+      { href: "/video/news", label: "News Videos" },
+    ],
+  },
+  {
+    id: "tools",
+    label: "Tools",
+    items: [
+      { href: "/crawler", label: "Crawler" },
+      { href: "/news", label: "News" },
+    ],
+  },
 ];
 
 // 단순 링크 메뉴 (드롭다운 없음)
@@ -66,6 +66,21 @@ const ADMIN_LINKS = [
   {
     href: "/admin/users",
     label: "Admin Menu",
+  },
+  {
+    href: "/admin/videos",
+    label: "Admin Video",
+  },
+];
+
+const ADMIN_LINK: MenuGroup[] = [
+  {
+    id: "Admin",
+    label: "Admin",
+    items: [
+      { href: "/admin/users", label: "Admin Menu" },
+      { href: "/admin/videos", label: "Admin Video" },
+    ],
   },
 ];
 
@@ -182,68 +197,14 @@ export default function Header() {
 
           {/* ───── 네비게이션 메뉴 ───── */}
           <div className="flex gap-6">
-            {/* 드롭다운 메뉴들 */}
-            {MENUS.map(({ id, label, items }) => (
-              <div
-                key={id}
-                className="relative"
-                onMouseEnter={() => toggleMenu(id, true)}
-                onMouseLeave={() => toggleMenu(id, false)}
-              >
-                <button
-                  className={`cursor-pointer relative py-5 transition-colors flex items-center gap-1 ${
-                    items.some((item) => isActive(item.href))
-                      ? "text-black font-medium"
-                      : "text-gray-600 hover:text-black"
-                  }`}
-                >
-                  {label}
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                  {items.some((item) => isActive(item.href)) && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
-                  )}
-                </button>
-
-                {openMenu === id && (
-                  <div className="absolute top-full left-0 w-48 bg-white border border-gray-200 rounded-lg  z-50">
-                    {items.map(({ href, label }) => (
-                      <Link
-                        key={href}
-                        href={href}
-                        className={`block px-4 py-3 hover:bg-gray-50 transition-colors ${
-                          isActive(href)
-                            ? "bg-gray-50 font-medium text-black"
-                            : "text-gray-700"
-                        }`}
-                      >
-                        {label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {/* 단순 링크 메뉴들 */}
+            {/* 슈퍼관리자 전용 메뉴 */}
             {SIMPLE_LINKS.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
                 className={`relative py-5 transition-colors ${
                   isActive(href)
-                    ? "text-black font-medium"
+                    ? "text-black"
                     : "text-gray-600 hover:text-black"
                 }`}
               >
@@ -256,21 +217,57 @@ export default function Header() {
 
             {/* 슈퍼관리자 전용 메뉴 */}
             {isSuperAdmin &&
-              ADMIN_LINKS.map(({ href, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`relative py-5 transition-colors font-semibold ${
-                    isActive(href)
-                      ? "text-black"
-                      : "text-gray-600 hover:text-black"
-                  }`}
+              ADMIN_LINK.map(({ id, label, items }) => (
+                <div
+                  key={id}
+                  className="relative"
+                  onMouseEnter={() => toggleMenu(id, true)}
+                  onMouseLeave={() => toggleMenu(id, false)}
                 >
-                  {label}
-                  {isActive(href) && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                  <button
+                    className={`cursor-pointer relative py-5 transition-colors flex items-center gap-1 ${
+                      items.some((item) => isActive(item.href))
+                        ? "text-black font-medium"
+                        : "text-gray-600 hover:text-black"
+                    }`}
+                  >
+                    {label}
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                    {items.some((item) => isActive(item.href)) && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                    )}
+                  </button>
+
+                  {openMenu === id && (
+                    <div className="absolute top-full left-0 w-48 bg-white border border-gray-200 rounded-lg  z-50">
+                      {items.map(({ href, label }) => (
+                        <Link
+                          key={href}
+                          href={href}
+                          className={`block px-4 py-3 hover:bg-gray-50 transition-colors ${
+                            isActive(href)
+                              ? "bg-gray-50 font-medium text-black"
+                              : "text-gray-700"
+                          }`}
+                        >
+                          {label}
+                        </Link>
+                      ))}
+                    </div>
                   )}
-                </Link>
+                </div>
               ))}
           </div>
         </div>

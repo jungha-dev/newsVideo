@@ -69,26 +69,6 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen">
-      {/* 네비게이션 */}
-      <div className="bg-white border-b border-gray-300 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6">
-          <nav className="flex space-x-8">
-            <Link
-              href="/admin/users"
-              className="py-4 px-1 border-b-2 border-transparent text-sm font-semibold transition-all duration-200 hover:border-current"
-            >
-              사용자 관리
-            </Link>
-            <Link
-              href="/admin/videos"
-              className="py-4 px-1 border-b-2 border-transparent text-sm font-semibold transition-all duration-200 hover:border-current"
-            >
-              영상 관리
-            </Link>
-          </nav>
-        </div>
-      </div>
-
       {/* 메인 콘텐츠 */}
       <main className="max-w-7xl mx-auto py-8 px-6">{children}</main>
     </div>
