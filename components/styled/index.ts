@@ -12,6 +12,7 @@ export { default as Modal } from "./Modal";
 export { default as VideoScenarioList } from "./VideoScenarioList";
 export { default as VideoPreview } from "./VideoPreview";
 export { default as ConfirmModal } from "./ConfirmModal";
+export { default as AutoUploadStatus } from "./AutoUploadStatus";
 
 // 공통 레이아웃 컴포넌트
 export { default as PageLayout } from "../common/PageLayout";

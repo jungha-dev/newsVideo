@@ -1,5 +1,4 @@
-import { storage } from "@/lib/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getStorage } from "firebase-admin/storage";
 
 export interface UploadVideoOptions {
   replicateUrl: string;
@@ -25,16 +24,20 @@ export async function uploadVideoToFirebase({
       fileName,
     });
 
+    // videoId와 sceneIndex가 undefined일 때 기본값 설정
+    const safeVideoId = videoId || `temp_${Date.now()}`;
+    const safeSceneIndex = sceneIndex !== undefined ? sceneIndex : 0;
+
     // 파일 경로 생성
     let storagePath: string;
-    if (videoId && sceneIndex !== undefined) {
+    if (safeVideoId && safeSceneIndex !== undefined) {
       // Generated Video Scene의 경우
-      storagePath = `users/${userId}/newsVideos/${videoId}/scene-${
-        sceneIndex + 1
+      storagePath = `users/${userId}/newsVideos/${safeVideoId}/scene-${
+        safeSceneIndex + 1
       }.mp4`;
-    } else if (videoId) {
+    } else if (safeVideoId) {
       // 단일 비디오의 경우
-      storagePath = `users/${userId}/videos/${videoId}/${
+      storagePath = `users/${userId}/videos/${safeVideoId}/${
         fileName || "video.mp4"
       }`;
     } else {
@@ -58,15 +61,28 @@ export async function uploadVideoToFirebase({
     const buffer = Buffer.from(arrayBuffer);
     console.log("Video buffer size:", buffer.length, "bytes");
 
-    // Firebase Storage에 업로드
-    const storageRef = ref(storage, storagePath);
-    const snapshot = await uploadBytes(storageRef, buffer);
-    console.log("Upload snapshot:", snapshot);
+    // Firebase Admin Storage에 업로드
+    const adminStorage = getStorage();
+    const bucket = adminStorage.bucket();
+    const file = bucket.file(storagePath);
 
-    const downloadURL = await getDownloadURL(snapshot.ref);
-    console.log("Firebase download URL:", downloadURL);
+    await file.save(buffer, {
+      metadata: {
+        contentType: "video/mp4",
+      },
+    });
 
-    return downloadURL;
+    console.log("Upload completed");
+
+    // 서명된 URL 생성 (10년간 유효)
+    const [signedUrl] = await file.getSignedUrl({
+      action: "read",
+      expires: Date.now() + 10 * 365 * 24 * 60 * 60 * 1000,
+    });
+
+    console.log("Firebase signed URL:", signedUrl);
+
+    return signedUrl;
   } catch (error) {
     console.error("Error uploading video to Firebase:", error);
     throw error;

@@ -72,6 +72,7 @@ export default function NewsVideoDetailPage() {
     if (video?.status === "failed") return "failed";
     return "pending";
   };
+
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const previousStatusRef = useRef<string | undefined>(undefined);
   const isRegeneratingRef = useRef<boolean>(false);
@@ -151,11 +152,11 @@ export default function NewsVideoDetailPage() {
       (sv) => sv.status === "starting" || sv.status === "processing"
     );
 
-    // Add Scenes 중이거나 Regenerate 중이거나 처리 중이면 폴링
+    // Add Scenes 중이거나 Regenerate 중이거나 처리 중이거나 개별 씬이 미완료 상태면 폴링
     const shouldPoll =
       isRegeneratingRef.current ||
       currentStatus === "processing" ||
-      (hasIncompleteScenes && sceneVideos.length > 0);
+      hasIncompleteScenes;
 
     console.log("Polling check:", {
       isRegenerating: isRegeneratingRef.current,
@@ -163,6 +164,12 @@ export default function NewsVideoDetailPage() {
       hasIncompleteScenes,
       sceneVideosCount: sceneVideos.length,
       shouldPoll,
+      incompleteScenes: sceneVideos
+        .filter((sv) => sv.status === "starting" || sv.status === "processing")
+        .map((sv) => ({
+          sceneIndex: sv.sceneIndex,
+          status: sv.status,
+        })),
     });
 
     if (!shouldPoll) {
@@ -185,14 +192,54 @@ export default function NewsVideoDetailPage() {
       currentStatus,
       hasIncompleteScenes,
       sceneVideosCount: sceneVideos.length,
+      reason: isRegeneratingRef.current
+        ? "Regenerating"
+        : currentStatus === "processing"
+        ? "Video processing"
+        : hasIncompleteScenes
+        ? "Incomplete scenes"
+        : "Unknown",
     });
 
     // 즉시 한 번 상태 확인
     const checkStatus = async () => {
       try {
+        console.log("🔄 상태 확인 시작...");
         const response = await fetch(`/api/video/news/status/${videoId}`);
         if (response.ok) {
           const data = await response.json();
+          console.log("📊 상태 확인 응답:", {
+            videoStatus: data.video.status,
+            sceneCount: data.video.scenes?.length || 0,
+            sceneVideosCount: data.sceneVideos?.length || 0,
+          });
+
+          // 씬 데이터 상세 로깅
+          if (data.video.scenes) {
+            console.log("🔍 씬 데이터 상세:");
+            data.video.scenes.forEach((scene: any, index: number) => {
+              console.log(`   Scene ${index + 1}:`, {
+                videoUrl: scene.videoUrl || "없음",
+                firebaseUrl: scene.firebaseUrl || "없음",
+                output: scene.output || "없음",
+              });
+            });
+          }
+
+          // sceneVideos 데이터도 로깅
+          if (data.sceneVideos) {
+            console.log("🔍 Scene Videos 데이터:");
+            data.sceneVideos.forEach((sv: any) => {
+              console.log(`   Scene ${sv.sceneIndex + 1}:`, {
+                status: sv.status,
+                replicateStatus: sv.replicateStatus || "unknown",
+                videoUrl: sv.videoUrl || "없음",
+                firebaseUrl: sv.firebaseUrl || "없음",
+                output: sv.output || "없음",
+              });
+            });
+          }
+
           console.log("Polling update:", data.video.status);
           setVideo(data.video);
 
@@ -205,12 +252,23 @@ export default function NewsVideoDetailPage() {
             (sv) => sv.status === "completed" || sv.status === "failed"
           );
 
-          // 완료되면 폴링 중단
-          if (
-            (data.video.status === "completed" ||
-              data.video.status === "failed") &&
-            allScenesCompleted
-          ) {
+          console.log("📊 완료 상태 확인:", {
+            allScenesCompleted,
+            sceneVideosStatus: updatedSceneVideos.map((sv) => sv.status),
+            videoStatus: data.video.status,
+            incompleteScenes: updatedSceneVideos
+              .filter(
+                (sv) => sv.status === "starting" || sv.status === "processing"
+              )
+              .map((sv) => ({
+                sceneIndex: sv.sceneIndex,
+                status: sv.status,
+              })),
+          });
+
+          // 모든 씬이 완료되면 폴링 중단
+          if (allScenesCompleted) {
+            console.log("✅ 모든 씬 완료 - 폴링 중단");
             if (pollingRef.current) {
               clearInterval(pollingRef.current);
               pollingRef.current = null;
@@ -218,6 +276,12 @@ export default function NewsVideoDetailPage() {
             // Regenerate 완료 시 플래그 리셋
             isRegeneratingRef.current = false;
           }
+        } else {
+          console.error(
+            "❌ 상태 확인 실패:",
+            response.status,
+            response.statusText
+          );
         }
       } catch (error) {
         console.error("Polling error:", error);
@@ -227,16 +291,13 @@ export default function NewsVideoDetailPage() {
     // 즉시 실행
     checkStatus();
 
-    // 30초마다 상태 확인 (서버 부하 감소)
-    pollingRef.current = setInterval(checkStatus, 60000);
-
     return () => {
       if (pollingRef.current) {
         clearInterval(pollingRef.current);
         pollingRef.current = null;
       }
     };
-  }, [video?.status, videoId]); // sceneVideos 의존성 제거
+  }, [video?.status, videoId, sceneVideos.length]);
 
   const loadVideo = async () => {
     try {
@@ -466,6 +527,19 @@ export default function NewsVideoDetailPage() {
 
         // 비디오 정보 새로고침
         await loadVideo();
+
+        // sceneVideos도 다시 로드하여 폴링이 제대로 작동하도록 함
+        await loadSceneVideos();
+
+        console.log("✅ Add Scene 완료 - 폴링 시작");
+        console.log(
+          "📊 현재 sceneVideos 상태:",
+          sceneVideos.map((sv) => ({
+            sceneIndex: sv.sceneIndex,
+            status: sv.status,
+            replicatePredictionId: sv.replicatePredictionId,
+          }))
+        );
       } else {
         const errorData = await response.json();
         console.error("API Error Response:", errorData);
@@ -731,122 +805,6 @@ export default function NewsVideoDetailPage() {
     }
   };
 
-  // Firebase Storage 업로드 기능
-  const handleUploadToFirebase = async () => {
-    if (!video || !user) return;
-
-    try {
-      console.log("📤 Firebase Storage upload started...");
-
-      // 각 Scene에 대해 Firebase Storage 업로드
-      for (let i = 0; i < video.scenes.length; i++) {
-        const scene = video.scenes[i];
-        if (scene.videoUrl) {
-          console.log(
-            `📤 Scene ${i + 1} Firebase Storage upload: ${scene.videoUrl}`
-          );
-
-          const response = await fetch(`/api/video/news/status/${videoId}`);
-          if (response.ok) {
-            const data = await response.json();
-            console.log(
-              `✅ Scene ${i + 1} Firebase Storage upload completed:`,
-              data
-            );
-
-            // 업데이트된 Scene Info 확인
-            const updatedScene = data.video?.scenes?.[i];
-            if (updatedScene?.firebaseUrl) {
-              console.log(
-                `🔗 Scene ${i + 1} Firebase URL: ${updatedScene.firebaseUrl}`
-              );
-
-              // 비디오 데이터 업데이트
-              const updatedScenes = [...video.scenes];
-              updatedScenes[i] = {
-                ...updatedScenes[i],
-                videoUrl: updatedScene.firebaseUrl,
-                firebaseUrl: updatedScene.firebaseUrl,
-              } as any;
-              setVideo({ ...video, scenes: updatedScenes });
-            }
-          } else {
-            console.error(
-              `❌ Scene ${i + 1} Firebase Storage upload failed:`,
-              response.statusText
-            );
-          }
-        }
-      }
-
-      console.log("🎉 Firebase Storage upload completed!");
-
-      // 업데이트된 데이터 다시 로드
-      await loadVideo();
-    } catch (error) {
-      console.error("❌ Firebase Storage upload failed:", error);
-    }
-  };
-
-  // 개별 Scene Firebase Storage 업로드 기능
-  const handleUploadSceneToFirebase = async (sceneIndex: number) => {
-    if (!video || !user) return;
-
-    try {
-      const scene = video.scenes[sceneIndex];
-      if (!scene.videoUrl) {
-        console.log(`❌ Scene ${sceneIndex + 1}: No video URL.`);
-        return;
-      }
-
-      console.log(
-        `📤 Scene ${sceneIndex + 1} Firebase Storage upload started...`
-      );
-      console.log(`📤 Original URL: ${scene.videoUrl}`);
-
-      const response = await fetch(`/api/video/news/status/${videoId}`);
-      if (response.ok) {
-        const data = await response.json();
-        console.log(
-          `✅ Scene ${sceneIndex + 1} Firebase Storage upload completed:`,
-          data
-        );
-
-        // 업데이트된 Scene Info 확인
-        const updatedScene = data.video?.scenes?.[sceneIndex];
-        if (updatedScene?.firebaseUrl) {
-          console.log(
-            `🔗 Scene ${sceneIndex + 1} Firebase URL: ${
-              updatedScene.firebaseUrl
-            }`
-          );
-
-          // 비디오 데이터 업데이트
-          const updatedScenes = [...video.scenes];
-          updatedScenes[sceneIndex] = {
-            ...updatedScenes[sceneIndex],
-            videoUrl: updatedScene.firebaseUrl,
-            firebaseUrl: updatedScene.firebaseUrl,
-          } as any;
-          setVideo({ ...video, scenes: updatedScenes });
-        }
-
-        // 업데이트된 데이터 다시 로드
-        await loadVideo();
-      } else {
-        console.error(
-          `❌ Scene ${sceneIndex + 1} Firebase Storage upload failed:`,
-          response.statusText
-        );
-      }
-    } catch (error) {
-      console.error(
-        `❌ Scene ${sceneIndex + 1} Firebase Storage upload failed:`,
-        error
-      );
-    }
-  };
-
   // 삭제 관련 함수들
   const handleDeleteVideo = async () => {
     if (!video || !user) return;
@@ -1024,6 +982,9 @@ export default function NewsVideoDetailPage() {
                 </>
               )}
 
+              {/* 자동 업로드 상태 표시 */}
+              {/* 자동 업로드 상태 표시 */}
+
               <Button
                 onClick={handleAddScene}
                 variant="primary"
@@ -1150,6 +1111,7 @@ export default function NewsVideoDetailPage() {
                         </div>
                       </div>
                     )}
+                    {/* <FirebaseStatusDebug scene={scene} sceneIndex={index} /> */}
                   </div>
                 </div>
 
@@ -1168,13 +1130,6 @@ export default function NewsVideoDetailPage() {
                         />
                         Browser does not support video.
                       </video>
-                    </div>
-                  </div>
-                ) : getSceneStatus(scene, index) === "processing" ? (
-                  <div className="mb-3 bg-gray-100 rounded-lg aspect-video flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400 mx-auto mb-1"></div>
-                      <p className="text-xs text-gray-600">Generating...</p>
                     </div>
                   </div>
                 ) : (
@@ -1202,6 +1157,18 @@ export default function NewsVideoDetailPage() {
                       placeholder="Please enter narration"
                     />
                   </div>
+
+                  {/* 자동 업로드 상태 표시 */}
+                  {/* <div className="mt-2">
+                    <AutoUploadStatus
+                      scene={scene}
+                      sceneIndex={index}
+                      isUploading={uploadingScenes.has(index)}
+                    />
+                  </div> */}
+
+                  {/* Firebase 업로드 상태 디버깅 */}
+                  {/* <FirebaseStatusDebug scene={scene} sceneIndex={index} /> */}
                 </div>
               </div>
             ))}
