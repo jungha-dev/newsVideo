@@ -12,7 +12,12 @@ const getServiceAccount = () => {
   // 환경 변수에서 서비스 계정 정보를 가져오거나, 파일에서 로드
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     console.log("환경 변수에서 서비스 계정 정보 로드");
-    return JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    try {
+      return JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    } catch (error) {
+      console.error("❌ 환경 변수 파싱 실패:", error);
+      throw new Error("FIREBASE_SERVICE_ACCOUNT 환경 변수 파싱 실패");
+    }
   } else {
     console.log("파일에서 서비스 계정 정보 로드 시도");
     // 파일에서 로드 (개발 환경에서만)
@@ -28,14 +33,23 @@ const getServiceAccount = () => {
       console.log("✅ 서비스 계정 파일 로드 성공");
       return serviceAccount;
     } catch (error) {
-      console.warn("❌ 서비스 계정 파일을 찾을 수 없음, 환경 변수 사용");
-      console.warn("에러:", error);
+      console.error("❌ 서비스 계정 파일을 찾을 수 없음");
+      console.error("에러:", error);
+
       // 환경 변수에서 개별 필드들을 가져옴
+      const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+      if (!privateKey) {
+        throw new Error(
+          "Firebase 서비스 계정 키가 설정되지 않았습니다. keys/serviceAccountKey.json 파일을 생성하거나 환경변수를 설정해주세요."
+        );
+      }
+
       const serviceAccount = {
         type: process.env.FIREBASE_TYPE || "service_account",
-        project_id: process.env.FIREBASE_PROJECT_ID || "nesvideo-24f56",
+        project_id:
+          process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "nesvideo-24f56",
         private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-        private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+        private_key: privateKey.replace(/\\n/g, "\n"),
         client_email: process.env.FIREBASE_CLIENT_EMAIL,
         client_id: process.env.FIREBASE_CLIENT_ID,
         auth_uri:
@@ -72,13 +86,31 @@ const storageBucket =
   "nesvideo-24f56.firebasestorage.app";
 console.log("설정된 Storage Bucket:", storageBucket);
 
-const app =
-  getApps().length === 0
-    ? initializeApp({
-        credential: cert(serviceAccount),
-        storageBucket: storageBucket,
-      })
-    : getApps()[0];
+// 서비스 계정 정보 검증
+if (!serviceAccount.private_key) {
+  console.error("❌ 서비스 계정 private_key가 없습니다!");
+  console.error("서비스 계정 정보:", {
+    type: serviceAccount.type,
+    project_id: serviceAccount.project_id,
+    client_email: serviceAccount.client_email,
+    has_private_key: !!serviceAccount.private_key,
+  });
+  throw new Error("Firebase Admin 서비스 계정 설정이 올바르지 않습니다.");
+}
+
+let app;
+try {
+  app =
+    getApps().length === 0
+      ? initializeApp({
+          credential: cert(serviceAccount),
+          storageBucket: storageBucket,
+        })
+      : getApps()[0];
+} catch (error) {
+  console.error("❌ Firebase Admin 초기화 실패:", error);
+  throw error;
+}
 
 console.log("✅ Firebase Admin 초기화 완료");
 console.log("Storage Bucket:", storageBucket);
