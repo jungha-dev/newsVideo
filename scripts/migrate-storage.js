@@ -180,7 +180,7 @@ function extractStoragePath(url) {
  * 모든 사용자 마이그레이션
  */
 async function migrateAllUsers() {
-  console.log("🚀 Starting storage migration...");
+  console.log(" Starting storage migration...");
 
   try {
     // 모든 사용자 가져오기
@@ -213,7 +213,7 @@ async function migrateAllUsers() {
  * 특정 사용자만 마이그레이션
  */
 async function migrateSpecificUser(userId) {
-  console.log(`🚀 Starting migration for user: ${userId}`);
+  console.log(` Starting migration for user: ${userId}`);
 
   try {
     const result = await migrateUserImages(userId);

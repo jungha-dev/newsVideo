@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/styled";
+import FirebaseStatusDebug from "./FirebaseStatusDebug";
 
 const NEWS_ANCHOR_PROMPT =
   "A neat-looking Asian female news anchor, wearing a classic white blouse with a standard pointed collar and five small white buttons down the center, long sleeves rolled up neatly to the elbows, no logos or prints. She has a polished, chin-length bob haircut with softly layered ends and natural side-swept bangs framing her face. Standing confidently in a modern news studio, soft natural lighting, realistic style, medium shot, high quality, ultra-detailed. The news anchor excitedly says:";
@@ -12,6 +13,8 @@ interface Scene {
   narration: string;
   videoUrl?: string;
   imageUrl?: string;
+  firebaseUrl?: string;
+  output?: string; // 원본 Replicate URL
 }
 
 interface VideoScenario {
@@ -719,6 +722,9 @@ export default function VideoScenarioList({
                     rows={2}
                   />
                 </div>
+
+                {/* Firebase 업로드 상태 표시 */}
+                <FirebaseStatusDebug scene={scene} sceneIndex={index} />
               </div>
             </div>
           ))}

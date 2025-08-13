@@ -78,7 +78,22 @@ export const getNewsVideosByUser = async (
     });
 
     // 클라이언트 사이드에서 정렬 (인덱스 불필요)
-    return videos.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return videos.sort((a, b) => {
+      const getTime = (date: any): number => {
+        if (date instanceof Date) {
+          return date.getTime();
+        } else if (date?.toDate) {
+          return date.toDate().getTime();
+        } else if (typeof date === "string" || typeof date === "number") {
+          return new Date(date).getTime();
+        }
+        return 0;
+      };
+
+      const aTime = getTime(a.createdAt);
+      const bTime = getTime(b.createdAt);
+      return bTime - aTime;
+    });
   } catch (error) {
     console.error("Error getting news videos:", error);
     throw error;

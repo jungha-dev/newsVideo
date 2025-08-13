@@ -148,6 +148,30 @@ export function getConnectedVideoPath({
 }
 
 /**
+ * 뉴스 비디오 경로 생성
+ */
+export function getNewsVideoPath({
+  userId,
+  filename,
+}: StoragePathOptions): string {
+  const timestamp = Date.now();
+  const safeFilename = filename || `${timestamp}_news_video`;
+  return `users/${userId}/uploads/videos/news/${safeFilename}`;
+}
+
+/**
+ * 뉴스 비디오 썸네일 경로 생성
+ */
+export function getNewsVideoThumbnailPath({
+  userId,
+  filename,
+}: StoragePathOptions): string {
+  const timestamp = Date.now();
+  const safeFilename = filename || `${timestamp}_news_thumbnail`;
+  return `users/${userId}/uploads/images/news/thumbnails/${safeFilename}`;
+}
+
+/**
  * 파일 확장자 추출
  */
 export function getFileExtension(filename: string): string {

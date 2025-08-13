@@ -33,7 +33,7 @@ const getServiceAccount = () => {
       // 환경 변수에서 개별 필드들을 가져옴
       const serviceAccount = {
         type: process.env.FIREBASE_TYPE || "service_account",
-        project_id: process.env.FIREBASE_PROJECT_ID,
+        project_id: process.env.FIREBASE_PROJECT_ID || "nesvideo-24f56",
         private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
         private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
         client_email: process.env.FIREBASE_CLIENT_EMAIL,
@@ -66,20 +66,29 @@ const serviceAccount = getServiceAccount();
 
 console.log("기존 Firebase Admin 앱 수:", getApps().length);
 
+// Storage Bucket 설정
+const storageBucket =
+  process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
+  "nesvideo-24f56.firebasestorage.app";
+console.log("설정된 Storage Bucket:", storageBucket);
+
 const app =
   getApps().length === 0
     ? initializeApp({
         credential: cert(serviceAccount),
-        storageBucket:
-          process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
-          "nesvideo-24f56.firebasestorage.com",
+        storageBucket: storageBucket,
       })
     : getApps()[0];
 
 console.log("✅ Firebase Admin 초기화 완료");
-console.log("Storage Bucket:", process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
+console.log("Storage Bucket:", storageBucket);
+console.log("Project ID:", serviceAccount.project_id);
 
 export const db = getFirestore("news-video");
 export const auth = getAuth(app);
 export const dbAdmin = getFirestore(app);
 export const storage = getStorage(app);
+
+// Firestore 데이터베이스 정보 로깅
+console.log("Firestore Database App:", app.name);
+console.log("Firestore Project ID:", app.options.projectId);
