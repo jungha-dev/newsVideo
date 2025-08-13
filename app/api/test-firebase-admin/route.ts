@@ -10,7 +10,10 @@ export async function GET() {
     // 환경 변수 확인
     console.log("환경 변수:");
     console.log("- NODE_ENV:", process.env.NODE_ENV);
-    console.log("- FIREBASE_PROJECT_ID:", process.env.FIREBASE_PROJECT_ID);
+    console.log(
+      "- FIREBASE_PROJECT_ID:",
+      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    );
     console.log(
       "- NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET:",
       process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
