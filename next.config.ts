@@ -23,6 +23,22 @@ const nextConfig: NextConfig = {
             key: "Cross-Origin-Embedder-Policy",
             value: "unsafe-none", // 🚨 COEP 완화
           },
+          {
+            key: "Access-Control-Allow-Origin",
+            value: "*", // 또는 특정 도메인: "https://your-domain.com"
+          },
+          {
+            key: "Access-Control-Allow-Methods",
+            value: "GET, POST, PUT, DELETE, OPTIONS",
+          },
+          {
+            key: "Access-Control-Allow-Headers",
+            value: "Content-Type, Authorization, X-Requested-With",
+          },
+          {
+            key: "Access-Control-Allow-Credentials",
+            value: "true",
+          },
         ],
       },
     ];

@@ -2,15 +2,44 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, storage } from "@/lib/firebase-admin";
 import { getUserFromToken } from "@/lib/auth";
 
+// CORS preflight 요청 처리
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers":
+        "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+    },
+  });
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ videoId: string }> }
 ) {
   try {
+    // CORS 헤더 추가
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers":
+        "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+    };
+
     // 인증 확인
     const user = await getUserFromToken();
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        {
+          status: 401,
+          headers,
+        }
+      );
     }
 
     const { videoId } = await params;
@@ -26,7 +55,13 @@ export async function DELETE(
       .get();
 
     if (!videoDoc.exists) {
-      return NextResponse.json({ error: "Video not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Video not found" },
+        {
+          status: 404,
+          headers,
+        }
+      );
     }
 
     const videoData = videoDoc.data()!;
@@ -104,16 +139,28 @@ export async function DELETE(
       `   📄 삭제된 sceneVideos: ${sceneVideosSnapshot.docs.length}개`
     );
 
-    return NextResponse.json({
-      message: "Video deleted successfully",
-      deletedFiles: storageFilesToDelete.length,
-      deletedSceneVideos: sceneVideosSnapshot.docs.length,
-    });
+    return NextResponse.json(
+      {
+        message: "Video deleted successfully",
+        deletedFiles: storageFilesToDelete.length,
+        deletedSceneVideos: sceneVideosSnapshot.docs.length,
+      },
+      { headers }
+    );
   } catch (error) {
     console.error("Error deleting video:", error);
     return NextResponse.json(
       { error: "Failed to delete video" },
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers":
+            "Content-Type, Authorization, X-Requested-With",
+          "Access-Control-Allow-Credentials": "true",
+        },
+      }
     );
   }
 }
