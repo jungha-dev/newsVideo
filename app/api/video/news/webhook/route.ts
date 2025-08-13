@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`🚀 Scene ${sceneIndex + 1} 자동 Firebase 업로드 시작:`, {
+    console.log(` Scene ${sceneIndex + 1} 자동 Firebase 업로드 시작:`, {
       videoId,
       sceneIndex,
       userId,

@@ -44,7 +44,7 @@ export default function NewsVideoListPage() {
       console.log("Loaded videos:", userVideos);
       setVideos(userVideos);
 
-      // 🚀 각 비디오의 최신 상태를 확인하여 videoUrl 업데이트
+      //  각 비디오의 최신 상태를 확인하여 videoUrl 업데이트
       if (userVideos.length > 0) {
         console.log("🔄 각 비디오의 최신 상태 확인 시작...");
         const updatedVideos = await Promise.all(
@@ -97,10 +97,10 @@ export default function NewsVideoListPage() {
     return null;
   };
 
-  // 🚀 자동 Firebase 업로드 트리거 (목록 페이지에서)
+  //  자동 Firebase 업로드 트리거 (목록 페이지에서)
   const triggerAutoUploadForVideo = async (videoId: string) => {
     try {
-      console.log(`🚀 비디오 ${videoId} 자동 Firebase 업로드 트리거...`);
+      console.log(` 비디오 ${videoId} 자동 Firebase 업로드 트리거...`);
 
       const response = await fetch(`/api/video/news/auto-upload-to-firebase`, {
         method: "POST",

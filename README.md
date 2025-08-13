@@ -105,7 +105,7 @@ The application includes advanced video processing features:
 
 The application now includes fully automatic Firebase Storage upload functionality:
 
-- **🚀 Fully Automatic**: No manual button clicks required - videos are automatically uploaded when ready
+- ** Fully Automatic**: No manual button clicks required - videos are automatically uploaded when ready
 - **Replicate to Firebase**: Automatically uploads videos from Replicate URLs to Firebase Storage
 - **Real-time Progress**: Visual feedback shows automatic upload status for each scene
 - **Smart Path Management**: Uses consistent storage paths with automatic filename generation
