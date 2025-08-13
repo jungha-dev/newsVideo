@@ -68,10 +68,17 @@ export default function AdminUserPage() {
     checkRole();
   }, [user]);
 
-  if (!authorized) return null;
+  if (!authorized) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+        <p className="text-gray-600 mt-2">권한 확인 중...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div>
       <h1 className="text-xl font-bold mb-4">사용자 승인 관리</h1>
       <ul className="space-y-4">
         {users.map((user) => (

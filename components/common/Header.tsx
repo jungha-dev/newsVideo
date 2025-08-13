@@ -61,6 +61,18 @@ const SIMPLE_LINKS = [
   },
 ];
 
+// 관리자 링크
+const ADMIN_LINKS = [
+  {
+    href: "/admin/users",
+    label: "사용자 관리",
+  },
+  {
+    href: "/admin/videos",
+    label: "영상 관리",
+  },
+];
+
 export default function Header() {
   const { user } = useAuth();
   const router = useRouter();
@@ -75,11 +87,23 @@ export default function Header() {
     if (!user?.uid) return;
     const fetchRole = async () => {
       try {
-        const snap = await getDoc(doc(db, "allowed_users", user.uid));
+        // 먼저 allowed_users에서 확인
+        let snap = await getDoc(doc(db, "allowed_users", user.uid));
 
         if (snap.exists() && snap.data().role === "superadmin") {
+          console.log("✅ Superadmin 권한 확인됨 (allowed_users 컬렉션)");
+          setIsSuperAdmin(true);
+          return;
+        }
+
+        // allowed_users에 없으면 users에서 확인
+        snap = await getDoc(doc(db, "users", user.uid));
+
+        if (snap.exists() && snap.data().role === "superadmin") {
+          console.log("✅ Superadmin 권한 확인됨 (users 컬렉션)");
           setIsSuperAdmin(true);
         } else {
+          console.log("❌ Superadmin 권한 없음 (users 컬렉션)");
           setIsSuperAdmin(false);
         }
       } catch (err) {
@@ -234,21 +258,24 @@ export default function Header() {
               </Link>
             ))}
 
-            {isSuperAdmin && (
-              <Link
-                href="/admin/users"
-                className={`relative py-5 transition-colors font-semibold ${
-                  isActive("/admin/users")
-                    ? "text-black"
-                    : "text-gray-600 hover:text-black"
-                }`}
-              >
-                Users Managing
-                {isActive("/admin/users") && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
-                )}
-              </Link>
-            )}
+            {/* 슈퍼관리자 전용 메뉴 */}
+            {isSuperAdmin &&
+              ADMIN_LINKS.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`relative py-5 transition-colors font-semibold ${
+                    isActive(href)
+                      ? "text-black"
+                      : "text-gray-600 hover:text-black"
+                  }`}
+                >
+                  {label}
+                  {isActive(href) && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                  )}
+                </Link>
+              ))}
           </div>
         </div>
 
