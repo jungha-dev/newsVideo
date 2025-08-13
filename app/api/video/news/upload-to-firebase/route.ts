@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     console.log(`📤 Firebase Storage 업로드 시작:`);
     console.log(`   📺 비디오 ID: ${videoId}`);
-    console.log(`   🎬 Scene 인덱스: ${sceneIndex}`);
+    console.log(`   Scene 인덱스: ${sceneIndex}`);
     console.log(`   🔗 Replicate URL: ${replicateUrl}`);
     console.log(`   👤 사용자: ${user.uid}`);
     console.log(`   📝 요청 본문:`, body);

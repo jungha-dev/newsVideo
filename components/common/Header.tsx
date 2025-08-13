@@ -65,11 +65,7 @@ const SIMPLE_LINKS = [
 const ADMIN_LINKS = [
   {
     href: "/admin/users",
-    label: "사용자 관리",
-  },
-  {
-    href: "/admin/videos",
-    label: "영상 관리",
+    label: "Admin Menu",
   },
 ];
 

@@ -50,7 +50,7 @@ export default function NewsVideoListPage() {
         const updatedVideos = await Promise.all(
           userVideos.map(async (video) => {
             if (video.status === "processing") {
-              console.log(`📊 비디오 ${video.id} 상태 확인 중...`);
+              console.log(` 비디오 ${video.id} 상태 확인 중...`);
               const updatedVideo = await updateVideoStatus(video.id);
               return updatedVideo || video;
             }
@@ -82,7 +82,7 @@ export default function NewsVideoListPage() {
       const response = await fetch(`/api/video/news/status/${videoId}`);
       if (response.ok) {
         const data = await response.json();
-        console.log(`📊 비디오 ${videoId} 상태 업데이트:`, data.video.status);
+        console.log(` 비디오 ${videoId} 상태 업데이트:`, data.video.status);
 
         // 현재 videos 배열에서 해당 비디오 업데이트
         setVideos((prevVideos) =>

@@ -208,7 +208,7 @@ export default function NewsVideoDetailPage() {
         const response = await fetch(`/api/video/news/status/${videoId}`);
         if (response.ok) {
           const data = await response.json();
-          console.log("📊 상태 확인 응답:", {
+          console.log(" 상태 확인 응답:", {
             videoStatus: data.video.status,
             sceneCount: data.video.scenes?.length || 0,
             sceneVideosCount: data.sceneVideos?.length || 0,
@@ -252,7 +252,7 @@ export default function NewsVideoDetailPage() {
             (sv) => sv.status === "completed" || sv.status === "failed"
           );
 
-          console.log("📊 완료 상태 확인:", {
+          console.log(" 완료 상태 확인:", {
             allScenesCompleted,
             sceneVideosStatus: updatedSceneVideos.map((sv) => sv.status),
             videoStatus: data.video.status,
@@ -533,7 +533,7 @@ export default function NewsVideoDetailPage() {
 
         console.log("✅ Add Scene 완료 - 폴링 시작");
         console.log(
-          "📊 현재 sceneVideos 상태:",
+          " 현재 sceneVideos 상태:",
           sceneVideos.map((sv) => ({
             sceneIndex: sv.sceneIndex,
             status: sv.status,

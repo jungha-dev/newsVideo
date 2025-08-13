@@ -49,7 +49,7 @@ export default function AdminVideosPage() {
   const [loading, setLoading] = useState(true);
   const [lastDoc, setLastDoc] = useState<any>(null);
   const [hasMore, setHasMore] = useState(true);
-  const [filterStatus, setFilterStatus] = useState<string>("all");
+
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
@@ -82,23 +82,9 @@ export default function AdminVideosPage() {
       // 권한이 있으면 authorized 상태를 true로 설정
       setAuthorized(true);
 
-      let videosQuery = query(
-        collection(db, "users"),
-        orderBy("createdAt", "desc")
-      );
-
-      if (!isInitial && lastDoc) {
-        videosQuery = query(
-          videosQuery,
-          startAfter(lastDoc),
-          limit(ITEMS_PER_PAGE)
-        );
-      } else {
-        videosQuery = query(videosQuery, limit(ITEMS_PER_PAGE));
-      }
-
-      const usersSnapshot = await getDocs(videosQuery);
-      const newVideos: (VideoData & { userEmail: string })[] = [];
+      // 모든 사용자에서 비디오를 가져와서 필터링
+      const usersSnapshot = await getDocs(collection(db, "users"));
+      const allVideos: (VideoData & { userEmail: string })[] = [];
 
       for (const userDoc of usersSnapshot.docs) {
         const userData = userDoc.data() as UserData;
@@ -111,11 +97,6 @@ export default function AdminVideosPage() {
         videosSnapshot.forEach((videoDoc) => {
           const videoData = videoDoc.data() as VideoData;
 
-          // 필터링 적용
-          if (filterStatus !== "all" && videoData.status !== filterStatus) {
-            return;
-          }
-
           // 검색어 필터링
           if (
             searchTerm &&
@@ -127,21 +108,37 @@ export default function AdminVideosPage() {
             return;
           }
 
-          newVideos.push({
+          allVideos.push({
             ...videoData,
             userEmail: userData.email || "Unknown",
           });
         });
       }
 
+      // 날짜순으로 정렬
+      allVideos.sort((a, b) => {
+        const dateA = a.createdAt?.toDate
+          ? a.createdAt.toDate()
+          : new Date(a.createdAt);
+        const dateB = b.createdAt?.toDate
+          ? b.createdAt.toDate()
+          : new Date(b.createdAt);
+        return dateB.getTime() - dateA.getTime();
+      });
+
+      // 페이지네이션 적용
+      const startIndex = isInitial ? 0 : lastDoc ? lastDoc : 0;
+      const endIndex = startIndex + ITEMS_PER_PAGE;
+      const paginatedVideos = allVideos.slice(startIndex, endIndex);
+
       if (isInitial) {
-        setVideos(newVideos);
+        setVideos(paginatedVideos);
       } else {
-        setVideos((prev) => [...prev, ...newVideos]);
+        setVideos((prev) => [...prev, ...paginatedVideos]);
       }
 
-      setLastDoc(usersSnapshot.docs[usersSnapshot.docs.length - 1]);
-      setHasMore(usersSnapshot.docs.length === ITEMS_PER_PAGE);
+      setLastDoc(endIndex);
+      setHasMore(endIndex < allVideos.length);
     } catch (error) {
       console.error("Error loading videos:", error);
     } finally {
@@ -153,13 +150,6 @@ export default function AdminVideosPage() {
     if (!loading && hasMore) {
       loadVideos(false);
     }
-  };
-
-  const handleFilterChange = (status: string) => {
-    setFilterStatus(status);
-    setLastDoc(null);
-    setHasMore(true);
-    loadVideos(true);
   };
 
   const handleSearch = () => {
@@ -256,59 +246,41 @@ export default function AdminVideosPage() {
     <div>
       <PageTitle title="전체 영상 관리" />
 
-      {/* 필터 및 검색 */}
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex gap-2">
-            <Button
-              variant={filterStatus === "all" ? "primary" : "secondary"}
-              onClick={() => handleFilterChange("all")}
-            >
-              전체
-            </Button>
-            <Button
-              variant={filterStatus === "completed" ? "primary" : "secondary"}
-              onClick={() => handleFilterChange("completed")}
-            >
-              완료
-            </Button>
-            <Button
-              variant={filterStatus === "processing" ? "primary" : "secondary"}
-              onClick={() => handleFilterChange("processing")}
-            >
-              처리중
-            </Button>
-            <Button
-              variant={filterStatus === "failed" ? "primary" : "secondary"}
-              onClick={() => handleFilterChange("failed")}
-            >
-              실패
-            </Button>
-          </div>
-
-          <div className="flex gap-2">
+      {/* 검색 */}
+      <div className="mb-8">
+        <div
+          className="bg-white rounded-2xl p-6 shadow-lg border"
+          style={{ borderColor: "var(--color-secondary-dark)" }}
+        >
+          <div className="flex gap-3">
             <input
               type="text"
-              placeholder="제목 또는 설명으로 검색..."
+              placeholder="🔍 제목 또는 설명으로 검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="flex-1 px-4 py-3 border rounded-full focus:outline-none focus:ring-2 focus:border-transparent"
+              style={{
+                borderColor: "var(--color-secondary-dark)",
+                background: "var(--color-secondary-light)",
+              }}
             />
-            <Button onClick={handleSearch} variant="primary">
-              검색
-            </Button>
+            <button
+              onClick={handleSearch}
+              className="px-6 py-3 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              style={{ background: "var(--color-primary)" }}
+            >
+              🔍 검색
+            </button>
           </div>
         </div>
       </div>
 
       {/* 영상 목록 */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         {videos.map((video) => (
-          <Card
+          <div
             key={video.id}
-            id={video.id}
-            title={video.title}
-            className="p-6"
+            className="bg-white rounded-2xl p-8 border border-secondary hover:border-secondary transition-all duration-300 hover:-translate-y-1"
           >
             <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
@@ -421,35 +393,56 @@ export default function AdminVideosPage() {
                 </div>
               </div>
             )}
-          </Card>
+          </div>
         ))}
       </div>
 
       {/* 로딩 및 더보기 */}
       {loading && (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-gray-600 mt-2">로딩 중...</p>
+        <div className="text-center py-12">
+          <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-full px-6 py-4 shadow-lg">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+            <p className="text-slate-600 font-medium">로딩 중...</p>
+          </div>
         </div>
       )}
 
       {!loading && hasMore && (
-        <div className="text-center py-4">
-          <Button onClick={loadMoreVideos} variant="secondary">
-            더 보기
-          </Button>
+        <div className="text-center py-8">
+          <button
+            onClick={loadMoreVideos}
+            className="px-8 py-4 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 font-medium"
+            style={{ background: "var(--color-primary)" }}
+          >
+            📄 더 보기
+          </button>
         </div>
       )}
 
       {!loading && !hasMore && videos.length > 0 && (
-        <div className="text-center py-4 text-gray-500">
-          모든 영상을 불러왔습니다.
+        <div className="text-center py-8">
+          <div className="inline-flex items-center gap-2 bg-green-50 px-6 py-3 rounded-full">
+            <span className="text-green-600">✅</span>
+            <span className="text-green-700 font-medium">
+              모든 영상을 불러왔습니다.
+            </span>
+          </div>
         </div>
       )}
 
       {!loading && videos.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          조건에 맞는 영상이 없습니다.
+        <div className="text-center py-12">
+          <div className="inline-flex items-center gap-3 bg-slate-50 px-8 py-6 rounded-2xl">
+            <span className="text-4xl">📭</span>
+            <div>
+              <p className="text-slate-600 font-medium text-lg">
+                조건에 맞는 영상이 없습니다.
+              </p>
+              <p className="text-slate-500 text-sm">
+                다른 필터를 시도해보세요.
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>
