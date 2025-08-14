@@ -20,11 +20,7 @@ export async function uploadReplicateVideoToFirebase(
     // Replicate URL에서 비디오 다운로드
     console.log("🔗 Replicate URL 요청 중...");
     const videoResponse = await fetch(replicateUrl);
-    console.log(
-      "📊 응답 상태:",
-      videoResponse.status,
-      videoResponse.statusText
-    );
+    console.log(" 응답 상태:", videoResponse.status, videoResponse.statusText);
 
     if (!videoResponse.ok) {
       throw new Error(`Failed to fetch video: ${videoResponse.statusText}`);
@@ -49,7 +45,7 @@ export async function uploadReplicateVideoToFirebase(
 
     // Firebase Storage에 업로드
     console.log(`📤 Firebase Storage 업로드 시작: ${storagePath}`);
-    console.log("📊 업로드 메타데이터 설정 중...");
+    console.log(" 업로드 메타데이터 설정 중...");
 
     await file.save(Buffer.from(videoBuffer), {
       metadata: {

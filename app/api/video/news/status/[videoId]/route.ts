@@ -70,7 +70,7 @@ export async function GET(
             console.log(
               `   🆔 Prediction ID: ${sceneVideo.replicatePredictionId}`
             );
-            console.log(`   📊 현재 상태: ${sceneVideo.status}`);
+            console.log(`    현재 상태: ${sceneVideo.status}`);
 
             // Replicate API에서 상태 확인
             const replicateResponse = await fetch(
@@ -88,7 +88,7 @@ export async function GET(
 
             if (replicateResponse.ok) {
               const replicateData = await replicateResponse.json();
-              console.log(`📊 Replicate 응답 데이터:`, {
+              console.log(` Replicate 응답 데이터:`, {
                 id: replicateData.id,
                 status: replicateData.status,
                 output: replicateData.output,
@@ -137,12 +137,12 @@ export async function GET(
 
                   // 실시간 업로드 로깅
                   console.log(
-                    `🎬 Scene ${
+                    `Scene ${
                       sceneVideo.sceneIndex + 1
                     } Firebase Storage 업로드 완료:`
                   );
                   console.log(
-                    `   📊 원본 Replicate URL: ${replicateData.output}`
+                    `    원본 Replicate URL: ${replicateData.output}`
                   );
                   console.log(
                     `   ✅ 상태: ${replicateData.status} → completed`
@@ -249,7 +249,7 @@ export async function GET(
     // 전체 비디오 상태 확인
     console.log("🔍 전체 비디오 상태 확인 시작...");
     console.log(
-      "📊 개별 씬 상태:",
+      " 개별 씬 상태:",
       updatedSceneVideos.map((sv) => ({
         sceneIndex: sv.sceneIndex,
         status: sv.status,
@@ -271,7 +271,7 @@ export async function GET(
       overallStatus = "failed";
     }
 
-    console.log("📊 전체 비디오 상태 업데이트:", {
+    console.log(" 전체 비디오 상태 업데이트:", {
       currentStatus: videoData.status,
       newStatus: overallStatus,
       allCompleted,
@@ -373,7 +373,7 @@ export async function GET(
       console.log(`🎉 Generated Video 완료 요약:`);
       console.log(`   📺 비디오 ID: ${videoId}`);
       console.log(`   👤 사용자: ${user.uid}`);
-      console.log(`   📊 총 Scene 수: ${updatedScenes.length}`);
+      console.log(`    총 Scene 수: ${updatedScenes.length}`);
       console.log(`   🔗 업로드된 Scene들:`);
       updatedScenes.forEach((scene, index) => {
         const sceneVideo = updatedSceneVideos.find(

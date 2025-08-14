@@ -68,44 +68,63 @@ export default function AdminUserPage() {
     checkRole();
   }, [user]);
 
-  if (!authorized) return null;
+  if (!authorized) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+        <p className="text-gray-600 mt-2">권한 확인 중...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-xl font-bold mb-4">사용자 승인 관리</h1>
-      <ul className="space-y-4">
-        {users.map((user) => (
-          <li
-            key={user.id}
-            className="flex items-center justify-between border-b pb-2"
-          >
-            <div>
-              <div className="font-medium">{user.email}</div>
-              <div className="text-sm text-gray-500">{user.id}</div>
-            </div>
-            <div className="flex gap-2">
-              {user.approved ? (
-                <>
-                  <span className="-black px-3 py-1">✅ 승인됨</span>
-                  <button
-                    onClick={() => updateApproval(user.id, false)}
-                    className="text-red-500 px-3 py-1 rounded-xl hover:text-red-600"
-                  >
-                    승인 취소
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => updateApproval(user.id, true)}
-                  className="bg-primary text-white px-3 py-1 rounded-xl hover:bg-primary/90"
+    <div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">사용자 승인 관리</h1>
+        <p>시스템 접근 권한을 관리합니다.</p>
+      </div>
+      <div>
+        <div className="space-y-4">
+          {users.map((user) => (
+            <div
+              key={user.id}
+              className="flex items-center justify-between p-4 rounded-xl border border-gray-300 hover:opacity-80 transition-all duration-200"
+            >
+              <div>
+                <div
+                  className="font-semibold"
+                  style={{ color: "var(--color-primary)" }}
                 >
-                  승인하기
-                </button>
-              )}
+                  {user.email}
+                </div>
+                <div className="text-sm font-mono text-gray-400">{user.id}</div>
+              </div>
+              <div className="flex gap-3">
+                {user.approved ? (
+                  <>
+                    <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium">
+                      승인됨
+                    </span>
+                    <button
+                      onClick={() => updateApproval(user.id, false)}
+                      className="text-red-500 px-4 py-2 rounded-full transition-all duration-200 text-sm font-medium"
+                    >
+                      승인 취소
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => updateApproval(user.id, true)}
+                    className="px-6 py-2 bg-primary text-white rounded-full transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 font-medium"
+                  >
+                    승인
+                  </button>
+                )}
+              </div>
             </div>
-          </li>
-        ))}
-      </ul>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

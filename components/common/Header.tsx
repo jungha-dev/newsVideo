@@ -17,36 +17,36 @@ type MenuGroup = {
 };
 
 const MENUS: MenuGroup[] = [
-  // {
-  //   id: "image",
-  //   label: "Image",
-  //   items: [
-  //     { href: "/image/charaters", label: "Create" },
-  //     { href: "/image/generated-img", label: "CharacterList" },
-  //   ],
-  // },
-  // {
-  //   id: "video",
-  //   label: "Video",
-  //   items: [
-  //     { href: "/video/multi-generate", label: "Generate" },
-  //     {
-  //       href: "/video/kling-v1-6-pro/connected-videos",
-  //       label: "Connected Videos",
-  //     },
-  //     { href: "/video/merge", label: "Merge" },
-  //     { href: "/video/my-create/video-group", label: "My Create" },
-  //     { href: "/video/news", label: "News Videos" },
-  //   ],
-  // },
-  // {
-  //   id: "tools",
-  //   label: "Tools",
-  //   items: [
-  //     { href: "/crawler", label: "Crawler" },
-  //     { href: "/news", label: "News" },
-  //   ],
-  // },
+  {
+    id: "image",
+    label: "Image",
+    items: [
+      { href: "/image/charaters", label: "Create" },
+      { href: "/image/generated-img", label: "CharacterList" },
+    ],
+  },
+  {
+    id: "video",
+    label: "Video",
+    items: [
+      { href: "/video/multi-generate", label: "Generate" },
+      {
+        href: "/video/kling-v1-6-pro/connected-videos",
+        label: "Connected Videos",
+      },
+      { href: "/video/merge", label: "Merge" },
+      { href: "/video/my-create/video-group", label: "My Create" },
+      { href: "/video/news", label: "News Videos" },
+    ],
+  },
+  {
+    id: "tools",
+    label: "Tools",
+    items: [
+      { href: "/crawler", label: "Crawler" },
+      { href: "/news", label: "News" },
+    ],
+  },
 ];
 
 // 단순 링크 메뉴 (드롭다운 없음)
@@ -58,6 +58,29 @@ const SIMPLE_LINKS = [
   {
     href: "/video/createVideo",
     label: "Generated Videos",
+  },
+];
+
+// 관리자 링크
+const ADMIN_LINKS = [
+  {
+    href: "/admin/users",
+    label: "Admin Menu",
+  },
+  {
+    href: "/admin/videos",
+    label: "Admin Video",
+  },
+];
+
+const ADMIN_LINK: MenuGroup[] = [
+  {
+    id: "Admin",
+    label: "Admin",
+    items: [
+      { href: "/admin/users", label: "Admin Menu" },
+      { href: "/admin/videos", label: "Admin Video" },
+    ],
   },
 ];
 
@@ -75,11 +98,23 @@ export default function Header() {
     if (!user?.uid) return;
     const fetchRole = async () => {
       try {
-        const snap = await getDoc(doc(db, "allowed_users", user.uid));
+        // 먼저 allowed_users에서 확인
+        let snap = await getDoc(doc(db, "allowed_users", user.uid));
 
         if (snap.exists() && snap.data().role === "superadmin") {
+          console.log("✅ Superadmin 권한 확인됨 (allowed_users 컬렉션)");
+          setIsSuperAdmin(true);
+          return;
+        }
+
+        // allowed_users에 없으면 users에서 확인
+        snap = await getDoc(doc(db, "users", user.uid));
+
+        if (snap.exists() && snap.data().role === "superadmin") {
+          console.log("✅ Superadmin 권한 확인됨 (users 컬렉션)");
           setIsSuperAdmin(true);
         } else {
+          console.log("❌ Superadmin 권한 없음 (users 컬렉션)");
           setIsSuperAdmin(false);
         }
       } catch (err) {
@@ -162,68 +197,14 @@ export default function Header() {
 
           {/* ───── 네비게이션 메뉴 ───── */}
           <div className="flex gap-6">
-            {/* 드롭다운 메뉴들 */}
-            {MENUS.map(({ id, label, items }) => (
-              <div
-                key={id}
-                className="relative"
-                onMouseEnter={() => toggleMenu(id, true)}
-                onMouseLeave={() => toggleMenu(id, false)}
-              >
-                <button
-                  className={`cursor-pointer relative py-5 transition-colors flex items-center gap-1 ${
-                    items.some((item) => isActive(item.href))
-                      ? "text-black font-medium"
-                      : "text-gray-600 hover:text-black"
-                  }`}
-                >
-                  {label}
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                  {items.some((item) => isActive(item.href)) && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
-                  )}
-                </button>
-
-                {openMenu === id && (
-                  <div className="absolute top-full left-0 w-48 bg-white border border-gray-200 rounded-lg  z-50">
-                    {items.map(({ href, label }) => (
-                      <Link
-                        key={href}
-                        href={href}
-                        className={`block px-4 py-3 hover:bg-gray-50 transition-colors ${
-                          isActive(href)
-                            ? "bg-gray-50 font-medium text-black"
-                            : "text-gray-700"
-                        }`}
-                      >
-                        {label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {/* 단순 링크 메뉴들 */}
+            {/* 슈퍼관리자 전용 메뉴 */}
             {SIMPLE_LINKS.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
                 className={`relative py-5 transition-colors ${
                   isActive(href)
-                    ? "text-black font-medium"
+                    ? "text-black"
                     : "text-gray-600 hover:text-black"
                 }`}
               >
@@ -234,21 +215,60 @@ export default function Header() {
               </Link>
             ))}
 
-            {isSuperAdmin && (
-              <Link
-                href="/admin/users"
-                className={`relative py-5 transition-colors font-semibold ${
-                  isActive("/admin/users")
-                    ? "text-black"
-                    : "text-gray-600 hover:text-black"
-                }`}
-              >
-                Users Managing
-                {isActive("/admin/users") && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
-                )}
-              </Link>
-            )}
+            {/* 슈퍼관리자 전용 메뉴 */}
+            {isSuperAdmin &&
+              ADMIN_LINK.map(({ id, label, items }) => (
+                <div
+                  key={id}
+                  className="relative"
+                  onMouseEnter={() => toggleMenu(id, true)}
+                  onMouseLeave={() => toggleMenu(id, false)}
+                >
+                  <button
+                    className={`cursor-pointer relative py-5 transition-colors flex items-center gap-1 ${
+                      items.some((item) => isActive(item.href))
+                        ? "text-black font-medium"
+                        : "text-gray-600 hover:text-black"
+                    }`}
+                  >
+                    {label}
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                    {items.some((item) => isActive(item.href)) && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                    )}
+                  </button>
+
+                  {openMenu === id && (
+                    <div className="absolute top-full left-0 w-48 bg-white border border-gray-200 rounded-lg  z-50">
+                      {items.map(({ href, label }) => (
+                        <Link
+                          key={href}
+                          href={href}
+                          className={`block px-4 py-3 hover:bg-gray-50 transition-colors ${
+                            isActive(href)
+                              ? "bg-gray-50 font-medium text-black"
+                              : "text-gray-700"
+                          }`}
+                        >
+                          {label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
           </div>
         </div>
 
