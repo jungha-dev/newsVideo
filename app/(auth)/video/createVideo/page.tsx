@@ -299,35 +299,7 @@ export default function NewsVideoListPage() {
         </div>
       ) : (
         <div>
-          {" "}
           <PageTitle title="Generated Video" />
-          {/* 새로고침 및 상태 정보 섹션 */}
-          {/* <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-blue-900 mb-2">
-                🔄 자동 업로드 상태
-              </h3>
-              <div className="text-xs text-blue-800 space-y-1">
-                {videos.some((v) => v.status === "processing") ? (
-                  <p>
-                    • 일부 비디오가 처리 중입니다. 30초마다 자동으로 상태를
-                    확인합니다.
-                  </p>
-                ) : (
-                  <p>• 모든 비디오가 완료되었습니다.</p>
-                )}
-                <p>• 자동 업로드가 완료되면 상태가 자동으로 업데이트됩니다.</p>
-              </div>
-            </div>
-            <Button
-              onClick={refreshVideos}
-              disabled={refreshing}
-              variant="outline"
-              className="whitespace-nowrap"
-            >
-              {refreshing ? "🔄 새로고침 중..." : "🔄 수동 새로고침"}
-            </Button>
-          </div> */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {currentVideos.map((video) => (
               <Link key={video.id} href={`/video/createVideo/${video.id}`}>
