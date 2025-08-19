@@ -2,7 +2,8 @@
   {
     "origin": [
       "http://localhost:3000",
-      "https://news-video.vercel.app, news-video-git-dev-jungha-devs-projects.vercel.app"
+      "https://news-video.vercel.app",
+      "https://news-video-git-dev-jungha-devs-projects.vercel.app"
     ],
     "method": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     "maxAgeSeconds": 3600,
