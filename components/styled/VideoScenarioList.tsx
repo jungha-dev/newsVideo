@@ -695,7 +695,7 @@ export default function VideoScenarioList({
 
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Narration
+                    Description
                   </label>
                   <textarea
                     value={scene.narration}

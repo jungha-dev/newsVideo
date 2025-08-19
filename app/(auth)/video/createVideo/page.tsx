@@ -182,7 +182,7 @@ export default function NewsVideoListPage() {
       // Firebase URL은 CORS 문제가 있을 수 있으므로 기본 썸네일 사용
       setThumbnails((prev) => ({
         ...prev,
-        [videoId]: "/placeholder-video.svg", // 기본 비디오 썸네일 SVG
+        [videoId]: "/placeholder-video.png", // 기본 비디오 썸네일 SVG
       }));
       return;
     }
@@ -198,7 +198,7 @@ export default function NewsVideoListPage() {
       // 타임아웃 시 기본 썸네일 사용
       setThumbnails((prev) => ({
         ...prev,
-        [videoId]: "/placeholder-video.svg",
+        [videoId]: "/placeholder-video.png",
       }));
     }, 10000); // 10초 타임아웃
 
@@ -229,7 +229,7 @@ export default function NewsVideoListPage() {
                 // 오류 시 기본 썸네일 사용
                 setThumbnails((prev) => ({
                   ...prev,
-                  [videoId]: "/placeholder-video.svg",
+                  [videoId]: "/placeholder-video.png",
                 }));
               }
             },
@@ -240,7 +240,7 @@ export default function NewsVideoListPage() {
         console.warn("Failed to create thumbnail canvas:", error);
         setThumbnails((prev) => ({
           ...prev,
-          [videoId]: "/placeholder-video.svg",
+          [videoId]: "/placeholder-video.png",
         }));
       }
     });
@@ -254,7 +254,7 @@ export default function NewsVideoListPage() {
       // 오류 시 기본 썸네일 사용
       setThumbnails((prev) => ({
         ...prev,
-        [videoId]: "/placeholder-video.svg",
+        [videoId]: "/placeholder-video.png",
       }));
     });
 

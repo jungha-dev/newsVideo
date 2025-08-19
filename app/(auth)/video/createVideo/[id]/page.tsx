@@ -617,10 +617,38 @@ export default function NewsVideoDetailPage() {
 
         if (response.ok) {
           // 로컬 상태 업데이트
-          setVideo({
+          const updatedVideo = {
             ...video,
             scenes: updatedScenes,
-          });
+          };
+
+          // 실패한 씬들을 삭제한 후, 남은 씬들이 모두 completed 상태인지 확인
+          const remainingScenesAllCompleted = updatedScenes.every(
+            (scene) => scene.videoUrl
+          );
+
+          // 모든 남은 씬이 completed 상태이고, 현재 비디오 상태가 failed라면 completed로 변경
+          if (
+            remainingScenesAllCompleted &&
+            video.status === "failed" &&
+            user
+          ) {
+            updatedVideo.status = "completed";
+
+            // Firebase에서 비디오 상태도 업데이트
+            try {
+              await updateNewsVideo(user.uid, video.id, {
+                status: "completed",
+              });
+              console.log(
+                "✅ Video status updated to completed after deleting failed scenes"
+              );
+            } catch (error) {
+              console.error("Failed to update video status:", error);
+            }
+          }
+
+          setVideo(updatedVideo);
 
           // 선택된 씬들도 업데이트
           const newSelectedScenes = new Set<number>();
@@ -735,8 +763,8 @@ export default function NewsVideoDetailPage() {
 
   // 영상 병합 기능
   const handleMergeAndDownload = async () => {
-    if (!video || video.status !== "completed") {
-      setError("Only completed videos can be merged. ");
+    if (!video || !video.scenes.some((scene) => scene.videoUrl)) {
+      setError("At least one scene must be completed to merge videos.");
       return;
     }
 
@@ -882,7 +910,8 @@ export default function NewsVideoDetailPage() {
     <div className="container max-w-7xl mx-auto px-4 py-8 mt-8">
       <div className="space-y-6">
         <div className="bg-white border border-gray-200 rounded-lg">
-          {video.status === "failed" ? (
+          {video.status === "failed" &&
+          !video.scenes.some((scene) => scene.videoUrl) ? (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-800">Video generation failed.</p>
             </div>
@@ -1299,7 +1328,7 @@ export default function NewsVideoDetailPage() {
                   {/* 나레이션 입력 */}
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Narration:
+                      Description :
                     </label>
                     <textarea
                       value={addSceneForm.narration}
