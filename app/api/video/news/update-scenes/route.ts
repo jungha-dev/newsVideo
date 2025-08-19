@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const videoData = videoDoc.data()!;
 
     // 삭제된 Scene의 비디오 파일이 있다면 Storage에서 삭제
-    let deletedScene = null;
+    let deletedScene: any = null;
 
     if (deletedSceneNumber !== undefined) {
       // scene_number를 기준으로 삭제된 씬 찾기
