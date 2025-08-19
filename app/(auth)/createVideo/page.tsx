@@ -73,7 +73,7 @@ Requirements:
   • Narration sentence (for video audio) — short and emotionally resonant
 - Ensure the scenes transition naturally and form a cohesive storyline.
 - Please output the result in the JSON format example below.
-- Keep the visual tone consistent (e.g., warm, cinematic, minimalistic) across all scenes.
+- Keep the visual tone consistent (e.g.,  informative, casual, minimal) across all scenes.
 
 [Example Output Format]
 {
