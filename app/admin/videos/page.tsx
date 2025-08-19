@@ -442,33 +442,36 @@ export default function AdminVideosPage() {
                         </span>
                         <div className="text-xs text-left">
                           총 {video.scenes.length}개 씬 중{" "}
-                          {
-                            video.scenes.filter((scene) => scene.videoUrl)
-                              .length
-                          }
-                          개 성공
+                          {video.status === "processing"
+                            ? "처리 중..."
+                            : `${
+                                video.scenes.filter((scene) => scene.videoUrl)
+                                  .length
+                              }개 성공`}
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="text-center">
                         <div className="text-lg font-bold text-green-600">
-                          {
-                            video.scenes.filter((scene) => scene.videoUrl)
-                              .length
-                          }
+                          {video.status === "processing"
+                            ? "-"
+                            : video.scenes.filter((scene) => scene.videoUrl)
+                                .length}
                         </div>
                         <div className="text-xs">성공</div>
                       </div>
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-red-600">
-                          {
-                            video.scenes.filter((scene) => !scene.videoUrl)
-                              .length
-                          }
+                      {video.status !== "processing" && (
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-red-600">
+                            {
+                              video.scenes.filter((scene) => !scene.videoUrl)
+                                .length
+                            }
+                          </div>
+                          <div className="text-xs">실패</div>
                         </div>
-                        <div className="text-xs ">실패</div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>

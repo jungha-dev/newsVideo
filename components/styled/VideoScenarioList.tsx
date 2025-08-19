@@ -724,7 +724,7 @@ export default function VideoScenarioList({
                 </div>
 
                 {/* Firebase 업로드 상태 표시 */}
-                <FirebaseStatusDebug scene={scene} sceneIndex={index} />
+                {/* <FirebaseStatusDebug scene={scene} sceneIndex={index} /> */}
               </div>
             </div>
           ))}

@@ -589,14 +589,15 @@ export default function NewsVideoDetailPage() {
     if (!video || video.scenes.length <= 1) return;
 
     const sceneToDelete = video.scenes[sceneIndex];
+    const sceneNumberToDelete = sceneToDelete.scene_number;
+
     if (
-      confirm(
-        `Are you sure you want to delete Scene ${sceneToDelete.scene_number}?`
-      )
+      confirm(`Are you sure you want to delete Scene ${sceneNumberToDelete}?`)
     ) {
       try {
+        // scene_number를 기준으로 씬 삭제
         const updatedScenes = video.scenes
-          .filter((_, index) => index !== sceneIndex)
+          .filter((scene) => scene.scene_number !== sceneNumberToDelete)
           .map((scene, index) => ({
             ...scene,
             scene_number: index + 1,
@@ -611,7 +612,8 @@ export default function NewsVideoDetailPage() {
           body: JSON.stringify({
             videoId: videoId,
             scenes: updatedScenes,
-            deletedSceneIndex: sceneIndex, // 삭제된 Scene의 인덱스 전달
+            deletedSceneIndex: sceneIndex, // UI 인덱스 전달 (Storage 삭제용)
+            deletedSceneNumber: sceneNumberToDelete, // 실제 씬 번호 전달
           }),
         });
 
@@ -650,6 +652,26 @@ export default function NewsVideoDetailPage() {
 
           setVideo(updatedVideo);
 
+          // sceneVideos 상태도 업데이트 (삭제된 씬 제거 및 인덱스 재정렬)
+          setSceneVideos((prev) => {
+            return prev
+              .filter((sv) => sv.sceneIndex !== sceneIndex) // UI 인덱스로 삭제된 씬 제거
+              .map((sv) => {
+                if (sv.sceneIndex > sceneIndex) {
+                  // 삭제된 씬보다 뒤에 있던 씬들의 인덱스 조정
+                  return { ...sv, sceneIndex: sv.sceneIndex - 1 };
+                }
+                return sv;
+              });
+          });
+
+          // modifiedScenes에서도 삭제된 씬 제거
+          if (modifiedScenes.length > 0) {
+            setModifiedScenes((prev) =>
+              prev.filter((_, index) => index !== sceneIndex)
+            );
+          }
+
           // 선택된 씬들도 업데이트
           const newSelectedScenes = new Set<number>();
           selectedScenes.forEach((selectedIndex) => {
@@ -662,7 +684,7 @@ export default function NewsVideoDetailPage() {
           setSelectedScenes(newSelectedScenes);
 
           console.log(
-            `✅ Scene ${sceneToDelete.scene_number} deleted successfully`
+            `✅ Scene ${sceneToDelete.scene_number} deleted successfully from Firebase and local state`
           );
         } else {
           const errorData = await response.json();
@@ -976,11 +998,23 @@ export default function NewsVideoDetailPage() {
               onDeleteVideo={confirmDelete}
               isDeleting={isDeleting}
             />
-          ) : video.status === "processing" ? (
+          ) : video.status === "processing" ||
+            sceneVideos.some(
+              (sv) => sv.status === "starting" || sv.status === "processing"
+            ) ? (
             <div className="bg-gray-100 rounded aspect-video flex items-center justify-center">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-400 mx-auto mb-4"></div>
-                <p className="text-gray-600">Generating video...</p>
+                <p className="text-gray-600">Rendering...</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  {
+                    sceneVideos.filter(
+                      (sv) =>
+                        sv.status === "starting" || sv.status === "processing"
+                    ).length
+                  }{" "}
+                  scenes are being processed
+                </p>
               </div>
             </div>
           ) : (
@@ -1145,27 +1179,61 @@ export default function NewsVideoDetailPage() {
                 </div>
 
                 {/* Scene 비디오 플레이어 */}
-                {(scene as any).firebaseUrl || scene.videoUrl ? (
-                  <div className="mb-3">
-                    <div className="bg-gray-100 rounded-lg overflow-hidden">
-                      <video
-                        controls
-                        className="w-full h-auto max-h-90 object-cover"
-                        preload="metadata"
-                      >
-                        <source
-                          src={(scene as any).firebaseUrl || scene.videoUrl}
-                          type="video/mp4"
-                        />
-                        Browser does not support video.
-                      </video>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mb-3 bg-gray-100 rounded-lg aspect-video flex items-center justify-center">
-                    <p className="text-xs text-gray-600">No video</p>
-                  </div>
-                )}
+                {(() => {
+                  // sceneVideos에서 해당 씬의 정확한 상태 확인
+                  const sceneVideo = sceneVideos.find(
+                    (sv) => sv.sceneIndex === index
+                  );
+                  const hasVideo =
+                    sceneVideo?.videoUrl ||
+                    sceneVideo?.firebaseUrl ||
+                    scene.videoUrl;
+                  const videoUrl =
+                    sceneVideo?.videoUrl ||
+                    sceneVideo?.firebaseUrl ||
+                    scene.videoUrl;
+
+                  if (hasVideo && sceneVideo?.status === "completed") {
+                    return (
+                      <div className="mb-3">
+                        <div className="bg-gray-100 rounded-lg overflow-hidden">
+                          <video
+                            controls
+                            className="w-full h-auto max-h-90 object-cover"
+                            preload="metadata"
+                          >
+                            <source src={videoUrl} type="video/mp4" />
+                            Browser does not support video.
+                          </video>
+                        </div>
+                      </div>
+                    );
+                  } else if (
+                    sceneVideo?.status === "starting" ||
+                    sceneVideo?.status === "processing"
+                  ) {
+                    return (
+                      <div className="mb-3 bg-gray-100 rounded-lg aspect-video flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400 mx-auto mb-2"></div>
+                          <p className="text-xs text-gray-600">Rendering...</p>
+                        </div>
+                      </div>
+                    );
+                  } else if (sceneVideo?.status === "failed") {
+                    return (
+                      <div className="mb-3 bg-red-50 rounded-lg aspect-video flex items-center justify-center">
+                        <p className="text-xs text-red-600">Failed</p>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="mb-3 bg-gray-100 rounded-lg aspect-video flex items-center justify-center">
+                        <p className="text-xs text-gray-600">No video</p>
+                      </div>
+                    );
+                  }
+                })()}
 
                 <div className="text-xs text-gray-600 space-y-2">
                   <div>
