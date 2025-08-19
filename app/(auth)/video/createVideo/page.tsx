@@ -347,8 +347,15 @@ export default function NewsVideoListPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <div className="text-secondary-dark">Landering...</div>
+                      <div className="w-full h-full flex items-center justify-center relative">
+                        <img
+                          src="/placeholder-video.png"
+                          alt="Placeholder"
+                          className="w-full h-full object-cover absolute inset-0"
+                        />
+                        <div className=" text-white/50 px-3 py-2 rounded-lg z-10">
+                          Rendering...
+                        </div>
                       </div>
                     )}
 

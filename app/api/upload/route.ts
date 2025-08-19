@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { storage } from "@/lib/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "@/lib/firebase-admin";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,13 +14,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Firebase Storage에 업로드
-    const storageRef = ref(storage, path);
-    const bytes = await file.arrayBuffer();
-    const snapshot = await uploadBytes(storageRef, bytes);
-    const downloadURL = await getDownloadURL(snapshot.ref);
+    // Firebase Admin Storage에 업로드
+    const bucket = storage.bucket();
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
 
-    return NextResponse.json({ url: downloadURL });
+    // 파일명에 확장자 추가 (MIME 타입 기반)
+    const extension = file.type.split("/")[1] || "jpg";
+    const fileName = `${path}.${extension}`;
+
+    const fileUpload = bucket.file(fileName);
+
+    // 파일 업로드
+    await fileUpload.save(fileBuffer, {
+      metadata: {
+        contentType: file.type,
+      },
+    });
+
+    // Firebase Storage 서명된 URL 생성 (7일 유효)
+    const [signedUrl] = await fileUpload.getSignedUrl({
+      action: "read",
+      expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7일
+    });
+
+    console.log(`✅ File uploaded successfully: ${signedUrl}`);
+
+    return NextResponse.json({ url: signedUrl });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(

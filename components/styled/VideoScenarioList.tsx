@@ -95,9 +95,36 @@ export default function VideoScenarioList({
 }: VideoScenarioListProps) {
   const [showImageUrlModal, setShowImageUrlModal] = useState(false);
   const [imageUrlInput, setImageUrlInput] = useState("");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [currentSceneIndex, setCurrentSceneIndex] = useState<number>(0);
   const [sceneMediaModals, setSceneMediaModals] = useState<{
     [key: number]: { show: boolean; type: "image" | "video"; url: string };
   }>({});
+
+  // 이미지 업로드 처리 함수
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // 파일 크기 체크 (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert("File size must be less than 10MB");
+        return;
+      }
+
+      // 파일 타입 체크
+      if (!file.type.startsWith("image/")) {
+        alert("Please select an image file");
+        return;
+      }
+
+      // 이미지 미리보기 생성
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   const [originalPrompts, setOriginalPrompts] = useState<{
     [key: number]: string;
   }>({});
@@ -131,8 +158,10 @@ export default function VideoScenarioList({
   };
 
   const handleAddImageUrl = () => {
-    if (imageUrlInput.trim() && onAddImageUrl) {
-      onAddImageUrl(imageUrlInput.trim());
+    if (imagePreview && onAddSceneImage) {
+      // 현재 선택된 씬에 이미지 추가
+      onAddSceneImage(currentSceneIndex, imagePreview);
+      setImagePreview(null);
       setImageUrlInput("");
       setShowImageUrlModal(false);
     }
@@ -656,13 +685,16 @@ export default function VideoScenarioList({
               {/* 미디어 추가 버튼들 */}
               <div className="flex gap-2 mb-3">
                 <Button
-                  onClick={() => openSceneMediaModal(index, "image")}
+                  onClick={() => {
+                    setCurrentSceneIndex(index);
+                    setShowImageUrlModal(true);
+                  }}
                   variant="normal"
                   size="sm"
                   className="flex-1 text-xs"
                   disabled={selectedVideoModel === "veo-3"}
                 >
-                  {selectedVideoModel === "veo-3" ? "" : "📷 Add Image"}
+                  {selectedVideoModel === "veo-3" ? "" : "📷 Upload Image"}
                 </Button>
               </div>
 
@@ -731,13 +763,13 @@ export default function VideoScenarioList({
         </div>
       </div>
 
-      {/* 이미지 URL 입력 모달 */}
+      {/* 이미지 업로드 모달 */}
       {showImageUrlModal && (
         <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">
-                Add Image URL
+                Upload Image for Scene {currentSceneIndex + 1}
               </h3>
               <button
                 onClick={() => {
@@ -751,23 +783,65 @@ export default function VideoScenarioList({
             </div>
 
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Image URL
-                </label>
+              {/* 이미지 업로드 영역 */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
                 <input
-                  type="url"
-                  value={imageUrlInput}
-                  onChange={(e) => setImageUrlInput(e.target.value)}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-light focus:border-transparent"
-                  onKeyPress={(e) => {
-                    if (e.key === "Enter") {
-                      handleAddImageUrl();
-                    }
-                  }}
+                  type="file"
+                  id="image-upload"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
                 />
+                <label
+                  htmlFor="image-upload"
+                  className="cursor-pointer flex flex-col items-center"
+                >
+                  <svg
+                    className="w-12 h-12 text-gray-400 mb-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                  <span className="text-sm text-gray-600">
+                    Click to upload image or drag and drop
+                  </span>
+                  <span className="text-xs text-gray-500 mt-1">
+                    PNG, JPG, JPEG up to 10MB
+                  </span>
+                </label>
               </div>
+
+              {/* 이미지 미리보기 */}
+              {imagePreview && (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-gray-700">
+                    Preview:
+                  </h4>
+                  <div className="relative">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-32 object-cover rounded-lg border"
+                    />
+                    <button
+                      onClick={() => {
+                        setImagePreview(null);
+                        setImageUrlInput("");
+                      }}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="flex gap-3 pt-4">
                 <Button
@@ -775,6 +849,7 @@ export default function VideoScenarioList({
                   onClick={() => {
                     setShowImageUrlModal(false);
                     setImageUrlInput("");
+                    setImagePreview(null);
                   }}
                   className="flex-1"
                 >
@@ -783,10 +858,10 @@ export default function VideoScenarioList({
                 <Button
                   variant="primary"
                   onClick={handleAddImageUrl}
-                  disabled={!imageUrlInput.trim()}
+                  disabled={!imagePreview}
                   className="flex-1"
                 >
-                  Add
+                  Upload Image
                 </Button>
               </div>
             </div>

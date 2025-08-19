@@ -345,13 +345,55 @@ Please compose the video based on the following blog content:
       return;
     }
 
+    // 이미지가 있는 씬들을 Firebase Storage에 업로드
+    const updatedScenes = [...videoScenario.scenes];
+    for (let i = 0; i < updatedScenes.length; i++) {
+      const scene = updatedScenes[i];
+      if (scene.imageUrl && scene.imageUrl.startsWith("data:image/")) {
+        try {
+          // base64 이미지를 Firebase Storage에 업로드
+          // base64를 Blob으로 변환
+          const base64Response = await fetch(scene.imageUrl);
+          const blob = await base64Response.blob();
+
+          const formData = new FormData();
+          formData.append("file", blob, `scene-${i + 1}-image.jpg`);
+          formData.append(
+            "path",
+            `users/${user.uid}/scenes/${Date.now()}-${i}`
+          );
+
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (response.ok) {
+            const uploadData = await response.json();
+            updatedScenes[i] = {
+              ...scene,
+              imageUrl: uploadData.url, // Firebase Storage URL로 업데이트
+            };
+            console.log(
+              `Scene ${i + 1} image uploaded to Firebase:`,
+              uploadData.url
+            );
+          } else {
+            console.error(`Failed to upload image for scene ${i + 1}`);
+          }
+        } catch (error) {
+          console.error(`Error uploading image for scene ${i + 1}:`, error);
+        }
+      }
+    }
+
     // API 요청 데이터 준비
     const requestData = {
       title: videoScenario.title,
       description: videoScenario.scenario,
       prompts: prompts,
       narrations: narrations,
-      scenes: videoScenario.scenes,
+      scenes: updatedScenes, // 업로드된 이미지 URL이 포함된 씬들
       model: selectedVideoModel,
       aspectRatio:
         selectedVideoModel === "kling-v2" ? klingAspectRatio : "16:9",
@@ -562,8 +604,20 @@ Please compose the video based on the following blog content:
   };
 
   const handleAddSceneImage = (sceneIndex: number, imageUrl: string) => {
-    if (imageUrl.trim()) {
-      addVideoUrl(imageUrl);
+    if (imageUrl && videoScenario) {
+      // 이미지 URL을 해당 씬에 추가
+      const updatedScenes = [...videoScenario.scenes];
+      updatedScenes[sceneIndex] = {
+        ...updatedScenes[sceneIndex],
+        imageUrl: imageUrl,
+      };
+
+      setVideoScenario({
+        ...videoScenario,
+        scenes: updatedScenes,
+      });
+
+      console.log(`Image added to Scene ${sceneIndex + 1}:`, imageUrl);
     }
   };
 

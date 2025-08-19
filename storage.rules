@@ -9,6 +9,12 @@ service firebase.storage {
       allow write: if false; // Admin SDK만 쓰기 허용
     }
     
+    // 사용자별 scenes 폴더 - 이미지 업로드용
+    match /users/{userId}/scenes/{allPaths=**} {
+      allow read: if true; // 모든 사용자에게 읽기 허용
+      allow write: if false; // Admin SDK만 쓰기 허용
+    }
+    
     // 기타 경로는 Admin SDK만 허용
     match /{allPaths=**} {
       allow read, write: if false;

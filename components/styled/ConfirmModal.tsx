@@ -54,7 +54,7 @@ export default function ConfirmModal({
           {apiInfo && (
             <div className="bg-gray-50 rounded-lg p-4 border">
               <h4 className="font-semibold text-gray-900 mb-2">
-                API 요청 정보:
+                API request information:
               </h4>
               <div className="space-y-2 text-sm">
                 <div>
